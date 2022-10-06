@@ -35,7 +35,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <summary>
         /// Internal chunk manager object that handles chunk loading
         /// </summary>
-        private readonly ChunkLoader<TCellType, TCell>? _chunkLoader;
+        internal readonly ChunkLoader<TCellType, TCell>? _chunkLoader;
 
         /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
@@ -58,7 +58,10 @@ namespace Venomaus.FlowVitae.Basics
 
             // Initialize chunkloader if grid uses chunks
             if (generator != null)
+            {
                 _chunkLoader = new ChunkLoader<TCellType, TCell>(Width, Height, generator, Convert);
+                _chunkLoader.LoadChunksAround(0, 0, true);
+            }
         }
 
         /// <summary>
@@ -90,6 +93,10 @@ namespace Venomaus.FlowVitae.Basics
         public void SetCell(int x, int y, TCell cell, bool storeState = false)
         {
             if (!InBounds(x, y)) return;
+
+            // Make sure cell position is correct
+            cell.X = x;
+            cell.Y = y;
 
             Cells[y * Width + x] = cell.CellType;
 
@@ -123,8 +130,11 @@ namespace Venomaus.FlowVitae.Basics
         public TCell? GetCell(int x, int y)
         {
             if (!InBounds(x, y)) return default;
-            return _storage.IsValueCreated && _storage.Value.TryGetValue((x, y), out TCell? cell) ? 
-                cell : Convert(x, y, Cells[y * Width + x]);
+            if (_chunkLoader == null && _storage.IsValueCreated && _storage.Value.TryGetValue((x, y), out TCell? cell))
+                return cell;
+            else if (_chunkLoader != null)
+                return _chunkLoader.GetChunkCell(x, y);
+            return Convert(x, y, Cells[y * Width + x]);
         }
 
         /// <summary>

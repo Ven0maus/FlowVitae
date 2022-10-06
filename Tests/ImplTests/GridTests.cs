@@ -2,13 +2,13 @@ using Venomaus.FlowVitae.Cells;
 
 namespace Venomaus.Tests.ImplTests
 {
-    internal class CoreObjectTests : CoreCellTestsBase<int, Cell>
+    internal class GridTests : BaseTests<int, Cell<int>>
     {
         [Test]
         public void GetCell()
         {
             var cell = Grid.GetCell(5, 5);
-            Assert.That(cell, Is.EqualTo(new Cell(5, 5)));
+            Assert.That(cell, Is.EqualTo(new Cell<int>(5, 5)));
         }
 
         [Test]

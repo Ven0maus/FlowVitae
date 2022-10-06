@@ -28,6 +28,14 @@ namespace Venomaus.FlowVitae.Basics.Procedural
             _currentLoadedChunk = (0, 0);
         }
 
+        public void LoadChunksAround(int x, int y, bool includeSourceChunk)
+        {
+            var chunkCoordinate = FindChunkCoordinates(x, y);
+            if (includeSourceChunk) 
+                LoadChunk(chunkCoordinate.x, chunkCoordinate.y);
+            // TODO: LoadNeighborChunks(chunkCoordinate.x, chunkCoordinate.y);
+        }
+
         public TCell? GetChunkCell(int x, int y)
         {
             // TODO: Remove nullable when negative coords are supported
@@ -113,7 +121,7 @@ namespace Venomaus.FlowVitae.Basics.Procedural
             var coordinate = FindChunkCoordinates(x, y);
 
             if (!_chunks.ContainsKey(coordinate))
-                _chunks.Add(coordinate, GenerateChunk(coordinate));
+                GenerateChunk(coordinate);
         }
 
         public void LoadChunk(TCell cell) => LoadChunk(cell.X, cell.Y);
@@ -155,7 +163,7 @@ namespace Venomaus.FlowVitae.Basics.Procedural
 
             // Generate chunk data
             var chunk = _generator?.Generate(chunkSeed, _width, _height);
-            if (chunk == null || chunk.Length > 0)
+            if (chunk == null || chunk.Length == 0)
             {
                 throw new Exception(chunk == null ? 
                     "Chunk generator returned null chunk data." : 
