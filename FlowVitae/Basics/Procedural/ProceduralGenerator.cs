@@ -12,17 +12,17 @@
         /// <inheritdoc />
         public int Seed { get; private set; }
 
-        private readonly Func<Random, TCellType> _initializer;
+        private readonly Func<Random, TCellType> _method;
 
         /// <summary>
         /// Constructor for <see cref="ProceduralGenerator{TCellType, TCell}"/>
         /// </summary>
         /// <param name="seed">Unique seed</param>
-        /// <param name="initializer"><typeparamref name="TCellType"/> initializer</param>
-        public ProceduralGenerator(int seed, Func<Random, TCellType> initializer)
+        /// <param name="method"><typeparamref name="TCellType"/> method</param>
+        public ProceduralGenerator(int seed, Func<Random, TCellType> method)
         {
             Seed = seed;
-            _initializer = initializer;
+            _method = method;
         }
 
         /// <inheritdoc />
@@ -34,7 +34,7 @@
             {
                 for (int y = 0; y < height; y++)
                 {
-                    grid[y * width + x] = _initializer.Invoke(random);
+                    grid[y * width + x] = _method.Invoke(random);
                 }
             }
             return grid;
