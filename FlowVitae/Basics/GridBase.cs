@@ -45,13 +45,11 @@ namespace Venomaus.FlowVitae.Basics
         /// </remarks>
         /// <param name="width">Width of <see cref="Cells"/></param>
         /// <param name="height">Height of <see cref="Cells"/></param>
-        /// <param name="seed">Seed used by <see cref="ChunkLoader{TCellType, TCell}"/></param>
         /// <param name="generator"></param>
-        public GridBase(int width, int height, int seed = 0, IProceduralGen<TCellType, TCell>? generator = null)
+        public GridBase(int width, int height, IProceduralGen<TCellType, TCell>? generator = null)
         {
             Width = width;
             Height = height;
-            Seed = seed;
             Cells = new TCellType[Width * Height];
 
             // Initialize lazy objects
@@ -60,7 +58,7 @@ namespace Venomaus.FlowVitae.Basics
 
             // Initialize chunkloader if grid uses chunks
             if (generator != null)
-                _chunkLoader = new ChunkLoader<TCellType, TCell>(Width, Height, Seed, generator);
+                _chunkLoader = new ChunkLoader<TCellType, TCell>(Width, Height, generator, Convert);
         }
 
         /// <summary>
@@ -86,30 +84,22 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
         /// <param name="cell"></param>
-        /// <param name="storeState">Stores the <paramref name="cell"/> with all its properties and field values</param>
+        /// <param name="storeState">Stores the <paramref name="cell"/> with all its properties and field values.
+        /// This value is always true when the grid uses chunks.
+        /// </param>
         public void SetCell(int x, int y, TCell cell, bool storeState = false)
         {
             if (!InBounds(x, y)) return;
 
-            TCellType cellType;
-            if (cell == null)
-            {
-                cellType = default;
-                var key = (x, y);
-                if (_storage.IsValueCreated && _storage.Value.ContainsKey(key))
-                {
-                    _storage.Value.Remove(key);
-                }
-            }
-            else
-            {
-                cellType = cell.CellType;
-            }
+            Cells[y * Width + x] = cell.CellType;
 
-            Cells[y * Width + x] = cellType;
-
-            if (storeState && cell != null && InBounds(x, y))
-                _storage.Value[(x, y)] = cell;   
+            // Storage or chunking
+            if (!storeState && _chunkLoader == null && _storage.IsValueCreated)
+                _storage.Value.Remove((x, y));
+            else if (!storeState && _chunkLoader == null)
+                _storage.Value[(x, y)] = cell;
+            else if (_chunkLoader != null)
+                _chunkLoader.SetChunkCell(x, y, cell, storeState);
         }
 
         /// <summary>
@@ -118,11 +108,11 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
         /// <param name="cellType"></param>
-        public void SetCell(int x, int y, TCellType cellType)
-        {
-            if (!InBounds(x, y)) return;
-            Cells[y * Width + x] = cellType;
-        }
+        /// <param name="storeState">Converts <paramref name="cellType"/> to <typeparamref name="TCell"/> and stores it with all its properties and field values.
+        /// This value is always true when the grid uses chunks.
+        /// </param>
+        public void SetCell(int x, int y, TCellType cellType, bool storeState = false) 
+            => SetCell(x, y, Convert(x, y, cellType), storeState);
 
         /// <summary>
         /// Retrieve the <typeparamref name="TCell"/> at position (<paramref name="x"/>, <paramref name="y"/>)
