@@ -18,7 +18,7 @@ namespace Venomaus.FlowVitae.Grids
         { }
 
         /// <summary>
-        /// Overwrites the Convert method with a custom implementation without having to create a new <see cref="IGrid{TCellType, TCell}"/> implementation.
+        /// Overwrites the Convert method with a custom implementation without having to create a new <see cref="GridBase{TCellType, TCell}"/> implementation.
         /// </summary>
         /// <param name="converter">Converter func that resembles the Convert method</param>
         public void SetCustomConverter(Func<int, int, TCellType, TCell>? converter)

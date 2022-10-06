@@ -6,7 +6,7 @@ namespace Venomaus.Tests.ImplTests
     internal class ChunkLoaderTests : BaseTests<int, TestCell<int>>
     {
         private const int Seed = 1000;
-        protected override IProceduralGen<int, TestCell<int>>? ProcGen => new ProceduralGenerator<TestCell<int>>(Seed);
+        protected override IProceduralGen<int, TestCell<int>>? ProcGen => new ProceduralGenerator<int, TestCell<int>>(Seed, (a) => a.Next(0, 10));
 
         [Test]
         public void SetCell_StoreState_ValueCorrect()
