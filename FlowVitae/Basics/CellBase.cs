@@ -33,11 +33,13 @@
             CellType = cellType;
         }
 
+        /// <inheritdoc/>
         public bool Equals(ICell<TCellType>? other)
         {
             return other != null && X == other.X && Y == other.Y;
         }
 
+        /// <inheritdoc/>
         public bool Equals((int x, int y) other)
         {
             return X == other.x && Y == other.y;

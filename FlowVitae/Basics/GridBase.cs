@@ -1,4 +1,6 @@
-﻿namespace Venomaus.FlowVitae.Basics
+﻿using Venomaus.FlowVitae.Basics.Procedural;
+
+namespace Venomaus.FlowVitae.Basics
 {
     /// <summary>
     /// Base class which provides basic grid functionality
@@ -9,6 +11,10 @@
         where TCellType : struct
         where TCell : class, ICell<TCellType>, new()
     {
+        /// <summary>
+        /// Seed that represents <see cref="GridBase{TCellType, TCell}"/>
+        /// </summary>
+        public int Seed { get; }
         /// <summary>
         /// Width of <see cref="Cells"/>
         /// </summary>
@@ -26,19 +32,35 @@
         /// Container for cells that contain extra data
         /// </summary>
         private readonly Lazy<Dictionary<(int x, int y), TCell>> _storage;
+        /// <summary>
+        /// Internal chunk manager object that handles chunk loading
+        /// </summary>
+        private readonly ChunkLoader<TCellType, TCell>? _chunkLoader;
 
         /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
         /// </summary>
+        /// <remarks>
+        /// When chunks are enabled <paramref name="width"/>, <paramref name="height"/> are used to determine the chunk size.
+        /// </remarks>
         /// <param name="width">Width of <see cref="Cells"/></param>
         /// <param name="height">Height of <see cref="Cells"/></param>
-        public GridBase(int width, int height)
+        /// <param name="seed">Seed used by <see cref="ChunkLoader{TCellType, TCell}"/></param>
+        /// <param name="generator"></param>
+        public GridBase(int width, int height, int seed = 0, IProceduralGen<TCellType, TCell>? generator = null)
         {
             Width = width;
             Height = height;
+            Seed = seed;
             Cells = new TCellType[Width * Height];
+
+            // Initialize lazy objects
             _storage = new Lazy<Dictionary<(int x, int y), TCell>>
                 (() => new Dictionary<(int x, int y), TCell>());
+
+            // Initialize chunkloader if grid uses chunks
+            if (generator != null)
+                _chunkLoader = new ChunkLoader<TCellType, TCell>(Width, Height, Seed, generator);
         }
 
         /// <summary>
