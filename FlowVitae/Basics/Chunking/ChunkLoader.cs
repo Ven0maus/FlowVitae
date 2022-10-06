@@ -1,6 +1,7 @@
-﻿using Venomaus.FlowVitae.Helpers;
+﻿using Venomaus.FlowVitae.Basics.Procedural;
+using Venomaus.FlowVitae.Helpers;
 
-namespace Venomaus.FlowVitae.Basics.Procedural
+namespace Venomaus.FlowVitae.Basics.Chunking
 {
     internal class ChunkLoader<TCellType, TCell>
         where TCellType : struct
@@ -31,7 +32,7 @@ namespace Venomaus.FlowVitae.Basics.Procedural
         public void LoadChunksAround(int x, int y, bool includeSourceChunk)
         {
             var chunkCoordinate = FindChunkCoordinates(x, y);
-            if (includeSourceChunk) 
+            if (includeSourceChunk)
                 LoadChunk(chunkCoordinate.x, chunkCoordinate.y);
             // TODO: LoadNeighborChunks(chunkCoordinate.x, chunkCoordinate.y);
         }
@@ -84,7 +85,7 @@ namespace Venomaus.FlowVitae.Basics.Procedural
                     }
                     storedCells[(x, y)] = cell;
                 }
-                
+
                 // Adjust chunk cell & stored cell
                 chunk[y * _width + x] = cell.CellType;
             }
@@ -165,8 +166,8 @@ namespace Venomaus.FlowVitae.Basics.Procedural
             var chunk = _generator?.Generate(chunkSeed, _width, _height);
             if (chunk == null || chunk.Length == 0)
             {
-                throw new Exception(chunk == null ? 
-                    "Chunk generator returned null chunk data." : 
+                throw new Exception(chunk == null ?
+                    "Chunk generator returned null chunk data." :
                     "Chunk generator returned empty chunk data.");
             }
 
