@@ -20,7 +20,7 @@ namespace Venomaus.Tests.ImplTests
             Assert.That(cell.CellType, Is.Not.EqualTo(4));
 
             // Change cell to 4 with store state
-            Grid.SetCell(5, 5, new TestCell<int>(4, number), true);
+            Grid.SetCell(new TestCell<int>(5, 5, 4, number), true);
 
             // Verify if cell is 4 and number matches stored state
             cell = Grid.GetCell(5, 5);

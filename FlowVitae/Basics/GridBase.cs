@@ -83,23 +83,20 @@ namespace Venomaus.FlowVitae.Basics
         }
 
         /// <summary>
-        /// Update the cell's <typeparamref name="TCellType"/> at position (<paramref name="x"/>, <paramref name="y"/>)
+        /// Update the cell's <typeparamref name="TCellType"/> and other properties if state is stored)
         /// </summary>
-        /// <param name="x">Coordinate X</param>
-        /// <param name="y">Coordinate Y</param>
         /// <param name="cell"></param>
         /// <param name="storeState">Stores the <paramref name="cell"/> with all its properties and field values.
         /// This value is always true when the grid uses chunks.
         /// </param>
-        public void SetCell(int x, int y, TCell cell, bool storeState = false)
+        public void SetCell(TCell cell, bool storeState = false)
         {
+            int x = cell.X;
+            int y = cell.Y;
+
             if (_chunkLoader == null && !InBounds(x, y)) return;
 
             var pos = _chunkLoader != null ? _chunkLoader.RemapChunkCoordinate(x, y) : (x, y);
-
-            // Make sure cell position is correct
-            cell.X = x;
-            cell.Y = y;
 
             Cells[pos.y * Width + pos.x] = cell.CellType;
 
@@ -122,7 +119,7 @@ namespace Venomaus.FlowVitae.Basics
         /// This value is always true when the grid uses chunks.
         /// </param>
         public void SetCell(int x, int y, TCellType cellType, bool storeState = false) 
-            => SetCell(x, y, Convert(x, y, cellType), storeState);
+            => SetCell(Convert(x, y, cellType), storeState);
 
         /// <summary>
         /// Retrieve the <typeparamref name="TCell"/> at position (<paramref name="x"/>, <paramref name="y"/>)
