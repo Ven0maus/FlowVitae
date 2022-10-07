@@ -41,25 +41,47 @@ namespace Venomaus.FlowVitae.Basics
         /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
         /// </summary>
-        /// <remarks>
-        /// When chunks are enabled <paramref name="width"/>, <paramref name="height"/> are used to determine the chunk size.
-        /// </remarks>
-        /// <param name="width">Width of <see cref="Cells"/></param>
-        /// <param name="height">Height of <see cref="Cells"/></param>
-        /// <param name="generator"></param>
-        public GridBase(int width, int height, IProceduralGen<TCellType, TCell>? generator = null)
+        /// <remarks>Initializes a grid that does not use chunking.</remarks>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        public GridBase(int width, int height)
         {
             Width = width;
             Height = height;
             Cells = new TCellType[Width * Height];
+        }
+
+        /// <summary>
+        /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
+        /// </summary>
+        /// <remarks>Initializes a grid that uses chunking. (<paramref name="chunkWidth"/>, <paramref name="chunkHeight"/>) are used to determine the chunk size.</remarks>
+        /// <param name="viewPortWidth">Width of <see cref="Cells"/>, this is what is usually rendered on screen.</param>
+        /// <param name="viewPortHeight">Height of <see cref="Cells"/>, this is what is usually rendered on screen.</param>
+        /// <param name="chunkWidth">The width of the chunk</param>
+        /// <param name="chunkHeight">The height of the chunk</param>
+        /// <param name="generator">The procedural algorithm used to generate the chunk data</param>
+        public GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell> generator, int chunkWidth, int chunkHeight)
+            : this (viewPortWidth, viewPortHeight)
+        {
+            if (generator == null) return;
 
             // Initialize chunkloader if grid uses chunks
-            if (generator != null)
-            {
-                _chunkLoader = new ChunkLoader<TCellType, TCell>(Width, Height, generator, Convert);
-                _chunkLoader.LoadChunksAround(0, 0, true);
-            }
+            _chunkLoader = new ChunkLoader<TCellType, TCell>(chunkWidth, chunkHeight, generator, Convert);
+            _chunkLoader.LoadChunksAround(0, 0, true);
         }
+
+        /// <summary>
+        /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
+        /// </summary>
+        /// <remarks>
+        /// Initializes a grid that uses chunking. (<paramref name="viewPortWidth"/>, <paramref name="viewPortHeight"/>) are used to determine the chunk size.
+        /// </remarks>
+        /// <param name="viewPortWidth">Width of <see cref="Cells"/></param>
+        /// <param name="viewPortHeight">Height of <see cref="Cells"/></param>
+        /// <param name="generator">The procedural algorithm used to generate the chunk data</param>
+        public GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell> generator)
+            : this(viewPortWidth, viewPortHeight, generator, viewPortWidth, viewPortHeight)
+        { }
 
         /// <summary>
         /// Centers the grid on the specified coordinate

@@ -14,8 +14,19 @@ namespace Venomaus.FlowVitae.Grids
         private Func<int, int, TCellType, TCell>? _customConverter;
 
         /// <inheritdoc />
-        public Grid(int width, int height, IProceduralGen<TCellType, TCell>? procGen = null) : base(width, height, procGen)
-        { }
+        public Grid(int width, int height) : base(width, height)
+        {
+        }
+
+        /// <inheritdoc />
+        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell> generator, int chunkWidth, int chunkHeight) : base(viewPortWidth, viewPortHeight, generator, chunkWidth, chunkHeight)
+        {
+        }
+
+        /// <inheritdoc />
+        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell> generator) : base(viewPortWidth, viewPortHeight, generator)
+        {
+        }
 
         /// <summary>
         /// Overwrites the Convert method with a custom implementation without having to create a new <see cref="GridBase{TCellType, TCell}"/> implementation.
