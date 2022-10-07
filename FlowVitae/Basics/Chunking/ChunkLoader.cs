@@ -14,7 +14,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         private readonly Dictionary<(int x, int y), TCellType[]> _chunks;
         private Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>? _modifiedCellsInChunks;
 
-        private (int x, int y) _currentLoadedChunk;
+        public (int x, int y) CurrentChunk { get; private set; }
 
         public ChunkLoader(int width, int height, IProceduralGen<TCellType, TCell> generator, Func<int, int, TCellType, TCell> cellTypeConverter)
         {
@@ -24,9 +24,14 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             _generator = generator;
             _cellTypeConverter = cellTypeConverter;
             _chunks = new Dictionary<(int x, int y), TCellType[]>();
-            _currentLoadedChunk = (0, 0);
         }
 
+        /// <summary>
+        /// Remaps the cell coordinate to the Grid's coordinate
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public (int x, int y) RemapChunkCoordinate(int x, int y)
         {
             _ = GetChunk(x, y, out var chunkCoordinate);
@@ -38,16 +43,54 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return (x: Math.Abs(x - chunkCoordinate.x), y: Math.Abs(y - chunkCoordinate.y));
         }
 
-        public void LoadChunksAround(int x, int y, bool includeSourceChunk)
+        public void SetCurrentChunk(int x, int y)
         {
-            var chunkCoordinate = FindChunkCoordinates(x, y);
-            if (includeSourceChunk)
-                LoadChunk(chunkCoordinate.x, chunkCoordinate.y);
-            // TODO: LoadNeighborChunks(chunkCoordinate.x, chunkCoordinate.y);
+            CurrentChunk = GetChunkCoordinate(x, y);
+
+            // Load new chunks
+            LoadChunksAround(x, y, true);
+
+            // Unload any other chunks
+            UnloadNonMandatoryChunks();
         }
 
-        public TCell? GetChunkCell(int x, int y)
+        public void LoadChunksAround(int x, int y, bool includeSourceChunk)
         {
+            var chunkCoordinate = GetChunkCoordinate(x, y);
+
+            if (includeSourceChunk)
+                LoadChunk(chunkCoordinate.x, chunkCoordinate.y);
+
+            var neighbors = GetNeighborChunks(chunkCoordinate.x, chunkCoordinate.y);
+            foreach (var neighbor in neighbors)
+                LoadChunk(neighbor.x, neighbor.y);
+        }
+
+        public void UnloadNonMandatoryChunks()
+        {
+            var mandatoryChunks = GetMandatoryChunks();
+            var allChunks = _chunks.Select(a => a.Key).ToArray();
+            foreach (var chunk in allChunks)
+            {
+                if (!mandatoryChunks.Contains(chunk))
+                    _chunks.Remove(chunk);
+            }
+        }
+
+        private HashSet<(int x, int y)> GetMandatoryChunks()
+        {
+            return new HashSet<(int x, int y)>(GetNeighborChunks())
+            {
+                CurrentChunk
+            };
+        }
+
+        public TCell? GetChunkCell(int x, int y, bool loadChunk = false)
+        {
+            bool wasChunkLoaded = false;
+            if (loadChunk)
+                wasChunkLoaded = LoadChunk(x, y);
+
             var chunk = GetChunk(x, y, out var chunkCoordinate);
             if (chunk != null)
             {
@@ -58,19 +101,42 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                     .TryGetValue(chunkCoordinate, out var cells) &&
                     cells.TryGetValue(remappedCoordinate, out var cell))
                 {
+                    if (loadChunk && wasChunkLoaded)
+                        UnloadChunk(x, y);
                     // Return the modified cell if it exists
                     return cell;
                 }
 
+                if (loadChunk && wasChunkLoaded)
+                    UnloadChunk(x, y);
                 // Return the non-modified cell
-                return _cellTypeConverter(remappedCoordinate.x, remappedCoordinate.y, 
+                return _cellTypeConverter(remappedCoordinate.x, remappedCoordinate.y,
                     chunk[remappedCoordinate.y * _width + remappedCoordinate.x]);
             }
             return null;
         }
 
-        public void SetChunkCell(int x, int y, TCell cell, bool storeState = false)
+        public IEnumerable<TCell> GetChunkCells(IEnumerable<Tuple<int, int>> positions)
         {
+            var loadedChunks = new List<(int x, int y)>();
+            foreach (var pos in positions)
+            {
+                if (LoadChunk(pos.Item1, pos.Item2))
+                    loadedChunks.Add((pos.Item1, pos.Item2));
+                var cell = GetChunkCell(pos.Item1, pos.Item2);
+                if (cell != null)
+                    yield return cell;
+            }
+            foreach (var (x, y) in loadedChunks)
+                UnloadChunk(x, y);
+        }
+
+        public void SetChunkCell(int x, int y, TCell cell, bool storeState = false, bool loadChunk = false)
+        {
+            bool wasChunkLoaded = false;
+            if (loadChunk)
+                wasChunkLoaded = LoadChunk(x, y);
+
             var chunk = GetChunk(x, y, out var chunkCoordinate);
             if (chunk != null)
             {
@@ -99,43 +165,73 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 // Adjust chunk cell & stored cell
                 chunk[remappedCoordinate.y * _width + remappedCoordinate.x] = cell.CellType;
             }
+
+            if (loadChunk && wasChunkLoaded)
+                UnloadChunk(x, y);
         }
 
-        public void SetCurrentChunk(int x, int y)
+        public void SetChunkCells(IEnumerable<TCell> cells, bool storeCellState) 
+            => SetChunkCells(cells, (s) => storeCellState);
+
+        public void SetChunkCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null)
         {
-            var coordinate = FindChunkCoordinates(x, y);
-
-            if (_chunks.ContainsKey(coordinate))
-                _currentLoadedChunk = (x, y);
+            var loadedChunks = new List<(int x, int y)>();
+            foreach (var cell in cells)
+            {
+                if (LoadChunk(cell.X, cell.Y))
+                    loadedChunks.Add((cell.X, cell.Y));
+                SetChunkCell(cell.X, cell.Y, cell, storeCellStateFunc?.Invoke(cell) ?? false);
+            }
+            foreach (var (x, y) in loadedChunks)
+                UnloadChunk(x, y);
         }
 
-        public TCellType[] GetCurrentChunk()
-        {
-            if (!_chunks.TryGetValue(_currentLoadedChunk, out var chunk))
-                throw new Exception("No chunk loaded, initialize chunks first!");
-            return chunk;
-        }
-
-        public TCellType[] GetNeighborChunk(Direction direction)
+        private (int x, int y) GetNeighborChunk(Direction direction)
         {
             // TODO: Implement neighbor chunking
-            // TODO: Support negative coordinates
-            return new TCellType[_width * _height];
+            return (0, 0);
         }
 
-        public void LoadChunk(int x, int y)
+        private (int x, int y) GetNeighborChunk(int x, int y, Direction direction)
         {
-            var coordinate = FindChunkCoordinates(x, y);
+            // TODO: Implement neighbor chunking
+            return (0, 0);
+        }
+
+        private (int x, int y)[] GetNeighborChunks()
+        {
+            // TODO: Implement neighbor chunking
+            return new[] { (0, 0) };
+        }
+
+        private (int x, int y)[] GetNeighborChunks(int x, int y)
+        {
+            // TODO: Implement neighbor chunking
+            return new[] { (0, 0) };
+        }
+
+        public bool LoadChunk(int x, int y)
+        {
+            var coordinate = GetChunkCoordinate(x, y);
 
             if (!_chunks.ContainsKey(coordinate))
+            {
                 GenerateChunk(coordinate);
+                return true;
+            }
+            return false;
         }
 
         public void LoadChunk(TCell cell) => LoadChunk(cell.X, cell.Y);
 
         public void UnloadChunk(int x, int y)
         {
-            var chunkCoordinate = FindChunkCoordinates(x, y);
+            var chunkCoordinate = GetChunkCoordinate(x, y);
+
+            // Check that we are not unloading current or neighbor chunks
+            if (CurrentChunk == chunkCoordinate) return;
+            var neighborChunks = GetNeighborChunks();
+            if (neighborChunks.Any(m => m.x == x && m.y == y)) return;
 
             _chunks.Remove(chunkCoordinate);
         }
@@ -144,7 +240,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         private TCellType[]? GetChunk(int x, int y, out (int x, int y) chunkCoordinate)
         {
-            chunkCoordinate = FindChunkCoordinates(x, y);
+            chunkCoordinate = GetChunkCoordinate(x, y);
             return _chunks.TryGetValue(chunkCoordinate, out var chunk) ? chunk : null;
         }
 
@@ -167,7 +263,13 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return chunk;
         }
 
-        private (int x, int y) FindChunkCoordinates(int x, int y)
+        /// <summary>
+        /// Returns the base coordinate of the cell's chunk
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public (int x, int y) GetChunkCoordinate(int x, int y)
         {
             // eg: 10_width * (27x / 10_width);
             // so (27x / 10_width) would round to 2 int so (10 * 2) = 20chunkX

@@ -97,17 +97,29 @@ namespace Venomaus.FlowVitae.Basics
             var minX = x - (Width / 2);
             var minY = y - (Height / 2);
 
+            // Update the current chunk
+            var currentChunk = _chunkLoader.CurrentChunk;
+            var centerChunk = _chunkLoader.GetChunkCoordinate(x, y);
+            if (currentChunk.x != centerChunk.x && currentChunk.y != centerChunk.y)
+                _chunkLoader.SetCurrentChunk(centerChunk.x, centerChunk.y);
+
+            // Collect all positions
+            var positions = new Tuple<int, int>[Width * Height]; 
             for (var xX = 0; xX < Width; xX++)
             {
                 for (var yY = 0; yY < Height; yY++)
                 {
                     var cellX = minX + xX;
                     var cellY = minY + yY;
-                    var cell = GetCell(cellX, cellY);
-                    if (cell == null)
-                        throw new Exception("Something went wrong during cell retrieval from chunk.");
-                    Cells[yY * Width + xX] = cell.CellType;
+                    positions[yY * Width + xX] = new Tuple<int, int>(cellX, cellY);
                 }
+            }
+
+            // Set cells properly to cell type
+            var cells = GetCells(positions);
+            foreach (var cell in cells)
+            {
+                Cells[cell.Y * Width + cell.X] = cell.CellType; 
             }
         }
 
@@ -142,25 +154,11 @@ namespace Venomaus.FlowVitae.Basics
 
             if (_chunkLoader == null && !InBounds(x, y)) return;
 
-            var pos = _chunkLoader != null ? _chunkLoader.RemapChunkCoordinate(x, y) : (x, y);
+            var gridPos = _chunkLoader != null ? _chunkLoader.RemapChunkCoordinate(x, y) : (x, y);
+            Cells[gridPos.y * Width + gridPos.x] = cell.CellType;
 
-            Cells[pos.y * Width + pos.x] = cell.CellType;
-
-            // Storage or chunking
-            if (!storeState && _chunkLoader == null && _storage != null)
-            {
-                _storage.Remove((x, y));
-                if (_storage.Count == 0)
-                    _storage = null;
-            }
-            else if (!storeState && _chunkLoader == null)
-            {
-                if (_storage == null)
-                    _storage = new Dictionary<(int x, int y), TCell>();
-                _storage[(x, y)] = cell;
-            }
-            else if (_chunkLoader != null)
-                _chunkLoader.SetChunkCell(x, y, cell, storeState);
+            // Storage and chunking
+            SetStateStorage(cell, storeState);
         }
 
         /// <summary>
@@ -172,23 +170,85 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="storeState">Converts <paramref name="cellType"/> to <typeparamref name="TCell"/> and stores it with all its properties and field values.
         /// This value is always true when the grid uses chunks.
         /// </param>
+        /// <remarks>When setting multiple cells at once, use <see cref="SetCells(IEnumerable{TCell}, bool)"/> instead.</remarks>
         public void SetCell(int x, int y, TCellType cellType, bool storeState = false) 
             => SetCell(Convert(x, y, cellType), storeState);
+
+        /// <summary>
+        /// Update all <paramref name="cells"/> within the grid, this method is optimized for setting cells in unloaded chunks.
+        /// </summary>
+        /// <param name="cells">Collection of <typeparamref name="TCell"/></param>
+        /// <param name="storeCellState">If <see langword="true"/>, stores all properties and field values of all <paramref name="cells"/>.</param>
+        /// <remarks>If you want to control which cells to store state for, use the <see cref="SetCells(IEnumerable{TCell}, Func{TCell, bool}?)"/> overload.</remarks>
+        public void SetCells(IEnumerable<TCell> cells, bool storeCellState) 
+            => SetCells(cells, (s) => storeCellState);
+
+        /// <summary>
+        /// Update all <paramref name="cells"/> within the grid, this method is optimized for setting cells in unloaded chunks.
+        /// </summary>
+        /// <param name="cells">Collection of <typeparamref name="TCell"/></param>
+        /// <param name="storeCellStateFunc">Method to decide which cell to store state for or not, default false if null.</param>
+        public void SetCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null)
+        {
+            if (_chunkLoader == null)
+            {
+                // Handle non chunkloaded grid
+                foreach (var cell in cells)
+                {
+                    if (!InBounds(cell)) continue;
+                    SetCell(cell, storeCellStateFunc?.Invoke(cell) ?? false);
+                }
+            }
+            else
+            {
+                // Handle chunkloaded grid
+                _chunkLoader.SetChunkCells(cells, storeCellStateFunc);
+            }
+        }
 
         /// <summary>
         /// Retrieve the <typeparamref name="TCell"/> at position (<paramref name="x"/>, <paramref name="y"/>)
         /// </summary>
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
+        /// <remarks>When setting multiple cells at once, use <see cref="GetCells(IEnumerable{Tuple{int, int}})"/> instead.</remarks>
         /// <returns><typeparamref name="TCell"/>?</returns>
         public TCell? GetCell(int x, int y)
         {
             if (_chunkLoader == null && !InBounds(x, y)) return default;
-            if (_chunkLoader == null && _storage != null && _storage.TryGetValue((x, y), out TCell? cell))
+            if (_chunkLoader != null)
+            {
+                var cell = _chunkLoader.GetChunkCell(x, y, true);
+                if (cell == null) throw new Exception("Something went wrong during cell retrieval from chunk.");
                 return cell;
-            else if (_chunkLoader != null)
-                return _chunkLoader.GetChunkCell(x, y);
-            return Convert(x, y, Cells[y * Width + x]);
+            }
+            return Convert(x, y, GetCellType(x, y));
+        }
+
+        /// <summary>
+        /// Retrieves multiple <typeparamref name="TCell"/>
+        /// </summary>
+        /// <param name="positions"></param>
+        /// <returns></returns>
+        public IEnumerable<TCell> GetCells(IEnumerable<Tuple<int, int>> positions)
+        {
+            if (_chunkLoader == null)
+            {
+                // Handle non chunkloaded grid
+                foreach (var pos in positions)
+                {
+                    if (!InBounds(pos.Item1, pos.Item2)) continue;
+                    var cell = GetCell(pos.Item1, pos.Item2);
+                    if (cell != null)
+                        yield return cell;
+                }
+            }
+            else
+            {
+                // Handle chunkloaded grid
+                foreach (var cell in _chunkLoader.GetChunkCells(positions))
+                    yield return cell;
+            }
         }
 
         /// <summary>
@@ -199,7 +259,16 @@ namespace Venomaus.FlowVitae.Basics
         /// <returns><typeparamref name="TCellType"/></returns>
         public TCellType GetCellType(int x, int y)
         {
-            if (!InBounds(x, y)) return default;
+            if (_chunkLoader == null && !InBounds(x, y)) return default;
+            if (_chunkLoader == null && _storage != null && _storage.TryGetValue((x, y), out TCell? cell))
+                return cell.CellType;
+            else if (_chunkLoader != null)
+            {
+                // TODO: Load chunk automatically, so cell cannot be null
+                cell = _chunkLoader.GetChunkCell(x, y);
+                if (cell != null) return cell.CellType;
+                return default;
+            }
             return Cells[y * Width + x];
         }
 
@@ -226,6 +295,25 @@ namespace Venomaus.FlowVitae.Basics
         {
             if (_chunkLoader != null) return true;
             return InBounds(cell.X, cell.Y);
+        }
+
+        private void SetStateStorage(TCell cell, bool storeState)
+        {
+            var coordinate = (cell.X, cell.Y);
+            if (storeState && _chunkLoader == null)
+            {
+                if (_storage == null)
+                    _storage = new Dictionary<(int x, int y), TCell>();
+                _storage[coordinate] = cell;
+            }
+            else if (!storeState && _chunkLoader == null && _storage != null)
+            {
+                _storage.Remove(coordinate);
+                if (_storage.Count == 0)
+                    _storage = null;
+            }
+            else if (_chunkLoader != null)
+                _chunkLoader.SetChunkCell(cell.X, cell.Y, cell, storeState, true);
         }
     }
 }
