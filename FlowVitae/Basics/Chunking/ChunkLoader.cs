@@ -78,6 +78,10 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 if (!storeState && _modifiedCellsInChunks != null && _modifiedCellsInChunks.TryGetValue(chunkCoordinate, out var storedCells))
                 {
                     storedCells.Remove(remappedCoordinate);
+                    if (storedCells.Count == 0)
+                        _modifiedCellsInChunks.Remove(chunkCoordinate);
+                    if (_modifiedCellsInChunks.Count == 0)
+                        _modifiedCellsInChunks = null;
                 }
                 else if (storeState)
                 {

@@ -98,7 +98,11 @@ namespace Venomaus.FlowVitae.Basics
 
             // Storage or chunking
             if (!storeState && _chunkLoader == null && _storage != null)
+            {
                 _storage.Remove((x, y));
+                if (_storage.Count == 0)
+                    _storage = null;
+            }
             else if (!storeState && _chunkLoader == null)
             {
                 if (_storage == null)
@@ -152,11 +156,13 @@ namespace Venomaus.FlowVitae.Basics
         /// <summary>
         /// Validation to see if the coordinate (<paramref name="x"/>, <paramref name="y"/>) is within the <see cref="Cells"/> bounds
         /// </summary>
+        /// <remarks>Always true when chunking is used.</remarks>
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
         /// <returns><see langword="true"/> or <see langword="false"/></returns>
         public bool InBounds(int x, int y)
         {
+            if (_chunkLoader != null) return true;
             return x >= 0 && y >= 0 && x < Width && y < Height;
         }
 
@@ -164,9 +170,11 @@ namespace Venomaus.FlowVitae.Basics
         /// Validation to see if the (<typeparamref name="TCell"/>.X, <typeparamref name="TCell"/>.Y) is within the <see cref="Cells"/> bounds
         /// </summary>
         /// <param name="cell"></param>
+        /// <remarks>Always true when chunking is used.</remarks>
         /// <returns><see langword="true"/> or <see langword="false"/></returns>
         public bool InBounds(TCell cell)
         {
+            if (_chunkLoader != null) return true;
             return InBounds(cell.X, cell.Y);
         }
     }
