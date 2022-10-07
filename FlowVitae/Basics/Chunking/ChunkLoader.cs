@@ -12,7 +12,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         private readonly IProceduralGen<TCellType, TCell> _generator;
         private readonly Func<int, int, TCellType, TCell> _cellTypeConverter;
         private readonly Dictionary<(int x, int y), TCellType[]> _chunks;
-        private readonly Lazy<Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>> _modifiedCellsInChunks;
+        private Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>? _modifiedCellsInChunks;
 
         private (int x, int y) _currentLoadedChunk;
 
@@ -24,8 +24,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             _generator = generator;
             _cellTypeConverter = cellTypeConverter;
             _chunks = new Dictionary<(int x, int y), TCellType[]>();
-            _modifiedCellsInChunks = new Lazy<Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>>(
-                () => new Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>());
             _currentLoadedChunk = (0, 0);
         }
 
@@ -37,7 +35,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         private static (int x, int y) RemapChunkCoordinate(int x, int y, (int x, int y) chunkCoordinate)
         {
-            return (x: x - chunkCoordinate.x, y: y - chunkCoordinate.y);
+            return (x: Math.Abs(x - chunkCoordinate.x), y: Math.Abs(y - chunkCoordinate.y));
         }
 
         public void LoadChunksAround(int x, int y, bool includeSourceChunk)
@@ -50,16 +48,13 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public TCell? GetChunkCell(int x, int y)
         {
-            // TODO: Remove nullable when negative coords are supported
-            if (x < 0 || y < 0) return null;
-
             var chunk = GetChunk(x, y, out var chunkCoordinate);
             if (chunk != null)
             {
                 var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
 
                 // Check if there are modified cell tiles within this chunk
-                if (_modifiedCellsInChunks.IsValueCreated && _modifiedCellsInChunks.Value
+                if (_modifiedCellsInChunks != null && _modifiedCellsInChunks
                     .TryGetValue(chunkCoordinate, out var cells) &&
                     cells.TryGetValue(remappedCoordinate, out var cell))
                 {
@@ -76,23 +71,23 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public void SetChunkCell(int x, int y, TCell cell, bool storeState = false)
         {
-            if (x < 0 || y < 0) return;
-
             var chunk = GetChunk(x, y, out var chunkCoordinate);
             if (chunk != null)
             {
                 var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
-                if (!storeState && _modifiedCellsInChunks.IsValueCreated && _modifiedCellsInChunks.Value.TryGetValue(chunkCoordinate, out var storedCells))
+                if (!storeState && _modifiedCellsInChunks != null && _modifiedCellsInChunks.TryGetValue(chunkCoordinate, out var storedCells))
                 {
                     storedCells.Remove(remappedCoordinate);
                 }
                 else if (storeState)
                 {
                     // Check if there are modified cell tiles within this chunk
-                    if (!_modifiedCellsInChunks.Value.TryGetValue(chunkCoordinate, out storedCells))
+                    if (_modifiedCellsInChunks == null)
+                        _modifiedCellsInChunks = new Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>();
+                    if (!_modifiedCellsInChunks.TryGetValue(chunkCoordinate, out storedCells))
                     {
                         storedCells = new Dictionary<(int x, int y), TCell>();
-                        _modifiedCellsInChunks.Value.Add(chunkCoordinate, storedCells);
+                        _modifiedCellsInChunks.Add(chunkCoordinate, storedCells);
                     }
                     storedCells[remappedCoordinate] = cell;
                 }
@@ -104,8 +99,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public void SetCurrentChunk(int x, int y)
         {
-            if (x < 0 || y < 0) return;
-
             var coordinate = FindChunkCoordinates(x, y);
 
             if (_chunks.ContainsKey(coordinate))
@@ -128,8 +121,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public void LoadChunk(int x, int y)
         {
-            if (x < 0 || y < 0) return;
-
             var coordinate = FindChunkCoordinates(x, y);
 
             if (!_chunks.ContainsKey(coordinate))
@@ -140,8 +131,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public void UnloadChunk(int x, int y)
         {
-            if (x < 0 || y < 0) return;
-
             var chunkCoordinate = FindChunkCoordinates(x, y);
 
             _chunks.Remove(chunkCoordinate);
@@ -151,20 +140,12 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         private TCellType[]? GetChunk(int x, int y, out (int x, int y) chunkCoordinate)
         {
-            if (x < 0 || y < 0)
-            {
-                chunkCoordinate = default;
-                return null;
-            }
             chunkCoordinate = FindChunkCoordinates(x, y);
             return _chunks.TryGetValue(chunkCoordinate, out var chunk) ? chunk : null;
         }
 
         private TCellType[] GenerateChunk((int x, int y) coordinate)
         {
-            if (coordinate.x < 0 || coordinate.y < 0)
-                throw new Exception($"Invalid coordinate: {coordinate.x}, {coordinate.y}");
-
             // Get a unique hash seed based on the chunk (x,y) and the main seed
             var chunkSeed = Fnv1a.Hash32(coordinate.x, coordinate.y, _seed);
 
@@ -184,7 +165,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         private (int x, int y) FindChunkCoordinates(int x, int y)
         {
-            if (x < 0 || y < 0) return default;
             // eg: 10_width * (27x / 10_width);
             // so (27x / 10_width) would round to 2 int so (10 * 2) = 20chunkX
             var chunkX = _width * (x / _width);

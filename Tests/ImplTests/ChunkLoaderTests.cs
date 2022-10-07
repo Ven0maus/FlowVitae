@@ -39,13 +39,25 @@ namespace Venomaus.Tests.ImplTests
         }
 
         [Test]
-        public void Cell_Coordinate_Remapped_Correct()
+        public void Cell_Positive_Coordinate_Remapped_Correct()
         {
             Assert.That(Grid._chunkLoader, Is.Not.Null);
 
             Grid._chunkLoader.LoadChunk(55, 72);
             Grid.SetCell(55, 72, -5);
             var cell = Grid.GetCell(55, 72);
+            Assert.That(cell, Is.Not.Null);
+            Assert.That(cell.CellType, Is.EqualTo(-5));
+        }
+
+        [Test]
+        public void Cell_Negative_Coordinate_Remapped_Correct()
+        {
+            Assert.That(Grid._chunkLoader, Is.Not.Null);
+
+            Grid._chunkLoader.LoadChunk(-55, -72);
+            Grid.SetCell(-55, -72, -5);
+            var cell = Grid.GetCell(-55, -72);
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(-5));
         }

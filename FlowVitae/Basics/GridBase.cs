@@ -32,7 +32,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <summary>
         /// Container for cells that contain extra data
         /// </summary>
-        private readonly Lazy<Dictionary<(int x, int y), TCell>> _storage;
+        private Dictionary<(int x, int y), TCell>? _storage;
         /// <summary>
         /// Internal chunk manager object that handles chunk loading
         /// </summary>
@@ -52,10 +52,6 @@ namespace Venomaus.FlowVitae.Basics
             Width = width;
             Height = height;
             Cells = new TCellType[Width * Height];
-
-            // Initialize lazy objects
-            _storage = new Lazy<Dictionary<(int x, int y), TCell>>
-                (() => new Dictionary<(int x, int y), TCell>());
 
             // Initialize chunkloader if grid uses chunks
             if (generator != null)
@@ -101,10 +97,14 @@ namespace Venomaus.FlowVitae.Basics
             Cells[pos.y * Width + pos.x] = cell.CellType;
 
             // Storage or chunking
-            if (!storeState && _chunkLoader == null && _storage.IsValueCreated)
-                _storage.Value.Remove((x, y));
+            if (!storeState && _chunkLoader == null && _storage != null)
+                _storage.Remove((x, y));
             else if (!storeState && _chunkLoader == null)
-                _storage.Value[(x, y)] = cell;
+            {
+                if (_storage == null)
+                    _storage = new Dictionary<(int x, int y), TCell>();
+                _storage[(x, y)] = cell;
+            }
             else if (_chunkLoader != null)
                 _chunkLoader.SetChunkCell(x, y, cell, storeState);
         }
@@ -130,7 +130,7 @@ namespace Venomaus.FlowVitae.Basics
         public TCell? GetCell(int x, int y)
         {
             if (_chunkLoader == null && !InBounds(x, y)) return default;
-            if (_chunkLoader == null && _storage.IsValueCreated && _storage.Value.TryGetValue((x, y), out TCell? cell))
+            if (_chunkLoader == null && _storage != null && _storage.TryGetValue((x, y), out TCell? cell))
                 return cell;
             else if (_chunkLoader != null)
                 return _chunkLoader.GetChunkCell(x, y);
