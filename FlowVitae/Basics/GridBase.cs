@@ -26,6 +26,12 @@ namespace Venomaus.FlowVitae.Basics
         public int Height { get; }
 
         /// <summary>
+        /// The cell type that will be used for cells that are out of bounds.
+        /// </summary>
+        /// <remarks>Not used for chunked grids.</remarks>
+        public TCellType NullCell { get; }
+
+        /// <summary>
         /// Internal cell container for the defined cell type
         /// </summary>
         protected readonly TCellType[] Cells;
@@ -58,6 +64,34 @@ namespace Venomaus.FlowVitae.Basics
             {
                 _chunkLoader = new ChunkLoader<TCellType, TCell>(Width, Height, generator, Convert);
                 _chunkLoader.LoadChunksAround(0, 0, true);
+            }
+        }
+
+        /// <summary>
+        /// Centers the grid on the specified coordinate
+        /// </summary>
+        /// <remarks>Can only be used for grids that use chunking.</remarks>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        public void Center(int x, int y)
+        {
+            if (_chunkLoader == null)
+                throw new Exception("Center method can only be used for grids that use chunking.");
+
+            var minX = x - (Width / 2);
+            var minY = y - (Height / 2);
+
+            for (var xX = 0; xX < Width; xX++)
+            {
+                for (var yY = 0; yY < Height; yY++)
+                {
+                    var cellX = minX + xX;
+                    var cellY = minY + yY;
+                    var cell = GetCell(cellX, cellY);
+                    if (cell == null)
+                        throw new Exception("Something went wrong during cell retrieval from chunk.");
+                    Cells[yY * Width + xX] = cell.CellType;
+                }
             }
         }
 
