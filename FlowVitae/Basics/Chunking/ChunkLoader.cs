@@ -32,7 +32,12 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         public (int x, int y) RemapChunkCoordinate(int x, int y)
         {
             _ = GetChunk(x, y, out var chunkCoordinate);
-            return (x: x - chunkCoordinate.chunkX, y: y - chunkCoordinate.chunkY);
+            return RemapChunkCoordinate(x, y, chunkCoordinate);
+        }
+
+        private static (int x, int y) RemapChunkCoordinate(int x, int y, (int x, int y) chunkCoordinate)
+        {
+            return (x: x - chunkCoordinate.x, y: y - chunkCoordinate.y);
         }
 
         public void LoadChunksAround(int x, int y, bool includeSourceChunk)
@@ -51,7 +56,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             var chunk = GetChunk(x, y, out var chunkCoordinate);
             if (chunk != null)
             {
-                var remappedCoordinate = (x: x - chunkCoordinate.chunkX, y: y - chunkCoordinate.chunkY);
+                var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
 
                 // Check if there are modified cell tiles within this chunk
                 if (_modifiedCellsInChunks.IsValueCreated && _modifiedCellsInChunks.Value
@@ -76,7 +81,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             var chunk = GetChunk(x, y, out var chunkCoordinate);
             if (chunk != null)
             {
-                var remappedCoordinate = (x: x - chunkCoordinate.chunkX, y: y - chunkCoordinate.chunkY);
+                var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
                 if (!storeState && _modifiedCellsInChunks.IsValueCreated && _modifiedCellsInChunks.Value.TryGetValue(chunkCoordinate, out var storedCells))
                 {
                     storedCells.Remove(remappedCoordinate);
@@ -144,7 +149,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public void UnloadChunk(TCell cell) => UnloadChunk(cell.X, cell.Y);
 
-        private TCellType[]? GetChunk(int x, int y, out (int chunkX, int chunkY) chunkCoordinate)
+        private TCellType[]? GetChunk(int x, int y, out (int x, int y) chunkCoordinate)
         {
             if (x < 0 || y < 0)
             {
