@@ -26,12 +26,6 @@ namespace Venomaus.FlowVitae.Basics
         public int Height { get; }
 
         /// <summary>
-        /// The cell type that will be used for cells that are out of bounds.
-        /// </summary>
-        /// <remarks>Not used for chunked grids.</remarks>
-        public TCellType NullCell { get; }
-
-        /// <summary>
         /// Internal cell container for the defined cell type
         /// </summary>
         protected readonly TCellType[] Cells;
