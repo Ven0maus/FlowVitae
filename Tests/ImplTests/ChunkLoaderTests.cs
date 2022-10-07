@@ -9,7 +9,7 @@ namespace Venomaus.Tests.ImplTests
         protected override IProceduralGen<int, TestCell<int>>? ProcGen => new ProceduralGenerator<int, TestCell<int>>(Seed, (a) => a.Next(0, 10));
 
         [Test]
-        public void SetCell_StoreState_ValueCorrect()
+        public void Cell_StoreState_ValueCorrect()
         {
             var random = new Random(Seed);
             var number = random.Next();
@@ -36,6 +36,18 @@ namespace Venomaus.Tests.ImplTests
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(1));
             Assert.That(cell.Number, Is.EqualTo(default(int)));
+        }
+
+        [Test]
+        public void Cell_Coordinate_Remapped_Correct()
+        {
+            Assert.That(Grid._chunkLoader, Is.Not.Null);
+
+            Grid._chunkLoader.LoadChunk(55, 72);
+            Grid.SetCell(55, 72, -5);
+            var cell = Grid.GetCell(55, 72);
+            Assert.That(cell, Is.Not.Null);
+            Assert.That(cell.CellType, Is.EqualTo(-5));
         }
     }
 }

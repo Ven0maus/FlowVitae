@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<InternalsVisibleTo Include="Tests" />
+	<InternalsVisibleTo Include="Venomaus.Tests" />
   </ItemGroup>
 
 

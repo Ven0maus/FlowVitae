@@ -93,13 +93,15 @@ namespace Venomaus.FlowVitae.Basics
         /// </param>
         public void SetCell(int x, int y, TCell cell, bool storeState = false)
         {
-            if (!InBounds(x, y)) return;
+            if (_chunkLoader == null && !InBounds(x, y)) return;
+
+            var pos = _chunkLoader != null ? _chunkLoader.RemapChunkCoordinate(x, y) : (x, y);
 
             // Make sure cell position is correct
             cell.X = x;
             cell.Y = y;
 
-            Cells[y * Width + x] = cell.CellType;
+            Cells[pos.y * Width + pos.x] = cell.CellType;
 
             // Storage or chunking
             if (!storeState && _chunkLoader == null && _storage.IsValueCreated)
@@ -130,7 +132,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <returns><typeparamref name="TCell"/>?</returns>
         public TCell? GetCell(int x, int y)
         {
-            if (!InBounds(x, y)) return default;
+            if (_chunkLoader == null && !InBounds(x, y)) return default;
             if (_chunkLoader == null && _storage.IsValueCreated && _storage.Value.TryGetValue((x, y), out TCell? cell))
                 return cell;
             else if (_chunkLoader != null)
