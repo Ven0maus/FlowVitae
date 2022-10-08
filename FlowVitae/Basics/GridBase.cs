@@ -203,7 +203,7 @@ namespace Venomaus.FlowVitae.Basics
             {
                 for (int y=0; y < Height; y++)
                 {
-                    positions[y * Width + x] = (x, y);
+                    positions[y * Width + x] = ScreenToWorldCoordinate(x, y);
                 }
             }
             return GetCells(positions).ToArray();

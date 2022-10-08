@@ -286,9 +286,18 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         /// <returns></returns>
         public (int x, int y) GetChunkCoordinate(int x, int y)
         {
-            // TODO: FIX FOR NEGATIVE COORDINATES
             // eg: 10_width * (27x / 10_width);
-            // so (27x / 10_width) would round to 2 int so (10 * 2) = 20chunkX
+            // so (27x / 10_width) would floor to 2 int so (10 * 2) = 20chunkX
+            var chunkX = (int)(_width * Math.Floor(((double)x / _width)));
+            var chunkY = (int)(_height * Math.Floor(((double)y / _height)));
+            return (chunkX, chunkY);
+        }
+
+        private (int x, int y) GetChunkCoordinateNoConversion(int x, int y)
+        {
+            // TODO: Revisit this, something is wrong here
+            if (x < 0) x -= _width;
+            if (y < 0) y -= _height;
             var chunkX = _width * (x / _width);
             var chunkY = _height * (y / _height);
             return (chunkX, chunkY);
