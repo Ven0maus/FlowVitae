@@ -116,7 +116,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return null;
         }
 
-        public IEnumerable<TCell> GetChunkCells(IEnumerable<Tuple<int, int>> positions)
+        public IEnumerable<TCell> GetChunkCells(IEnumerable<(int, int)> positions)
         {
             var loadedChunks = new List<(int x, int y)>();
             foreach (var pos in positions)
@@ -131,7 +131,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 UnloadChunk(x, y);
         }
 
-        public void SetChunkCell(int x, int y, TCell cell, bool storeState = false, bool loadChunk = false)
+        public void SetChunkCell(int x, int y, TCell cell, bool storeState = false, bool loadChunk = false, EventHandler<TCell>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
             bool wasChunkLoaded = false;
             if (loadChunk)
@@ -162,8 +162,22 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                     storedCells[remappedCoordinate] = cell;
                 }
 
+                var prev = chunk[remappedCoordinate.y * _width + remappedCoordinate.x];
+
                 // Adjust chunk cell & stored cell
                 chunk[remappedCoordinate.y * _width + remappedCoordinate.x] = cell.CellType;
+
+                if (isWorldCoordinateOnScreen != null && screenCells != null &&
+                    isWorldCoordinateOnScreen(x, y, out (int x, int y)? screenCoordinate, out int screenWidth) &&
+                    screenCoordinate != null)
+                {
+                    screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = cell.CellType;
+                }
+
+                if (!storeState && !prev.Equals(cell.CellType))
+                    onCellUpdate?.Invoke(null, cell);
+                else if (storeState)
+                    onCellUpdate?.Invoke(null, cell);
             }
 
             if (loadChunk && wasChunkLoaded)
@@ -173,14 +187,15 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         public void SetChunkCells(IEnumerable<TCell> cells, bool storeCellState) 
             => SetChunkCells(cells, (s) => storeCellState);
 
-        public void SetChunkCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null)
+        public delegate bool Checker(int x, int y, out (int x, int y)? coordinate, out int screenWidth);
+        public void SetChunkCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null, EventHandler<TCell>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
             var loadedChunks = new List<(int x, int y)>();
             foreach (var cell in cells)
             {
                 if (LoadChunk(cell.X, cell.Y))
                     loadedChunks.Add((cell.X, cell.Y));
-                SetChunkCell(cell.X, cell.Y, cell, storeCellStateFunc?.Invoke(cell) ?? false);
+                SetChunkCell(cell.X, cell.Y, cell, storeCellStateFunc?.Invoke(cell) ?? false, onCellUpdate: onCellUpdate, isWorldCoordinateOnScreen: isWorldCoordinateOnScreen, screenCells: screenCells);
             }
             foreach (var (x, y) in loadedChunks)
                 UnloadChunk(x, y);
@@ -251,11 +266,11 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
             // Generate chunk data
             var chunk = _generator?.Generate(chunkSeed, _width, _height);
-            if (chunk == null || chunk.Length == 0)
+            if (chunk == null || chunk.Length != (_width * _height))
             {
                 throw new Exception(chunk == null ?
                     "Chunk generator returned null chunk data." :
-                    "Chunk generator returned empty chunk data.");
+                    "Chunk generator returned invalid sized chunk data, must be of length (width * height).");
             }
 
             _chunks.Add(coordinate, chunk);

@@ -17,18 +17,23 @@ namespace Venomaus.FlowVitae.Basics
         /// </summary>
         public int Seed { get; }
         /// <summary>
-        /// Width of <see cref="Cells"/>
+        /// Width of <see cref="ScreenCells"/>
         /// </summary>
         public int Width { get; }
         /// <summary>
-        /// Height of <see cref="Cells"/>
+        /// Height of <see cref="ScreenCells"/>
         /// </summary>
         public int Height { get; }
 
         /// <summary>
         /// Internal cell container for the defined cell type
         /// </summary>
-        protected readonly TCellType[] Cells;
+        protected readonly TCellType[] ScreenCells;
+
+        /// <summary>
+        /// Represents the real coordinate that is located in the center of the screen cells.
+        /// </summary>
+        private (int x, int y) _centerCoordinate;
         /// <summary>
         /// Container for cells that contain extra data
         /// </summary>
@@ -37,6 +42,11 @@ namespace Venomaus.FlowVitae.Basics
         /// Internal chunk manager object that handles chunk loading
         /// </summary>
         internal readonly ChunkLoader<TCellType, TCell>? _chunkLoader;
+
+        /// <summary>
+        /// Raised every time a cell is updated, can be used for rendering updated cell to screen.
+        /// </summary>
+        public event EventHandler<TCell>? OnCellUpdate;
 
         /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
@@ -48,19 +58,20 @@ namespace Venomaus.FlowVitae.Basics
         {
             Width = width;
             Height = height;
-            Cells = new TCellType[Width * Height];
+            ScreenCells = new TCellType[Width * Height];
+            _centerCoordinate = (Width / 2, Height / 2);
         }
 
         /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
         /// </summary>
         /// <remarks>Initializes a grid that uses chunking. (<paramref name="chunkWidth"/>, <paramref name="chunkHeight"/>) are used to determine the chunk size.</remarks>
-        /// <param name="viewPortWidth">Width of <see cref="Cells"/>, this is what is usually rendered on screen.</param>
-        /// <param name="viewPortHeight">Height of <see cref="Cells"/>, this is what is usually rendered on screen.</param>
+        /// <param name="viewPortWidth">Width of <see cref="ScreenCells"/>, this is what is usually rendered on screen.</param>
+        /// <param name="viewPortHeight">Height of <see cref="ScreenCells"/>, this is what is usually rendered on screen.</param>
         /// <param name="chunkWidth">The width of the chunk</param>
         /// <param name="chunkHeight">The height of the chunk</param>
         /// <param name="generator">The procedural algorithm used to generate the chunk data</param>
-        public GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell> generator, int chunkWidth, int chunkHeight)
+        public GridBase(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell>? generator)
             : this (viewPortWidth, viewPortHeight)
         {
             if (generator == null) return;
@@ -76,11 +87,11 @@ namespace Venomaus.FlowVitae.Basics
         /// <remarks>
         /// Initializes a grid that uses chunking. (<paramref name="viewPortWidth"/>, <paramref name="viewPortHeight"/>) are used to determine the chunk size.
         /// </remarks>
-        /// <param name="viewPortWidth">Width of <see cref="Cells"/></param>
-        /// <param name="viewPortHeight">Height of <see cref="Cells"/></param>
+        /// <param name="viewPortWidth">Width of <see cref="ScreenCells"/></param>
+        /// <param name="viewPortHeight">Height of <see cref="ScreenCells"/></param>
         /// <param name="generator">The procedural algorithm used to generate the chunk data</param>
-        public GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell> generator)
-            : this(viewPortWidth, viewPortHeight, generator, viewPortWidth, viewPortHeight)
+        public GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell>? generator)
+            : this(viewPortWidth, viewPortHeight, viewPortWidth, viewPortHeight, generator)
         { }
 
         /// <summary>
@@ -104,14 +115,14 @@ namespace Venomaus.FlowVitae.Basics
                 _chunkLoader.SetCurrentChunk(centerChunk.x, centerChunk.y);
 
             // Collect all positions
-            var positions = new Tuple<int, int>[Width * Height]; 
+            var positions = new (int, int)[Width * Height]; 
             for (var xX = 0; xX < Width; xX++)
             {
                 for (var yY = 0; yY < Height; yY++)
                 {
                     var cellX = minX + xX;
                     var cellY = minY + yY;
-                    positions[yY * Width + xX] = new Tuple<int, int>(cellX, cellY);
+                    positions[yY * Width + xX] = (cellX, cellY);
                 }
             }
 
@@ -119,8 +130,10 @@ namespace Venomaus.FlowVitae.Basics
             var cells = GetCells(positions);
             foreach (var cell in cells)
             {
-                Cells[cell.Y * Width + cell.X] = cell.CellType; 
+                ScreenCells[cell.Y * Width + cell.X] = cell.CellType; 
             }
+
+            _centerCoordinate = (x, y);
         }
 
         /// <summary>
@@ -130,7 +143,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="y">Coordinate Y</param>
         /// <param name="cellType">Internal cell <typeparamref name="TCellType"/></param>
         /// <returns><typeparamref name="TCell"/></returns>
-        public virtual TCell Convert(int x, int y, TCellType cellType)
+        protected virtual TCell Convert(int x, int y, TCellType cellType)
         {
             return new TCell
             {
@@ -141,12 +154,64 @@ namespace Venomaus.FlowVitae.Basics
         }
 
         /// <summary>
+        /// Returns the world coordinate that resembles the given screen coordinate.
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
+        public (int x, int y) ScreenToWorldCoordinate(int x, int y)
+        {
+            if (!InBounds(x, y)) 
+                throw new Exception("Invalid screen coordinate, must be within screen bounds (Width * Height).");
+            
+            int minX = _centerCoordinate.x - Width / 2;
+            int minY = _centerCoordinate.y - Width / 2;
+
+            return (minX + x, minY + y);
+        }
+
+        /// <summary>
+        /// Returns the screen coordinate that resembles the given world coordinate.
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        /// <remarks>Only useful when using a chunkloaded grid, static grids will just return input coordinate.</remarks>
+        /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
+        public (int x, int y) WorldToScreenCoordinate(int x, int y)
+        {
+            if (_chunkLoader == null)
+            {
+                if (!InBounds(x, y))
+                    throw new Exception("Invalid world coordinate, must be within screen bounds (Width * Height).");
+                return (x, y);
+            }
+            return _chunkLoader.RemapChunkCoordinate(x, y);
+        }
+
+        /// <summary>
+        /// Returns all the cells within this grid's viewport
+        /// </summary>
+        /// <returns><typeparamref name="TCell"/>[]</returns>
+        public TCell[] GetViewPortCells()
+        {
+            var positions = new (int, int)[Width * Height];
+            for (int i = 0; i < ScreenCells.Length; i++)
+            {
+                var coordinate = ScreenToWorldCoordinate(i / Width, i % Height);
+                positions[i] = coordinate;
+            }
+            return GetCells(positions).ToArray();
+        }
+
+        /// <summary>
         /// Update the cell's <typeparamref name="TCellType"/> and other properties if state is stored)
         /// </summary>
         /// <param name="cell"></param>
         /// <param name="storeState">Stores the <paramref name="cell"/> with all its properties and field values.
         /// This value is always true when the grid uses chunks.
         /// </param>
+        /// <remarks>When storeState is <see langword="false"/>, and <typeparamref name="TCellType"/> is modified <see cref="OnCellUpdate"/> will be raised.
+        /// When storeState is <see langword="true"/> <see cref="OnCellUpdate"/> will always be raised.</remarks>
         public void SetCell(TCell cell, bool storeState = false)
         {
             int x = cell.X;
@@ -155,7 +220,18 @@ namespace Venomaus.FlowVitae.Basics
             if (_chunkLoader == null && !InBounds(x, y)) return;
 
             var gridPos = _chunkLoader != null ? _chunkLoader.RemapChunkCoordinate(x, y) : (x, y);
-            Cells[gridPos.y * Width + gridPos.x] = cell.CellType;
+
+            // Update internal screen cells if the world coordinate is currently displayed
+            if (IsWorldCoordinateOnScreen(gridPos.x, gridPos.y, out _, out _))
+            {
+                var prev = ScreenCells[gridPos.y * Width + gridPos.x];
+                ScreenCells[gridPos.y * Width + gridPos.x] = cell.CellType;
+
+                if (!storeState && !prev.Equals(cell.CellType))
+                    OnCellUpdate?.Invoke(null, cell);
+                else if (storeState)
+                    OnCellUpdate?.Invoke(null, cell);
+            }
 
             // Storage and chunking
             SetStateStorage(cell, storeState);
@@ -202,7 +278,7 @@ namespace Venomaus.FlowVitae.Basics
             else
             {
                 // Handle chunkloaded grid
-                _chunkLoader.SetChunkCells(cells, storeCellStateFunc);
+                _chunkLoader.SetChunkCells(cells, storeCellStateFunc, OnCellUpdate, IsWorldCoordinateOnScreen, ScreenCells);
             }
         }
 
@@ -211,7 +287,7 @@ namespace Venomaus.FlowVitae.Basics
         /// </summary>
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
-        /// <remarks>When setting multiple cells at once, use <see cref="GetCells(IEnumerable{Tuple{int, int}})"/> instead.</remarks>
+        /// <remarks>When setting multiple cells at once, use <see cref="GetCells(IEnumerable{ValueTuple{int, int}})"/> instead.</remarks>
         /// <returns><typeparamref name="TCell"/>?</returns>
         public TCell? GetCell(int x, int y)
         {
@@ -230,7 +306,7 @@ namespace Venomaus.FlowVitae.Basics
         /// </summary>
         /// <param name="positions"></param>
         /// <returns></returns>
-        public IEnumerable<TCell> GetCells(IEnumerable<Tuple<int, int>> positions)
+        public IEnumerable<TCell> GetCells(IEnumerable<(int, int)> positions)
         {
             if (_chunkLoader == null)
             {
@@ -264,16 +340,15 @@ namespace Venomaus.FlowVitae.Basics
                 return cell.CellType;
             else if (_chunkLoader != null)
             {
-                // TODO: Load chunk automatically, so cell cannot be null
-                cell = _chunkLoader.GetChunkCell(x, y);
+                cell = _chunkLoader.GetChunkCell(x, y, true);
                 if (cell != null) return cell.CellType;
                 return default;
             }
-            return Cells[y * Width + x];
+            return ScreenCells[y * Width + x];
         }
 
         /// <summary>
-        /// Validation to see if the coordinate (<paramref name="x"/>, <paramref name="y"/>) is within the <see cref="Cells"/> bounds
+        /// Validation to see if the coordinate (<paramref name="x"/>, <paramref name="y"/>) is within the <see cref="ScreenCells"/> bounds
         /// </summary>
         /// <remarks>Always true when chunking is used.</remarks>
         /// <param name="x">Coordinate X</param>
@@ -286,7 +361,7 @@ namespace Venomaus.FlowVitae.Basics
         }
 
         /// <summary>
-        /// Validation to see if the (<typeparamref name="TCell"/>.X, <typeparamref name="TCell"/>.Y) is within the <see cref="Cells"/> bounds
+        /// Validation to see if the (<typeparamref name="TCell"/>.X, <typeparamref name="TCell"/>.Y) is within the <see cref="ScreenCells"/> bounds
         /// </summary>
         /// <param name="cell"></param>
         /// <remarks>Always true when chunking is used.</remarks>
@@ -314,6 +389,24 @@ namespace Venomaus.FlowVitae.Basics
             }
             else if (_chunkLoader != null)
                 _chunkLoader.SetChunkCell(cell.X, cell.Y, cell, storeState, true);
+        }
+
+        private bool IsWorldCoordinateOnScreen(int x, int y, out (int x, int y)? screenCoordinate, out int screenWidth)
+        {
+            screenWidth = Width;
+
+            int minX = _centerCoordinate.x - Width / 2;
+            int minY = _centerCoordinate.y - Width / 2;
+            int maxX = minX + Width - 1;
+            int maxY = minY + Height - 1;
+
+            if (x >= minX && y >= minY && x <= maxX && y <= maxY)
+            {
+                screenCoordinate = WorldToScreenCoordinate(x, y);
+                return true;
+            }
+            screenCoordinate = null;
+            return false;
         }
     }
 }

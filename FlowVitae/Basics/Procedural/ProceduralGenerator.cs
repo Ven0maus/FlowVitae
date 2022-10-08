@@ -12,14 +12,14 @@
         /// <inheritdoc />
         public int Seed { get; private set; }
 
-        private readonly Func<Random, TCellType> _method;
+        private readonly Action<Random, TCellType[], int, int> _method;
 
         /// <summary>
-        /// Constructor for <see cref="ProceduralGenerator{TCellType, TCell}"/>
+        /// Basic procedural algorithm, method param uses following signature: (<see cref="Random"/>, <typeparamref name="TCellType"/>[], width, height)
         /// </summary>
         /// <param name="seed">Unique seed</param>
-        /// <param name="method"><typeparamref name="TCellType"/> method</param>
-        public ProceduralGenerator(int seed, Func<Random, TCellType> method)
+        /// <param name="method">Signature: (<see cref="Random"/>, <typeparamref name="TCellType"/>[], width, height)</param>
+        public ProceduralGenerator(int seed, Action<Random, TCellType[], int, int> method)
         {
             Seed = seed;
             _method = method;
@@ -30,12 +30,14 @@
         {
             var random = new Random(seed);
             var grid = new TCellType[width * height];
-            for (int x = 0; x < width; x++)
+
+            // Custom generation method
+            _method.Invoke(random, new TCellType[width * height], width, height);
+
+            if (grid == null || grid.Length != (width * height))
             {
-                for (int y = 0; y < height; y++)
-                {
-                    grid[y * width + x] = _method.Invoke(random);
-                }
+                throw new Exception(grid == null ? "Chunk cannot be null." :
+                    "Chunk size is invalid, must be of length (width * height).");
             }
             return grid;
         }

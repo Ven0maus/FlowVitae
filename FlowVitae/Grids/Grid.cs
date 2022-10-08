@@ -19,12 +19,12 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         /// <inheritdoc />
-        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell> generator, int chunkWidth, int chunkHeight) : base(viewPortWidth, viewPortHeight, generator, chunkWidth, chunkHeight)
+        public Grid(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell>? generator) : base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator)
         {
         }
 
         /// <inheritdoc />
-        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell> generator) : base(viewPortWidth, viewPortHeight, generator)
+        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell>? generator) : base(viewPortWidth, viewPortHeight, generator)
         {
         }
 
@@ -38,7 +38,7 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         /// <inheritdoc />
-        public override TCell Convert(int x, int y, TCellType cellType)
+        protected override TCell Convert(int x, int y, TCellType cellType)
         {
             return _customConverter != null ? _customConverter.Invoke(x, y, cellType) : 
                 base.Convert(x, y, cellType);
