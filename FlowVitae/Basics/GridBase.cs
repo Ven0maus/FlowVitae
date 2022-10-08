@@ -50,11 +50,6 @@ namespace Venomaus.FlowVitae.Basics
         public event EventHandler<CellUpdateArgs<TCellType, TCell>>? OnCellUpdate;
 
         /// <summary>
-        /// The amount of chunks loaded at the current time
-        /// </summary>
-        internal int ChunksLoaded { get { return _chunkLoader == null ? 0 : _chunkLoader.ChunksLoaded; } }
-
-        /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
         /// </summary>
         /// <remarks>Initializes a grid that does not use chunking.</remarks>
@@ -112,8 +107,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="y">Coordinate Y</param>
         public void Center(int x, int y)
         {
-            if (_chunkLoader == null)
-                throw new Exception("Center method can only be used for grids that use chunking.");
+            if (_chunkLoader == null) return;
 
             _centerCoordinate = (x, y);
 
@@ -317,12 +311,15 @@ namespace Venomaus.FlowVitae.Basics
         public TCell? GetCell(int x, int y)
         {
             if (_chunkLoader == null && !InBounds(x, y)) return default;
+            if (_chunkLoader == null && _storage != null && _storage.TryGetValue((x, y), out TCell? cell))
+                return cell;
             if (_chunkLoader != null)
             {
-                var cell = _chunkLoader.GetChunkCell(x, y, true);
+                cell = _chunkLoader.GetChunkCell(x, y, true);
                 if (cell == null) throw new Exception("Something went wrong during cell retrieval from chunk.");
                 return cell;
             }
+
             return Convert(x, y, GetCellType(x, y));
         }
 

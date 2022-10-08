@@ -10,6 +10,12 @@ namespace Venomaus.Tests.TestObjects
         public TestCell() : base()
         { }
 
+        public TestCell(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+
         public TestCell(int x, int y, TCellType cellType, int number)
         {
             X = x;

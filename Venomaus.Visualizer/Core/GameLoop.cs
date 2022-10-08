@@ -47,24 +47,14 @@ namespace Venomaus.Visualizer.Core
             _grid = new(screenWidth, screenHeight);
             _grid.SetCustomConverter(WorldGenerator.CellConverter);
 
-            // Basic grid with some borders
+            // Same grid as procedural gen, but with no chunks
+            int[] chunk = new int[_grid.Width * _grid.Height];
+            WorldGenerator.Generate(new Random(1000), chunk, _grid.Width, _grid.Height);
             for (int x=0; x < _grid.Width; x++)
-            {
                 for (int y = 0; y < _grid.Height; y++)
-                {
-                    // Using set cell won't hurt when we're in the same chunk
-                    if (x == 0 || y == 0 || x == _grid.Width -1 || y == _grid.Height -1)
-                        _grid.SetCell(x, y, (int)WorldGenerator.Tiles.Border);
-                    else
-                        _grid.SetCell(x, y, (int)WorldGenerator.Tiles.Grass);
-                }
-            }
+                    _grid.SetCell(x, y, chunk[y * _grid.Width + x]);
 
             InitializeMapWindow();
-
-            // Set a happy little tree
-            _grid.SetCell(5, 2, 2);
-
             AfterGridInitialization();
         }
 
@@ -80,12 +70,6 @@ namespace Venomaus.Visualizer.Core
             _grid.SetCustomConverter(WorldGenerator.CellConverter);
 
             InitializeMapWindow();
-
-            // Set a happy little tree
-            _grid.SetCell(5, 2, 2);
-
-            System.Diagnostics.Debug.WriteLine("Chunks loaded after map generation: " + _grid.ChunksLoaded);
-
             AfterGridInitialization();
         }
 

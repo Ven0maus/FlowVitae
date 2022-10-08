@@ -16,8 +16,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public (int x, int y) CurrentChunk { get; private set; }
 
-        public int ChunksLoaded { get { return _chunks.Count; } }
-
         public ChunkLoader(int width, int height, IProceduralGen<TCellType, TCell> generator, Func<int, int, TCellType, TCell> cellTypeConverter)
         {
             _width = width;
