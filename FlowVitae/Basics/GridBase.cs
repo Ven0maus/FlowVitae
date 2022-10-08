@@ -142,8 +142,6 @@ namespace Venomaus.FlowVitae.Basics
             var cells = GetCells(positions);
             foreach (var cell in cells)
             {
-                if (cell.X == 0 && cell.Y == 0)
-                    WorldToScreenCoordinate(cell.X, cell.Y);
                 var screenCoordinate = WorldToScreenCoordinate(cell.X, cell.Y);
                 ScreenCells[screenCoordinate.y * Width + screenCoordinate.x] = cell.CellType;
                 OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate, cell));
