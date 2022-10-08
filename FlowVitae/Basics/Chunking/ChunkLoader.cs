@@ -119,11 +119,11 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         public IEnumerable<TCell> GetChunkCells(IEnumerable<(int x, int y)> positions)
         {
             var loadedChunks = new List<(int x, int y)>();
-            foreach (var pos in positions)
+            foreach (var (x, y) in positions)
             {
-                if (LoadChunk(pos.x, pos.y))
-                    loadedChunks.Add((pos.x, pos.y));
-                var cell = GetChunkCell(pos.x, pos.y);
+                if (LoadChunk(x, y))
+                    loadedChunks.Add((x, y));
+                var cell = GetChunkCell(x, y);
                 if (cell != null)
                     yield return cell;
             }
@@ -286,7 +286,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         /// <returns></returns>
         public (int x, int y) GetChunkCoordinate(int x, int y)
         {
-            return GetChunkCoordinateConversion(x, y);
+            return GetChunkCoordinateNoConversion(x, y);
         }
 
         private (int x, int y) GetChunkCoordinateConversion(int x, int y)
