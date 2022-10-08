@@ -14,10 +14,6 @@ namespace Venomaus.FlowVitae.Basics
         where TCell : class, ICell<TCellType>, new()
     {
         /// <summary>
-        /// Seed that represents <see cref="GridBase{TCellType, TCell}"/>
-        /// </summary>
-        public int Seed { get; }
-        /// <summary>
         /// Width of <see cref="ScreenCells"/>
         /// </summary>
         public int Width { get; }
@@ -29,7 +25,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <summary>
         /// Internal cell container for the defined cell type
         /// </summary>
-        protected readonly TCellType[] ScreenCells;
+        private readonly TCellType[] ScreenCells;
 
         /// <summary>
         /// Represents the real coordinate that is located in the center of the screen cells.
@@ -411,6 +407,17 @@ namespace Venomaus.FlowVitae.Basics
             }
             else if (_chunkLoader != null)
                 _chunkLoader.SetChunkCell(cell.X, cell.Y, cell, storeState, true);
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if the world coordinate is within the viewport.
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        /// <returns><see langword="true"/> or <see langword="false"/></returns>
+        public bool IsWorldCoordinateOnViewPort(int x, int y)
+        {
+            return IsWorldCoordinateOnScreen(x, y, out _, out _);
         }
 
         private bool IsWorldCoordinateOnScreen(int x, int y, out (int x, int y)? screenCoordinate, out int screenWidth)
