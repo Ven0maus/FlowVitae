@@ -1,4 +1,5 @@
 ﻿using SadConsole;
+using Venomaus.FlowVitae.Basics;
 using Venomaus.Visualizer.Core;
 using Console = SadConsole.Console;
 
@@ -12,9 +13,9 @@ namespace Venomaus.Visualizer.Graphics
             Game.Instance.Screen = this;
         }
 
-        private void Grid_OnCellUpdate(object? sender, VisualCell<int> e)
+        private void Grid_OnCellUpdate(object? sender, CellUpdateArgs<int, VisualCell<int>> args)
         {
-            Surface.SetGlyph(e.X, e.Y, e);
+            Surface.SetGlyph(args.ScreenX, args.ScreenY, args.Cell);
         }
     }
 }

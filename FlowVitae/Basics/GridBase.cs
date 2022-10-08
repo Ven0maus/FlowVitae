@@ -47,7 +47,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <summary>
         /// Raised every time a cell is updated, can be used for rendering updated cell to screen.
         /// </summary>
-        public event EventHandler<TCell>? OnCellUpdate;
+        public event EventHandler<CellUpdateArgs<TCellType, TCell>>? OnCellUpdate;
 
         /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
@@ -109,10 +109,10 @@ namespace Venomaus.FlowVitae.Basics
             if (_chunkLoader == null)
                 throw new Exception("Center method can only be used for grids that use chunking.");
 
-            var halfScreenWidth = Width / 2;
-            var halfScreenHeight = Height / 2;
-            var minX = x - halfScreenWidth;
-            var minY = y - halfScreenHeight;
+            _centerCoordinate = (x, y);
+
+            var minX = x - (Width / 2);
+            var minY = y - (Height / 2);
 
             // Update the current chunk
             var currentChunk = _chunkLoader.CurrentChunk;
@@ -136,11 +136,12 @@ namespace Venomaus.FlowVitae.Basics
             var cells = GetCells(positions);
             foreach (var cell in cells)
             {
+                if (cell.X == 0 && cell.Y == 0)
+                    WorldToScreenCoordinate(cell.X, cell.Y);
                 var screenCoordinate = WorldToScreenCoordinate(cell.X, cell.Y);
-                ScreenCells[screenCoordinate.y * Width + screenCoordinate.x] = cell.CellType; 
+                ScreenCells[screenCoordinate.y * Width + screenCoordinate.x] = cell.CellType;
+                OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate, cell));
             }
-
-            _centerCoordinate = (x, y);
         }
 
         /// <summary>
@@ -172,7 +173,7 @@ namespace Venomaus.FlowVitae.Basics
                 throw new Exception("Invalid screen coordinate, must be within screen bounds (Width * Height).");
             
             int minX = _centerCoordinate.x - Width / 2;
-            int minY = _centerCoordinate.y - Width / 2;
+            int minY = _centerCoordinate.y - Height / 2;
 
             return (minX + x, minY + y);
         }
@@ -186,18 +187,24 @@ namespace Venomaus.FlowVitae.Basics
         /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
         public (int x, int y) WorldToScreenCoordinate(int x, int y)
         {
+            // TODO: FIX PROBLEM WITH OVERLAYED CHUNKS NOT GETTING CORRECT SCREEN CELL
             if (_chunkLoader == null)
             {
                 if (!InBounds(x, y))
                     throw new Exception("Invalid world coordinate, must be within screen bounds (Width * Height).");
                 return (x, y);
             }
-            return _chunkLoader.RemapChunkCoordinate(x, y);
+            var halfCenterX = _centerCoordinate.x - (Width / 2);
+            var halfCenterY = _centerCoordinate.y - (Height / 2);
+            var modifiedPos = (x:  x - halfCenterX, y: y - halfCenterY);
+            var remappedCoordinate = _chunkLoader.RemapChunkCoordinate(modifiedPos.x, modifiedPos.y);
+            return (remappedCoordinate.x, remappedCoordinate.y);
         }
 
         /// <summary>
-        /// Returns all the cells within this grid's viewport
+        /// Get a cloned version of the viewport cells where each cell coordinate is adjusted to the viewport.
         /// </summary>
+        /// <remarks>Cell (x, y) are adjusted to match the viewport (x, y).</remarks>
         /// <returns><typeparamref name="TCell"/>[]</returns>
         public TCell[] GetViewPortCells()
         {
@@ -236,18 +243,19 @@ namespace Venomaus.FlowVitae.Basics
 
             if (_chunkLoader == null && !InBounds(x, y)) return;
 
-            var gridPos = _chunkLoader != null ? _chunkLoader.RemapChunkCoordinate(x, y) : (x, y);
+            var worldCoordinate = _chunkLoader != null ? _chunkLoader.RemapChunkCoordinate(x, y) : (x, y);
 
             // Update internal screen cells if the world coordinate is currently displayed
-            if (IsWorldCoordinateOnScreen(gridPos.x, gridPos.y, out _, out _))
+            if (IsWorldCoordinateOnScreen(worldCoordinate.x, worldCoordinate.y, out (int x, int y)? screenCoordinate, out _) &&
+                screenCoordinate != null)
             {
-                var prev = ScreenCells[gridPos.y * Width + gridPos.x];
-                ScreenCells[gridPos.y * Width + gridPos.x] = cell.CellType;
+                var prev = ScreenCells[screenCoordinate.Value.y * Width + screenCoordinate.Value.x];
+                ScreenCells[screenCoordinate.Value.y * Width + screenCoordinate.Value.x] = cell.CellType;
 
                 if (!storeState && !prev.Equals(cell.CellType))
-                    OnCellUpdate?.Invoke(null, cell);
+                    OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
                 else if (storeState)
-                    OnCellUpdate?.Invoke(null, cell);
+                    OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
             }
 
             // Storage and chunking
@@ -413,7 +421,7 @@ namespace Venomaus.FlowVitae.Basics
             screenWidth = Width;
 
             int minX = _centerCoordinate.x - Width / 2;
-            int minY = _centerCoordinate.y - Width / 2;
+            int minY = _centerCoordinate.y - Height / 2;
             int maxX = minX + Width - 1;
             int maxY = minY + Height - 1;
 

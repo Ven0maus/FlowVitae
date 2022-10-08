@@ -131,7 +131,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 UnloadChunk(x, y);
         }
 
-        public void SetChunkCell(int x, int y, TCell cell, bool storeState = false, bool loadChunk = false, EventHandler<TCell>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
+        public void SetChunkCell(int x, int y, TCell cell, bool storeState = false, bool loadChunk = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
             bool wasChunkLoaded = false;
             if (loadChunk)
@@ -172,12 +172,12 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                     screenCoordinate != null)
                 {
                     screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = cell.CellType;
-                }
 
-                if (!storeState && !prev.Equals(cell.CellType))
-                    onCellUpdate?.Invoke(null, cell);
-                else if (storeState)
-                    onCellUpdate?.Invoke(null, cell);
+                    if (!storeState && !prev.Equals(cell.CellType))
+                        onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
+                    else if (storeState)
+                        onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
+                }
             }
 
             if (loadChunk && wasChunkLoaded)
@@ -188,7 +188,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             => SetChunkCells(cells, (s) => storeCellState);
 
         public delegate bool Checker(int x, int y, out (int x, int y)? coordinate, out int screenWidth);
-        public void SetChunkCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null, EventHandler<TCell>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
+        public void SetChunkCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
             var loadedChunks = new List<(int x, int y)>();
             foreach (var cell in cells)
@@ -286,8 +286,12 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         /// <returns></returns>
         public (int x, int y) GetChunkCoordinate(int x, int y)
         {
-            // eg: 10_width * (27x / 10_width);
-            // so (27x / 10_width) would floor to 2 int so (10 * 2) = 20chunkX
+            return GetChunkCoordinateConversion(x, y);
+        }
+
+        private (int x, int y) GetChunkCoordinateConversion(int x, int y)
+        {
+            // TODO: Performance test
             var chunkX = (int)(_width * Math.Floor(((double)x / _width)));
             var chunkY = (int)(_height * Math.Floor(((double)y / _height)));
             return (chunkX, chunkY);
@@ -295,9 +299,8 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         private (int x, int y) GetChunkCoordinateNoConversion(int x, int y)
         {
-            // TODO: Revisit this, something is wrong here
-            if (x < 0) x -= _width;
-            if (y < 0) y -= _height;
+            if (x < 0 && x % _width != 0) x -= _width;
+            if (y < 0 && y % _height != 0) y -= _height;
             var chunkX = _width * (x / _width);
             var chunkY = _height * (y / _height);
             return (chunkX, chunkY);

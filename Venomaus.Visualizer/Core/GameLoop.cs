@@ -44,6 +44,7 @@ namespace Venomaus.Visualizer.Core
             _grid.SetCustomConverter(WorldGenerator.CellConverter);
 
             Game.Instance.Screen = new MapWindow(_grid.GetViewPortCells());
+            _grid.SetCell(5, 2, 2);
         }
     }
 }
