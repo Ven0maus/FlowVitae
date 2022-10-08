@@ -2,7 +2,7 @@
 using SadRogue.Primitives;
 using Venomaus.FlowVitae.Basics;
 
-namespace Venomaus.Visualizer.Core
+namespace Venomaus.Visualizer.World
 {
     internal class VisualCell<TCellType> : ColoredGlyph, ICell<TCellType>
         where TCellType : struct
@@ -11,6 +11,7 @@ namespace Venomaus.Visualizer.Core
         public int Y { get; set; }
         public Point Position { get { return new Point(X, Y); } }
         public TCellType CellType { get; set; }
+        public bool Walkable { get; set; } = true;
 
         public VisualCell() { }
 
@@ -31,7 +32,7 @@ namespace Venomaus.Visualizer.Core
             Foreground = foreground;
         }
 
-        public VisualCell(int x, int y, TCellType cellType, int glyph, Color foreground, Color background) 
+        public VisualCell(int x, int y, TCellType cellType, int glyph, Color foreground, Color background)
         {
             X = x;
             Y = y;

@@ -1,6 +1,7 @@
 ﻿using SadConsole;
 using Venomaus.FlowVitae.Basics;
 using Venomaus.Visualizer.Core;
+using Venomaus.Visualizer.World;
 using Console = SadConsole.Console;
 
 namespace Venomaus.Visualizer.Graphics

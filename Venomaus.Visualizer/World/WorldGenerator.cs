@@ -1,7 +1,7 @@
 ﻿using SadConsole;
 using SadRogue.Primitives;
 
-namespace Venomaus.Visualizer.Core
+namespace Venomaus.Visualizer.World
 {
     internal class WorldGenerator
     {
@@ -35,7 +35,7 @@ namespace Venomaus.Visualizer.Core
                     else
                         chunk[y * width + x] = (int)Tiles.Grass;
                     //else if (random.Next(0, 100) < TreeChance)
-                        //chunk[y * width + x] = (int)Tiles.Tree;
+                    //chunk[y * width + x] = (int)Tiles.Tree;
                 }
             }
         }
@@ -52,9 +52,9 @@ namespace Venomaus.Visualizer.Core
                 case Tiles.Grass:
                     return new VisualCell<int>(x, y, cellType, '.', Color.Green);
                 case Tiles.Tree:
-                    return new VisualCell<int>(x, y, cellType, '&', Color.Brown);
+                    return new VisualCell<int>(x, y, cellType, '&', Color.Brown) { Walkable = false };
                 default:
-                    return new VisualCell<int>(x, y, cellType, 0);
+                    return new VisualCell<int>(x, y, cellType, 0) { Walkable = false};
             }
         }
     }
