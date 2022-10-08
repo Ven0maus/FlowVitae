@@ -214,8 +214,7 @@ namespace Venomaus.FlowVitae.Basics
             var halfCenterX = _centerCoordinate.x - (Width / 2);
             var halfCenterY = _centerCoordinate.y - (Height / 2);
             var modifiedPos = (x:  x - halfCenterX, y: y - halfCenterY);
-            var remappedCoordinate = _chunkLoader.RemapChunkCoordinate(modifiedPos.x, modifiedPos.y);
-            return (remappedCoordinate.x, remappedCoordinate.y);
+            return modifiedPos;
         }
 
         /// <summary>
