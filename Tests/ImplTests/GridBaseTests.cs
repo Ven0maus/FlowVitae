@@ -3,7 +3,7 @@ using Venomaus.Tests.TestObjects;
 
 namespace Venomaus.Tests.ImplTests
 {
-    internal class BasicGridTests : BaseTests<int, TestCell<int>>
+    internal class GridBaseTests : BaseTests<int, TestCell<int>>
     {
         [Test]
         public void GetCell_Get_Correct()

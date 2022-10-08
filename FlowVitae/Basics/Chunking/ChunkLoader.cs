@@ -54,6 +54,12 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             UnloadNonMandatoryChunks();
         }
 
+        public (int x, int y)[] GetLoadedChunks()
+        {
+            if (_chunks == null) return Array.Empty<(int x, int y)>();
+            return _chunks.Keys.ToArray();
+        }
+
         public void LoadChunksAround(int x, int y, bool includeSourceChunk)
         {
             var chunkCoordinate = GetChunkCoordinate(x, y);
@@ -77,7 +83,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             }
         }
 
-        private HashSet<(int x, int y)> GetMandatoryChunks()
+        public HashSet<(int x, int y)> GetMandatoryChunks()
         {
             return new HashSet<(int x, int y)>(GetNeighborChunks(), new TupleComparer<int>())
             {
@@ -131,16 +137,16 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 UnloadChunk(x, y);
         }
 
-        public void SetChunkCell(int x, int y, TCell cell, bool storeState = false, bool loadChunk = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
+        public void SetChunkCell(TCell cell, bool storeState = false, bool loadChunk = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
             bool wasChunkLoaded = false;
             if (loadChunk)
-                wasChunkLoaded = LoadChunk(x, y);
+                wasChunkLoaded = LoadChunk(cell.X, cell.Y);
 
-            var chunk = GetChunk(x, y, out var chunkCoordinate);
+            var chunk = GetChunk(cell.X, cell.Y, out var chunkCoordinate);
             if (chunk != null)
             {
-                var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
+                var remappedCoordinate = RemapChunkCoordinate(cell.X, cell.Y, chunkCoordinate);
                 if (!storeState && _modifiedCellsInChunks != null && _modifiedCellsInChunks.TryGetValue(chunkCoordinate, out var storedCells))
                 {
                     storedCells.Remove(remappedCoordinate);
@@ -168,7 +174,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 chunk[remappedCoordinate.y * _width + remappedCoordinate.x] = cell.CellType;
 
                 if (isWorldCoordinateOnScreen != null && screenCells != null &&
-                    isWorldCoordinateOnScreen(x, y, out (int x, int y)? screenCoordinate, out int screenWidth) &&
+                    isWorldCoordinateOnScreen(cell.X, cell.Y, out (int x, int y)? screenCoordinate, out int screenWidth) &&
                     screenCoordinate != null)
                 {
                     screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = cell.CellType;
@@ -181,7 +187,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             }
 
             if (loadChunk && wasChunkLoaded)
-                UnloadChunk(x, y);
+                UnloadChunk(cell.X, cell.Y);
         }
 
         public void SetChunkCells(IEnumerable<TCell> cells, bool storeCellState) 
@@ -195,13 +201,13 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             {
                 if (LoadChunk(cell.X, cell.Y))
                     loadedChunks.Add((cell.X, cell.Y));
-                SetChunkCell(cell.X, cell.Y, cell, storeCellStateFunc?.Invoke(cell) ?? false, onCellUpdate: onCellUpdate, isWorldCoordinateOnScreen: isWorldCoordinateOnScreen, screenCells: screenCells);
+                SetChunkCell(cell, storeCellStateFunc?.Invoke(cell) ?? false, onCellUpdate: onCellUpdate, isWorldCoordinateOnScreen: isWorldCoordinateOnScreen, screenCells: screenCells);
             }
             foreach (var (x, y) in loadedChunks)
                 UnloadChunk(x, y);
         }
 
-        private (int x, int y) GetNeighborChunk(int x, int y, Direction direction)
+        public (int x, int y) GetNeighborChunk(int x, int y, Direction direction)
         {
             var chunkCoordinate = GetChunkCoordinate(x, y);
             int chunkX = chunkCoordinate.x;
@@ -240,7 +246,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return GetChunkCoordinate(chunkX, chunkY);
         }
 
-        private (int x, int y)[] GetNeighborChunks(int x, int y)
+        public (int x, int y)[] GetNeighborChunks(int x, int y)
         {
             var chunks = new[]
             {
@@ -256,7 +262,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return chunks;
         }
 
-        private (int x, int y)[] GetNeighborChunks()
+        public (int x, int y)[] GetNeighborChunks()
         {
             return GetNeighborChunks(CurrentChunk.x, CurrentChunk.y);
         }
@@ -276,19 +282,24 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public void LoadChunk(TCell cell) => LoadChunk(cell.X, cell.Y);
 
-        public void UnloadChunk(int x, int y)
+        public bool UnloadChunk(int x, int y, bool forceUnload = false)
         {
             var coordinate = GetChunkCoordinate(x, y);
 
             // Check that we are not unloading current or neighbor chunks
-            if (CurrentChunk == coordinate) return;
-            var neighborChunks = GetNeighborChunks();
-            if (neighborChunks.Any(m => m.x == x && m.y == y)) return;
+            if (!forceUnload)
+            {
+                if (CurrentChunk == coordinate) return false;
+                var neighborChunks = GetNeighborChunks();
+                if (neighborChunks.Any(m => m.x == x && m.y == y)) return false;
+            }
 
             if (_chunks.ContainsKey(coordinate))
-                System.Diagnostics.Debug.WriteLine($"Unloaded chunk ({coordinate.x},{coordinate.y})");
-
-            _chunks.Remove(coordinate);
+            {
+                _chunks.Remove(coordinate);
+                return true;
+            }
+            return false;
         }
 
         public void UnloadChunk(TCell cell) => UnloadChunk(cell.X, cell.Y);

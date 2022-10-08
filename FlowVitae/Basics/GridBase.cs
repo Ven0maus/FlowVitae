@@ -419,7 +419,7 @@ namespace Venomaus.FlowVitae.Basics
                     _storage = null;
             }
             else if (_chunkLoader != null)
-                _chunkLoader.SetChunkCell(cell.X, cell.Y, cell, storeState, true);
+                _chunkLoader.SetChunkCell(cell, storeState, storeState);
         }
 
         /// <summary>
