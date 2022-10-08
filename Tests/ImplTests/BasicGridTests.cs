@@ -233,5 +233,24 @@ namespace Venomaus.Tests.ImplTests
                 Assert.That(args.Cell.Number, Is.EqualTo(20));
             });
         }
+
+        [Test]
+        public void SetCustomConverter_Converts_Correct()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => Grid.SetCustomConverter((int x, int y, int cellType) =>
+                {
+                    return new TestCell<int>(x, y, cellType, cellType == -1 ? 20 : 0);
+                }), Throws.Nothing);
+
+                Assert.That(() => Grid.SetCell(5, 5, -1), Throws.Nothing);
+            });
+
+            var cell = Grid.GetCell(5, 5);
+
+            Assert.That(cell, Is.Not.Null);
+            Assert.That(cell.Number, Is.EqualTo(20));
+        }
     }
 }

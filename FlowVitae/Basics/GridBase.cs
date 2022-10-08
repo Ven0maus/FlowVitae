@@ -32,6 +32,10 @@ namespace Venomaus.FlowVitae.Basics
         /// </summary>
         private (int x, int y) _centerCoordinate;
         /// <summary>
+        /// A custom converter method, to replace the default cell converter
+        /// </summary>
+        private Func<int, int, TCellType, TCell>? _customConverter;
+        /// <summary>
         /// Container for cells that contain extra data
         /// </summary>
         private Dictionary<(int x, int y), TCell>? _storage;
@@ -96,6 +100,15 @@ namespace Venomaus.FlowVitae.Basics
         { }
 
         /// <summary>
+        /// Overwrites the Convert method with a custom implementation without having to create a new <see cref="GridBase{TCellType, TCell}"/> implementation.
+        /// </summary>
+        /// <param name="converter">Converter func that resembles the Convert method</param>
+        public void SetCustomConverter(Func<int, int, TCellType, TCell>? converter)
+        {
+            _customConverter = converter;
+        }
+
+        /// <summary>
         /// Centers the grid on the specified coordinate
         /// </summary>
         /// <remarks>Can only be used for grids that use chunking.</remarks>
@@ -145,7 +158,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <returns><typeparamref name="TCell"/></returns>
         protected virtual TCell Convert(int x, int y, TCellType cellType)
         {
-            return new TCell
+            return _customConverter != null ? _customConverter.Invoke(x, y, cellType) : new TCell
             {
                 X = x,
                 Y = y,
