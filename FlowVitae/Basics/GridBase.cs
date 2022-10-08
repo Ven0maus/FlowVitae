@@ -1,5 +1,6 @@
 ﻿using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Basics.Procedural;
+using Venomaus.FlowVitae.Helpers;
 
 namespace Venomaus.FlowVitae.Basics
 {
@@ -79,6 +80,9 @@ namespace Venomaus.FlowVitae.Basics
             // Initialize chunkloader if grid uses chunks
             _chunkLoader = new ChunkLoader<TCellType, TCell>(chunkWidth, chunkHeight, generator, Convert);
             _chunkLoader.LoadChunksAround(0, 0, true);
+
+            // By default center on (x0, y0)
+            Center(0,0);
         }
 
         /// <summary>
@@ -195,10 +199,12 @@ namespace Venomaus.FlowVitae.Basics
         public TCell[] GetViewPortCells()
         {
             var positions = new (int, int)[Width * Height];
-            for (int i = 0; i < ScreenCells.Length; i++)
+            for (int x=0; x < Width; x++)
             {
-                var coordinate = ScreenToWorldCoordinate(i / Width, i % Height);
-                positions[i] = coordinate;
+                for (int y=0; y < Height; y++)
+                {
+                    positions[y * Width + x] = (x, y);
+                }
             }
             return GetCells(positions).ToArray();
         }
@@ -378,7 +384,7 @@ namespace Venomaus.FlowVitae.Basics
             if (storeState && _chunkLoader == null)
             {
                 if (_storage == null)
-                    _storage = new Dictionary<(int x, int y), TCell>();
+                    _storage = new Dictionary<(int x, int y), TCell>(new TupleComparer<int>());
                 _storage[coordinate] = cell;
             }
             else if (!storeState && _chunkLoader == null && _storage != null)

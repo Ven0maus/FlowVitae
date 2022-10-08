@@ -12,6 +12,35 @@ namespace Venomaus.Visualizer.Core
         public Point Position { get { return new Point(X, Y); } }
         public TCellType CellType { get; set; }
 
+        public VisualCell() { }
+
+        public VisualCell(int x, int y, TCellType cellType, int glyph)
+        {
+            X = x;
+            Y = y;
+            CellType = cellType;
+            Glyph = glyph;
+        }
+
+        public VisualCell(int x, int y, TCellType cellType, int glyph, Color foreground)
+        {
+            X = x;
+            Y = y;
+            CellType = cellType;
+            Glyph = glyph;
+            Foreground = foreground;
+        }
+
+        public VisualCell(int x, int y, TCellType cellType, int glyph, Color foreground, Color background) 
+        {
+            X = x;
+            Y = y;
+            CellType = cellType;
+            Glyph = glyph;
+            Foreground = foreground;
+            Background = background;
+        }
+
         public bool Equals(ICell<TCellType>? other)
         {
             return other != null && other.X == X && other.Y == Y;

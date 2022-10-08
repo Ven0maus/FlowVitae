@@ -32,7 +32,7 @@
             var grid = new TCellType[width * height];
 
             // Custom generation method
-            _method.Invoke(random, new TCellType[width * height], width, height);
+            _method.Invoke(random, grid, width, height);
 
             if (grid == null || grid.Length != (width * height))
             {

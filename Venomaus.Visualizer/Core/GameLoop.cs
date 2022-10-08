@@ -41,6 +41,7 @@ namespace Venomaus.Visualizer.Core
 
             var procedural = new ProceduralGenerator<int, VisualCell<int>>(1000, WorldGenerator.Generate);
             _grid = new(screenWidth, screenHeight, chunkWidth, chunkHeight, procedural);
+            _grid.SetCustomConverter(WorldGenerator.CellConverter);
 
             Game.Instance.Screen = new MapWindow(_grid.GetViewPortCells());
         }

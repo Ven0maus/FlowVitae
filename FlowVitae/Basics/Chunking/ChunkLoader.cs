@@ -23,7 +23,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             _seed = generator.Seed;
             _generator = generator;
             _cellTypeConverter = cellTypeConverter;
-            _chunks = new Dictionary<(int x, int y), TCellType[]>();
+            _chunks = new Dictionary<(int x, int y), TCellType[]>(new TupleComparer<int>());
         }
 
         /// <summary>
@@ -116,14 +116,14 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return null;
         }
 
-        public IEnumerable<TCell> GetChunkCells(IEnumerable<(int, int)> positions)
+        public IEnumerable<TCell> GetChunkCells(IEnumerable<(int x, int y)> positions)
         {
             var loadedChunks = new List<(int x, int y)>();
             foreach (var pos in positions)
             {
-                if (LoadChunk(pos.Item1, pos.Item2))
-                    loadedChunks.Add((pos.Item1, pos.Item2));
-                var cell = GetChunkCell(pos.Item1, pos.Item2);
+                if (LoadChunk(pos.x, pos.y))
+                    loadedChunks.Add((pos.x, pos.y));
+                var cell = GetChunkCell(pos.x, pos.y);
                 if (cell != null)
                     yield return cell;
             }
@@ -153,10 +153,10 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 {
                     // Check if there are modified cell tiles within this chunk
                     if (_modifiedCellsInChunks == null)
-                        _modifiedCellsInChunks = new Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>();
+                        _modifiedCellsInChunks = new Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>(new TupleComparer<int>());
                     if (!_modifiedCellsInChunks.TryGetValue(chunkCoordinate, out storedCells))
                     {
-                        storedCells = new Dictionary<(int x, int y), TCell>();
+                        storedCells = new Dictionary<(int x, int y), TCell>(new TupleComparer<int>());
                         _modifiedCellsInChunks.Add(chunkCoordinate, storedCells);
                     }
                     storedCells[remappedCoordinate] = cell;
@@ -286,6 +286,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         /// <returns></returns>
         public (int x, int y) GetChunkCoordinate(int x, int y)
         {
+            // TODO: FIX FOR NEGATIVE COORDINATES
             // eg: 10_width * (27x / 10_width);
             // so (27x / 10_width) would round to 2 int so (10 * 2) = 20chunkX
             var chunkX = _width * (x / _width);

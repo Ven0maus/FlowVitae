@@ -19,12 +19,14 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         /// <inheritdoc />
-        public Grid(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell>? generator) : base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator)
+        public Grid(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell>? generator) 
+            : base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator)
         {
         }
 
         /// <inheritdoc />
-        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell>? generator) : base(viewPortWidth, viewPortHeight, generator)
+        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell>? generator) 
+            : base(viewPortWidth, viewPortHeight, generator)
         {
         }
 

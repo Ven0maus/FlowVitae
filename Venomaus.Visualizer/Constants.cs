@@ -6,13 +6,13 @@
         {
             public const string GameWindowTitle = "Visualizer";
             public const int Width = 80;
-            public const int Height = 80;
+            public const int Height = 35;
         }
 
         public class GridSettings
         {
-            public const int ChunkWidth = 20;
-            public const int ChunkHeight = 20;
+            public const int ChunkWidth = 80;
+            public const int ChunkHeight = 35;
         }
     }
 }
