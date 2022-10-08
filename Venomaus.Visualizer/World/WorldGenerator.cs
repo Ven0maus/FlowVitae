@@ -31,11 +31,11 @@ namespace Venomaus.Visualizer.World
                         chunk[y * width + x] = (int)Tiles.ChunkCoordinate;
                     }
                     else if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
-                        chunk[y * width + x] = (int)Tiles.Border;
+                        chunk[y * width + x] = (int)Tiles.Border; // border
+                    else if (random.Next(0, 100) < TreeChance)
+                        chunk[y * width + x] = (int)Tiles.Tree;
                     else
                         chunk[y * width + x] = (int)Tiles.Grass;
-                    //else if (random.Next(0, 100) < TreeChance)
-                    //chunk[y * width + x] = (int)Tiles.Tree;
                 }
             }
         }
@@ -46,7 +46,7 @@ namespace Venomaus.Visualizer.World
             switch (tile)
             {
                 case Tiles.Border:
-                    return new VisualCell<int>(x, y, cellType, '#', Color.Red);
+                    return new VisualCell<int>(x, y, cellType, '.', Color.Green, Color.Lerp(Color.White, Color.Transparent, 0.6f));
                 case Tiles.ChunkCoordinate:
                     return new VisualCell<int>(x, y, cellType, '%', Color.Cyan);
                 case Tiles.Grass:
