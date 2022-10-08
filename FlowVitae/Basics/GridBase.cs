@@ -138,28 +138,12 @@ namespace Venomaus.FlowVitae.Basics
 
             // Set cells properly to cell type
             var cells = GetCells(positions);
-            var intMx = int.MaxValue;
-            var intMy = int.MaxValue;
-            var intMax = int.MinValue;
-            var intMay = int.MinValue;
             foreach (var cell in cells)
             {
                 var screenCoordinate = WorldToScreenCoordinate(cell.X, cell.Y);
                 ScreenCells[screenCoordinate.y * Width + screenCoordinate.x] = cell.CellType;
                 OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate, cell));
-
-                if (screenCoordinate.x < intMx)
-                    intMx = screenCoordinate.x;
-                if (screenCoordinate.y < intMy)
-                    intMy = screenCoordinate.y;
-
-                if (screenCoordinate.x > intMax)
-                    intMax = screenCoordinate.x;
-                if (screenCoordinate.y > intMay)
-                    intMay = screenCoordinate.y;
             }
-
-            System.Diagnostics.Debug.WriteLine("Min: (" + intMx + "," + intMy + ") Max: (" + intMax + "," + intMay + ")");
         }
 
         /// <summary>
