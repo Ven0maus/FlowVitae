@@ -31,7 +31,6 @@ namespace Venomaus.Visualizer.Core
 
         public static void InitializeGameLoop()
         {
-            Settings.WindowTitle = Constants.ScreenSettings.GameWindowTitle;
             Game.Instance.Screen = new MainScreen();
         }
 
@@ -90,7 +89,7 @@ namespace Venomaus.Visualizer.Core
             AfterGridInitialization();
         }
 
-        public void AfterGridInitialization()
+        private void AfterGridInitialization()
         {
             Player = new Player(new(Grid.Width / 2, Grid.Height / 2), new ColoredGlyph(Color.White, Color.Transparent, '@'), 1);
         }

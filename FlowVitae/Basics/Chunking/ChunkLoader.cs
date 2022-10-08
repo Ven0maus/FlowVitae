@@ -304,23 +304,23 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         /// <returns></returns>
         public (int x, int y) GetChunkCoordinate(int x, int y)
         {
-            return GetChunkCoordinateNoConversion(x, y);
+            return GetCoordinateBySizeNoConversion(x, y, _width, _height);
         }
 
-        private (int x, int y) GetChunkCoordinateConversion(int x, int y)
+        private (int x, int y) GetCoordinateBySizeConversion(int x, int y, int width, int height)
         {
             // TODO: Performance test
-            var chunkX = (int)(_width * Math.Floor(((double)x / _width)));
-            var chunkY = (int)(_height * Math.Floor(((double)y / _height)));
+            var chunkX = (int)(width * Math.Floor(((double)x / width)));
+            var chunkY = (int)(height * Math.Floor(((double)y / height)));
             return (chunkX, chunkY);
         }
 
-        private (int x, int y) GetChunkCoordinateNoConversion(int x, int y)
+        private (int x, int y) GetCoordinateBySizeNoConversion(int x, int y, int width, int height)
         {
-            if (x < 0 && x % _width != 0) x -= _width;
-            if (y < 0 && y % _height != 0) y -= _height;
-            var chunkX = _width * (x / _width);
-            var chunkY = _height * (y / _height);
+            if (x < 0 && x % width != 0) x -= width;
+            if (y < 0 && y % height != 0) y -= height;
+            var chunkX = width * (x / width);
+            var chunkY = height * (y / height);
             return (chunkX, chunkY);
         }
     }

@@ -7,6 +7,11 @@ namespace Venomaus.Visualizer
     {
         static void Main(string[] args)
         {
+            // Some settings
+            Settings.ResizeMode = Settings.WindowResizeOptions.Stretch;
+            Settings.AllowWindowResize = true;
+            Settings.WindowTitle = Constants.ScreenSettings.GameWindowTitle;
+
             // Setup the engine and create the main window.
             Game.Create(Constants.ScreenSettings.Width, Constants.ScreenSettings.Height);
 
