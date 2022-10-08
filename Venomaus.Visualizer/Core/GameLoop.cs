@@ -46,6 +46,8 @@ namespace Venomaus.Visualizer.Core
             }
 
             Game.Instance.Screen = new MapWindow(_grid.GetViewPortCells());
+
+            // Set a happy little tree
             _grid.SetCell(5, 2, 2);
         }
 
@@ -61,7 +63,11 @@ namespace Venomaus.Visualizer.Core
             _grid.SetCustomConverter(WorldGenerator.CellConverter);
 
             Game.Instance.Screen = new MapWindow(_grid.GetViewPortCells());
+
+            // Set a happy little tree
             _grid.SetCell(5, 2, 2);
+
+            System.Diagnostics.Debug.WriteLine("Chunks loaded after map generation: " + _grid.ChunksLoaded);
         }
     }
 }

@@ -16,6 +16,8 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public (int x, int y) CurrentChunk { get; private set; }
 
+        public int ChunksLoaded { get { return _chunks.Count; } }
+
         public ChunkLoader(int width, int height, IProceduralGen<TCellType, TCell> generator, Func<int, int, TCellType, TCell> cellTypeConverter)
         {
             _width = width;
@@ -201,28 +203,44 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 UnloadChunk(x, y);
         }
 
-        private (int x, int y) GetNeighborChunk(Direction direction)
-        {
-            // TODO: Implement neighbor chunking
-            return (0, 0);
-        }
-
         private (int x, int y) GetNeighborChunk(int x, int y, Direction direction)
         {
-            // TODO: Implement neighbor chunking
-            return (0, 0);
-        }
-
-        private (int x, int y)[] GetNeighborChunks()
-        {
-            // TODO: Implement neighbor chunking
-            return new[] { (0, 0) };
+            var chunkCoordinate = GetChunkCoordinate(x, y);
+            int chunkX = chunkCoordinate.x;
+            int chunkY = chunkCoordinate.y;
+            switch (direction)
+            {
+                case Direction.North:
+                    chunkY = CurrentChunk.y + _height;
+                    break;
+                case Direction.East:
+                    chunkX = CurrentChunk.x + _width;
+                    break;
+                case Direction.South:
+                    chunkY = CurrentChunk.y - _height;
+                    break;
+                case Direction.West:
+                    chunkX = CurrentChunk.x - _width;
+                    break;
+            }
+            return GetChunkCoordinate(chunkX, chunkY);
         }
 
         private (int x, int y)[] GetNeighborChunks(int x, int y)
         {
-            // TODO: Implement neighbor chunking
-            return new[] { (0, 0) };
+            var chunks = new[]
+            {
+                GetNeighborChunk(x, y, Direction.North),
+                GetNeighborChunk(x, y, Direction.East),
+                GetNeighborChunk(x, y, Direction.South),
+                GetNeighborChunk(x, y, Direction.West)
+            };
+            return chunks;
+        }
+
+        private (int x, int y)[] GetNeighborChunks()
+        {
+            return GetNeighborChunks(CurrentChunk.x, CurrentChunk.y);
         }
 
         public bool LoadChunk(int x, int y)

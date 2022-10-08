@@ -21,6 +21,7 @@
 
   <ItemGroup>
 	<InternalsVisibleTo Include="Venomaus.Tests" />
+	<InternalsVisibleTo Include="Venomaus.Visualizer" />
   </ItemGroup>
 
 

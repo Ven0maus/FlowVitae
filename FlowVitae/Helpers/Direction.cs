@@ -3,8 +3,12 @@
     internal enum Direction
     {
         North,
+        NorthEast,
+        NorthWest,
         East,
         South,
+        SouthEast,
+        SouthWest,
         West
     }
 }

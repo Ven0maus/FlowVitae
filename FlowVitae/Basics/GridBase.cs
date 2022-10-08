@@ -50,6 +50,11 @@ namespace Venomaus.FlowVitae.Basics
         public event EventHandler<CellUpdateArgs<TCellType, TCell>>? OnCellUpdate;
 
         /// <summary>
+        /// The amount of chunks loaded at the current time
+        /// </summary>
+        internal int ChunksLoaded { get { return _chunkLoader == null ? 0 : _chunkLoader.ChunksLoaded; } }
+
+        /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
         /// </summary>
         /// <remarks>Initializes a grid that does not use chunking.</remarks>
