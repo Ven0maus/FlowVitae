@@ -75,13 +75,13 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             foreach (var chunk in allChunks)
             {
                 if (!mandatoryChunks.Contains(chunk))
-                    _chunks.Remove(chunk);
+                    UnloadChunk(chunk.x, chunk.y);
             }
         }
 
         private HashSet<(int x, int y)> GetMandatoryChunks()
         {
-            return new HashSet<(int x, int y)>(GetNeighborChunks())
+            return new HashSet<(int x, int y)>(GetNeighborChunks(), new TupleComparer<int>())
             {
                 CurrentChunk
             };
@@ -222,6 +222,22 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 case Direction.West:
                     chunkX = CurrentChunk.x - _width;
                     break;
+                case Direction.NorthEast:
+                    chunkY = CurrentChunk.y + _height;
+                    chunkX = CurrentChunk.x + _width;
+                    break;
+                case Direction.NorthWest:
+                    chunkY = CurrentChunk.y + _height;
+                    chunkX = CurrentChunk.x - _width;
+                    break;
+                case Direction.SouthEast:
+                    chunkY = CurrentChunk.y - _height;
+                    chunkX = CurrentChunk.x + _width;
+                    break;
+                case Direction.SouthWest:
+                    chunkY = CurrentChunk.y - _height;
+                    chunkX = CurrentChunk.x - _width;
+                    break;
             }
             return GetChunkCoordinate(chunkX, chunkY);
         }
@@ -233,7 +249,11 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 GetNeighborChunk(x, y, Direction.North),
                 GetNeighborChunk(x, y, Direction.East),
                 GetNeighborChunk(x, y, Direction.South),
-                GetNeighborChunk(x, y, Direction.West)
+                GetNeighborChunk(x, y, Direction.West),
+                GetNeighborChunk(x, y, Direction.NorthEast),
+                GetNeighborChunk(x, y, Direction.NorthWest),
+                GetNeighborChunk(x, y, Direction.SouthEast),
+                GetNeighborChunk(x, y, Direction.SouthWest)
             };
             return chunks;
         }
@@ -249,6 +269,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
             if (!_chunks.ContainsKey(coordinate))
             {
+                System.Diagnostics.Debug.WriteLine($"Loaded chunk ({coordinate.x},{coordinate.y})");
                 GenerateChunk(coordinate);
                 return true;
             }
@@ -259,14 +280,17 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public void UnloadChunk(int x, int y)
         {
-            var chunkCoordinate = GetChunkCoordinate(x, y);
+            var coordinate = GetChunkCoordinate(x, y);
 
             // Check that we are not unloading current or neighbor chunks
-            if (CurrentChunk == chunkCoordinate) return;
+            if (CurrentChunk == coordinate) return;
             var neighborChunks = GetNeighborChunks();
             if (neighborChunks.Any(m => m.x == x && m.y == y)) return;
 
-            _chunks.Remove(chunkCoordinate);
+            if (_chunks.ContainsKey(coordinate))
+                System.Diagnostics.Debug.WriteLine($"Unloaded chunk ({coordinate.x},{coordinate.y})");
+
+            _chunks.Remove(coordinate);
         }
 
         public void UnloadChunk(TCell cell) => UnloadChunk(cell.X, cell.Y);
