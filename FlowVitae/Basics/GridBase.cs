@@ -188,7 +188,6 @@ namespace Venomaus.FlowVitae.Basics
         /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
         public (int x, int y) WorldToScreenCoordinate(int x, int y)
         {
-            // TODO: FIX PROBLEM WITH OVERLAYED CHUNKS NOT GETTING CORRECT SCREEN CELL
             if (_chunkLoader == null)
             {
                 if (!InBounds(x, y))
@@ -221,9 +220,9 @@ namespace Venomaus.FlowVitae.Basics
             var cells = GetCells(positions).ToArray();
             foreach (var cell in cells)
             {
-                var screenCoordinate = WorldToScreenCoordinate(cell.X, cell.Y);
-                cell.X = screenCoordinate.x;
-                cell.Y = screenCoordinate.y;
+                var (x, y) = WorldToScreenCoordinate(cell.X, cell.Y);
+                cell.X = x;
+                cell.Y = y;
             }
             return cells;
         }
