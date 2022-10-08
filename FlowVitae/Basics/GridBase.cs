@@ -109,8 +109,10 @@ namespace Venomaus.FlowVitae.Basics
             if (_chunkLoader == null)
                 throw new Exception("Center method can only be used for grids that use chunking.");
 
-            var minX = x - (Width / 2);
-            var minY = y - (Height / 2);
+            var halfScreenWidth = Width / 2;
+            var halfScreenHeight = Height / 2;
+            var minX = x - halfScreenWidth;
+            var minY = y - halfScreenHeight;
 
             // Update the current chunk
             var currentChunk = _chunkLoader.CurrentChunk;
@@ -134,7 +136,8 @@ namespace Venomaus.FlowVitae.Basics
             var cells = GetCells(positions);
             foreach (var cell in cells)
             {
-                ScreenCells[cell.Y * Width + cell.X] = cell.CellType; 
+                var screenCoordinate = WorldToScreenCoordinate(cell.X, cell.Y);
+                ScreenCells[screenCoordinate.y * Width + screenCoordinate.x] = cell.CellType; 
             }
 
             _centerCoordinate = (x, y);
@@ -206,7 +209,15 @@ namespace Venomaus.FlowVitae.Basics
                     positions[y * Width + x] = ScreenToWorldCoordinate(x, y);
                 }
             }
-            return GetCells(positions).ToArray();
+
+            var cells = GetCells(positions).ToArray();
+            foreach (var cell in cells)
+            {
+                var screenCoordinate = WorldToScreenCoordinate(cell.X, cell.Y);
+                cell.X = screenCoordinate.x;
+                cell.Y = screenCoordinate.y;
+            }
+            return cells;
         }
 
         /// <summary>

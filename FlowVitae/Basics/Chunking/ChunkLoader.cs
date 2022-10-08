@@ -110,7 +110,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 if (loadChunk && wasChunkLoaded)
                     UnloadChunk(x, y);
                 // Return the non-modified cell
-                return _cellTypeConverter(remappedCoordinate.x, remappedCoordinate.y,
+                return _cellTypeConverter(x, y,
                     chunk[remappedCoordinate.y * _width + remappedCoordinate.x]);
             }
             return null;

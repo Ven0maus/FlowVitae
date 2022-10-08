@@ -9,6 +9,7 @@ namespace Venomaus.Visualizer.Core
         {
             None = 0,
             Border = -1,
+            ChunkCoordinate = -2,
             Grass = 1,
             Tree = 2,
         }
@@ -24,7 +25,12 @@ namespace Venomaus.Visualizer.Core
             {
                 for (int y = 0; y < height; y++)
                 {
-                    if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
+                    if (x == 0 && y == 0)
+                    {
+                        // Chunk coordinate
+                        chunk[y * width + x] = (int)Tiles.ChunkCoordinate;
+                    }
+                    else if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
                         chunk[y * width + x] = (int)Tiles.Border;
                     else
                         chunk[y * width + x] = (int)Tiles.Grass;
@@ -41,6 +47,8 @@ namespace Venomaus.Visualizer.Core
             {
                 case Tiles.Border:
                     return new VisualCell<int>(x, y, cellType, '#', Color.Red);
+                case Tiles.ChunkCoordinate:
+                    return new VisualCell<int>(x, y, cellType, '%', Color.Cyan);
                 case Tiles.Grass:
                     return new VisualCell<int>(x, y, cellType, '.', Color.Green);
                 case Tiles.Tree:
