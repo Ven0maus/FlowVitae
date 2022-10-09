@@ -84,10 +84,9 @@ grid.RaiseOnlyOnCellTypeChange = false;
 ```
 
 # Custom cell conversion
-There are some ways to convert the underlying TCellType to TCell
-You can implement your own Grid class based on the GridBase<TCellType, TCell>
-and override Convert method
-Or you can simply call the method SetCustomConverter(converter) on the Grid
+There are some ways to convert the underlying TCellType to TCell.
+- You can implement your own Grid class based on the GridBase<TCellType, TCell> and override the Convert method.
+- You can call the method SetCustomConverter(converter) on the Grid which is then used in Convert instead of default new() constructor
 	
 Here is an example of the method:
 ```csharp
