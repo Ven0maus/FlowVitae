@@ -192,7 +192,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
         /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
-        public (int x, int y) ScreenToWorldCoordinate(int x, int y)
+        internal (int x, int y) ScreenToWorldCoordinate(int x, int y)
         {
             if (!InBounds(x, y)) 
                 throw new Exception("Invalid screen coordinate, must be within screen bounds (Width, Height).");
@@ -210,7 +210,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="y">Coordinate Y</param>
         /// <remarks>Only useful when using a chunkloaded grid, static grids will just return input coordinate.</remarks>
         /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
-        public (int x, int y) WorldToScreenCoordinate(int x, int y)
+        internal (int x, int y) WorldToScreenCoordinate(int x, int y)
         {
             if (_chunkLoader == null)
             {
