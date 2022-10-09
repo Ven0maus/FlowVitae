@@ -112,7 +112,7 @@ It can be easily done by inheriting from CellBase or ICell<TCellType>
 When you want your cell to be able to base of some render engine cell such as ColoredGlyph from Sadconsole,
 you can easily do it by using ColoredGlyph, ICell<TCellType> as your inheritance.
 	
-Here is an example of just a regular Cellbase inheritance:
+Here is an example of just a regular CellBase inheritance:
 ```csharp
 internal class VisualCell<TCellType> : CellBase<TCellType>
 where TCellType : struct
