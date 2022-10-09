@@ -20,7 +20,7 @@ namespace Venomaus.UnitTests.Tests
         [SetUp]
         public void Setup()
         {
-            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, ProcGen);;
+            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, ProcGen);
             Grid.SetCustomConverter(CustomConverter);
         }
 

@@ -1,5 +1,7 @@
 ﻿using BenchmarkDotNet.Running;
-using Venomaus.BenchmarkTests.Benchmarks;
+using Venomaus.BenchmarkTests.Benchmarks.Configurations.ProceduralGrids.DifferentChunkSize;
+using Venomaus.BenchmarkTests.Benchmarks.Configurations.ProceduralGrids.SameChunkSize;
+using Venomaus.BenchmarkTests.Benchmarks.Configurations.StaticGrids;
 
 namespace Venomaus.BenchmarkTests
 {
@@ -7,7 +9,12 @@ namespace Venomaus.BenchmarkTests
     {
         private static void Main(string[] args)
         {
-            _ = BenchmarkRunner.Run<GridBenchmarks>();
+            BenchmarkRunner.Run(new Type[]
+            {
+                typeof(SmallStaticGridBenchmarks),
+                typeof(SmallSSProcGenBenchmarks),
+                typeof(SmallDSProcGenBenchmarks)
+            });
 
             Console.WriteLine();
             Console.WriteLine("Benchmarking finished.");
