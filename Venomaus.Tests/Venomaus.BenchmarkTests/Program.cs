@@ -12,21 +12,26 @@ namespace Venomaus.BenchmarkTests
     {
         private static void Main(string[] args)
         {
+            RunSmallBenchmarks();
+
+            Console.WriteLine();
+            Console.WriteLine("Benchmarking finished.");
+            Console.ReadKey();
+        }
+
+        private static void RunSmallBenchmarks()
+        {
             BenchmarkRunner.Run(new Type[]
             {
                 typeof(SmallStaticGridBenchmarks),
                 typeof(SmallSSProcGenBenchmarks),
                 typeof(SmallDSProcGenBenchmarks)
             }, ManualConfig
-            .CreateMinimumViable()
-            .WithOptions(ConfigOptions.DisableLogFile)
-            .AddExporter(HtmlExporter.Default)
-            .KeepBenchmarkFiles(false)
-            .AddJob(Job.ShortRun));
-            
-            Console.WriteLine();
-            Console.WriteLine("Benchmarking finished.");
-            Console.ReadKey();
+                .CreateMinimumViable()
+                .WithOptions(ConfigOptions.DisableLogFile)
+                .AddExporter(HtmlExporter.Default)
+                .KeepBenchmarkFiles(false)
+                .AddJob(Job.ShortRun));
         }
     }
 }

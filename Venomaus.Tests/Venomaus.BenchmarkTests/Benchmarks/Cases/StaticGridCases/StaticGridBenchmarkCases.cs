@@ -8,6 +8,7 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.StaticGridCases
     public class StaticGridBenchmarkCases : BaseGridBenchmarks<int, Cell<int>>
     {
         protected override int Seed => 1000;
+        protected override bool ProcGenEnabled => false;
 
         [Benchmark]
         public void SetCell_NoStoreState()

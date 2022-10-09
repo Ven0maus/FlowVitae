@@ -11,13 +11,12 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         where TCell : class, ICell<TCellType>, new()
     {
         protected Grid<TCellType, TCell> Grid { get; private set; }
-        protected virtual IProceduralGen<TCellType, TCell>? ProcGen { get; }
-        protected virtual Func<int, int, TCellType, TCell>? CustomConverter { get; }
 
         protected virtual int ViewPortWidth { get; }
         protected virtual int ViewPortHeight { get; }
         protected virtual int ChunkWidth { get; }
         protected virtual int ChunkHeight { get; }
+        protected virtual bool ProcGenEnabled { get; }
 
         protected Cell<int>[] Cells { get; private set; }
         protected Cell<int>[] ProceduralCells { get; private set; }
@@ -30,9 +29,7 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
-            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, ProcGen);
-            Grid.SetCustomConverter(CustomConverter);
-            Grid.OnCellUpdate += OnCellUpdate;
+            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, InitializeProcGen());
 
             // Initialize benchmark data
             Random = new Random(Seed);
@@ -43,7 +40,12 @@ namespace Venomaus.BenchmarkTests.Benchmarks
             ProceduralPositionsInView = PopulatePositionsArray(true, true);
         }
 
-        protected virtual void OnCellUpdate(object? sender, CellUpdateArgs<TCellType, TCell> args)
+        private IProceduralGen<TCellType, TCell>? InitializeProcGen()
+        {
+            return ProcGenEnabled ? new ProceduralGenerator<TCellType, TCell>(Seed, GenerateChunk) : null;
+        }
+
+        protected virtual void GenerateChunk(Random random, TCellType[] chunk, int width, int height)
         { }
 
         protected virtual (int x, int y)[] PopulatePositionsArray(bool procedural, bool inView)

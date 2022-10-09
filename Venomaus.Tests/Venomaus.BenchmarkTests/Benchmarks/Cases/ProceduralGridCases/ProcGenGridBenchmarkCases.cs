@@ -8,6 +8,14 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
     public class ProcGenGridBenchmarkCases : BaseGridBenchmarks<int, Cell<int>>
     {
         protected override int Seed => 1000;
+        protected override bool ProcGenEnabled => true;
+
+        protected override void GenerateChunk(Random random, int[] chunk, int width, int height)
+        {
+            for (int x=0; x < width; x++)
+                for (int y = 0; y < height; x++)
+                    chunk[y * width + x] = random.Next(-10, 10);
+        }
 
         [Benchmark]
         public void SetCell_NoStoreState()
