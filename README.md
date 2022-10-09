@@ -20,3 +20,101 @@ Tested with:
 **Easy to use**
 - Possible to configure custom Grid, Cell, ProceduralGeneration classes
 - Has a visualizer project that serves as an example on how to integrate with a render engine, such as SadConsole.
+
+# Setup
+**FlowVitae grids use 2 generic types**
+- TCellType is constrained to a struct, and will represent the unique cell value kept in memory. (eg, an int or byte that points to the real cell id)
+- TCell is the real cell that represents the TCellType, it uses the ICell<TCellType> interface
+**FlowVitae provides some basic implementations already out of the box.**
+- Grid<TCellType, TCell>
+- Cell<TCellType>
+
+**Static Grid Creation**
+```csharp
+var grid = new Grid<int, Cell<int>>(width, height);
+```
+
+**Procedural Grid Creation**
+```csharp
+var procGen = new ProceduralGenerator<int, Cell<int>>(Seed, GenerateChunkMethod);
+var grid = new Grid<int, Cell<int>>(width, height, chunkWidth, chunkHeight, IProceduralGen implementation);
+```
+
+GenerateChunkMethod can look something like this:
+```csharp
+public void GenerateChunkMethod(Random random, int[] chunk, int width, int height)
+{
+	// Every position contains default value of int (0) which could represent grass
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			// Add a random chance for a cell to be a tree
+			if (random.Next(0, 100) < 10)
+				chunk[y * width + x] = 1;
+		}
+	}
+}
+```
+The random already has a unique seed based on the provided Seed in the ProceduralGenerator and the chunk coordinate.
+int[] chunk represent the chunk, int[] will be your TCellType[]
+
+Chunks are generated automatically and they will use this method as reference to build the chunk.
+
+# Rendering to a render engine
+FlowVitae provides an event that is raised when a cell on the viewport is updated
+```csharp
+grid.OnCellUpdate += Grid_OnCellUpdate;
+
+private void Grid_OnCellUpdate(object? sender, CellUpdateArgs<int, Cell<int>> args)
+{
+  // Pseudo code
+  var screenGraphic = ConvertCellTypeToGraphic(args.Cell.CellType);
+	SomeRenderEngine.SetScreenGraphic(args.ScreenX, args.ScreenY, screenGraphic);
+}
+```
+This event is by default only raised when the TCellType value on the viewport is changed during a SetCell/SetCells
+If you want this event to always be raised when a TCell is set, (even if CellType doesn't change, but some properties do)
+Then we also provided this functionality. You can adjust it like so:
+```csharp
+grid.RaiseOnlyOnCellTypeChange = false;
+```
+
+# Interaction with grids
+
+**Getting and setting cells**
+```csharp
+var cell = grid.GetCell(x, y); // returns TCell
+var cellType = grid.GetCelLType(x,y); // returns TCellType
+grid.SetCell(x, y);
+var cells = grid.GetCells(new [] {(0,0), (1,1)}); // returns collection of TCell
+grid.SetCells(cells);
+```
+
+**Center viewport on a coordinate for procedural grids**
+This is especially useful when you want your player to always be centered in the middle of the screen.
+But during movement, the viewport adjusts to show the right cells based on the position of the player
+For this you can use the Center(x, y) method Grid provides.
+```csharp
+// Pseudo code (make sure player doesn't actually move, or you'll end up with desync)
+if (player.MovedTowards(x, y))
+    grid.Center(x, y);
+```
+
+**Retrieve all cells within the viewport**
+```csharp
+// Returns a cloned array of the viewport, all cell positions are in screen coordinates instead of world coordinates
+grid.GetViewPortCells();
+```
+
+**Checking bounds for static grids**
+```csharp
+// Returns true or false if the position is within the viewport
+// Works only for screen coordinates if you're using a chunked grid
+var isInBounds = grid.InBounds(x, y);
+```
+
+**See if a cell is currently displayed on the viewport**
+```csharp
+var isInViewPort = grid.IsWorldCoordinateOnViewPort(x,y);
+```
