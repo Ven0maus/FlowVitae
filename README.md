@@ -25,9 +25,12 @@ Tested with:
 **FlowVitae grids use 2 generic types**
 - TCellType is constrained to a struct, and will represent the unique cell value kept in memory. (eg, an int or byte that points to the real cell id)
 - TCell is the real cell that represents the TCellType, it uses the ICell<TCellType> interface
+
 **FlowVitae provides some basic implementations already out of the box.**
-- Grid<TCellType, TCell>
-- Cell<TCellType>
+```csharp
+Grid<TCellType, TCell>
+Cell<TCellType>
+```
 
 **Static Grid Creation**
 ```csharp
