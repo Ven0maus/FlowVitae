@@ -1,5 +1,4 @@
-﻿using SadConsole;
-using SadRogue.Primitives;
+﻿using SadRogue.Primitives;
 
 namespace Venomaus.Visualizer.World
 {
