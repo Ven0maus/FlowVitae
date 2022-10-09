@@ -2,6 +2,7 @@
 using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Basics.Procedural;
 using Venomaus.FlowVitae.Cells;
+using Venomaus.FlowVitae.Grids;
 using Direction = Venomaus.FlowVitae.Helpers.Direction;
 
 namespace Venomaus.Tests.ImplTests
@@ -41,6 +42,19 @@ namespace Venomaus.Tests.ImplTests
         public void ChunkLoader_Is_Not_Null()
         {
             Assert.That(() => ChunkLoader, Throws.Nothing);
+        }
+
+        [Test]
+        public void Grid_Constructors_Covered()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100, 50, 50, null), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100, null), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100, 50, 50, ProcGen), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100, ProcGen), Throws.Nothing);
+            });
         }
 
         [Test]
@@ -99,16 +113,22 @@ namespace Venomaus.Tests.ImplTests
         public void NegativeCoordinate_SetAndGet_Correct()
         {
             // When not saving state in an unloaded chunk, the chunk data is lost
-            Grid.SetCell(-55, -72, -5);
-            var cell = Grid.GetCell(-55, -72);
+            Grid.SetCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, -5);
+            var cell = Grid.GetCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5);
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.Not.EqualTo(-5));
 
+            var cellType = Grid.GetCellType(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5);
+            Assert.That(cellType, Is.Not.EqualTo(-5));
+
             // When saving state in an unloaded chunk, the chunk data is stored
-            Grid.SetCell(-55, -72, -5, true);
-            cell = Grid.GetCell(-55, -72);
+            Grid.SetCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, -5, true);
+            cell = Grid.GetCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5);
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(-5));
+
+            cellType = Grid.GetCellType(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5);
+            Assert.That(cellType, Is.EqualTo(-5));
         }
 
         [Test]
@@ -331,10 +351,12 @@ namespace Venomaus.Tests.ImplTests
                 Assert.That(cell.Y, Is.EqualTo(posY));
             });
 
-            Assert.That(() => cell = ChunkLoader.GetChunkCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Throws.Nothing);
-            Assert.That(cell, Is.Null);
-
-            Assert.That(() => cell = ChunkLoader.GetChunkCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, true), Throws.Nothing);
+            cell = null;
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => cell = ChunkLoader.GetChunkCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Throws.Exception);
+                Assert.That(() => cell = ChunkLoader.GetChunkCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, true), Throws.Nothing);
+            });
             Assert.That(cell, Is.Not.Null);
             Assert.Multiple(() =>
             {
@@ -407,7 +429,10 @@ namespace Venomaus.Tests.ImplTests
         [Test]
         public void UnloadChunk_Unload_Correct()
         {
-            var loadedChunks = ChunkLoader.GetLoadedChunks();
+            (int x, int y)[] loadedChunks = ChunkLoader.GetLoadedChunks();
+            Assert.That(loadedChunks, Is.Not.Null);
+            Assert.That(loadedChunks, Has.Length.EqualTo(9));
+
             Assert.Multiple(() =>
             {
                 Assert.That(loadedChunks.Any(loadedChunk => loadedChunk.x == ChunkLoader.CurrentChunk.x &&
@@ -425,6 +450,16 @@ namespace Venomaus.Tests.ImplTests
 
             Assert.That(!loadedChunks.Any(loadedChunk => loadedChunk.x == ChunkLoader.CurrentChunk.x &&
                             loadedChunk.y == ChunkLoader.CurrentChunk.y), "Base chunk was still loaded.");
+
+            // Unload all chunks
+            foreach (var chunk in loadedChunks)
+                ChunkLoader.UnloadChunk(chunk.x, chunk.y, true);
+            loadedChunks = ChunkLoader.GetLoadedChunks();
+            Assert.Multiple(() =>
+            {
+                Assert.That(loadedChunks, Has.Length.EqualTo(0));
+                Assert.That(ChunkLoader.UnloadChunk(0, 0), Is.False);
+            });
         }
 
         [Test]
@@ -593,7 +628,8 @@ namespace Venomaus.Tests.ImplTests
                     dirX = startX - ChunkWidth;
                     break;
                 default:
-                    throw new NotSupportedException("Not yet implemented.");
+                    Assert.Fail("Invalid direction provided.");
+                    break;
             }
 
             var loadedChunks = ChunkLoader.GetLoadedChunks();
@@ -631,8 +667,6 @@ namespace Venomaus.Tests.ImplTests
             if (ChunkWidth >= (ViewPortWidth / 2) || ChunkHeight >= (ViewPortHeight / 2))
                 Assert.Pass("Test ignored because chunk size is higher or equal to half the viewport size.");
 
-            Assert.That(ChunkWidth < (ViewPortWidth / 2) && ChunkHeight < (ViewPortHeight / 2), Is.True);
-
             Grid.Center(0, 0);
 
             var loadedChunks = ChunkLoader.GetLoadedChunks();
@@ -653,15 +687,11 @@ namespace Venomaus.Tests.ImplTests
             });
 
             // Chunks retrieved are null without proper method call
-            var cells = new[]
-            {
-                ChunkLoader.GetChunkCell(x, y, false),
-                ChunkLoader.GetChunkCell(x2, y2, false)
-            };
-            Assert.That(cells.All(a => a == null));
+            Assert.That(() => ChunkLoader.GetChunkCell(x, y, false), Throws.Exception);
+            Assert.That(() => ChunkLoader.GetChunkCell(x2, y2, false), Throws.Exception);
 
             // Chunks retrieved are not null with proper method call with load chunks false
-            cells = new[]
+            var cells = new[]
             {
                 ChunkLoader.GetChunkCell(x, y, false, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells),
                 ChunkLoader.GetChunkCell(x2, y2, false, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells)

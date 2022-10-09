@@ -341,11 +341,8 @@ namespace Venomaus.FlowVitae.Basics
                 return cell;
             if (_chunkLoader != null)
             {
-                cell = _chunkLoader.GetChunkCell(x, y, true, IsWorldCoordinateOnScreen, ScreenCells);
-                if (cell == null) throw new Exception("Something went wrong during cell retrieval from chunk.");
-                return cell;
+                return _chunkLoader.GetChunkCell(x, y, true, IsWorldCoordinateOnScreen, ScreenCells);
             }
-
             return Convert(x, y, GetCellType(x, y));
         }
 
@@ -390,8 +387,7 @@ namespace Venomaus.FlowVitae.Basics
             else if (_chunkLoader != null)
             {
                 cell = _chunkLoader.GetChunkCell(x, y, true);
-                if (cell != null) return cell.CellType;
-                return default;
+                return cell.CellType;
             }
             return ScreenCells[y * Width + x];
         }

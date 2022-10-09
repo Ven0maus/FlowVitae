@@ -34,11 +34,6 @@
             // Custom generation method
             _method.Invoke(random, grid, width, height);
 
-            if (grid == null || grid.Length != (width * height))
-            {
-                throw new Exception(grid == null ? "Chunk cannot be null." :
-                    "Chunk size is invalid, must be of length (width * height).");
-            }
             return grid;
         }
     }

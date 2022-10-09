@@ -24,11 +24,6 @@
         /// </summary>
         public TCell Cell { get; private set; }
 
-        internal CellUpdateArgs() 
-        {
-            Cell = new();
-        }
-
         internal CellUpdateArgs((int x, int y) screenCoordinate, TCell cell)
         {
             ScreenX = screenCoordinate.x;

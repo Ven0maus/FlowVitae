@@ -1,6 +1,6 @@
 ﻿namespace Venomaus.Tests.PerfTests
 {
-    internal class CorePerfTests
+    internal class BenchmarkTests
     {
         [SetUp]
         public void Setup()

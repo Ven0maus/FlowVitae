@@ -57,7 +57,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public (int x, int y)[] GetLoadedChunks()
         {
-            if (_chunks == null) return Array.Empty<(int x, int y)>();
             return _chunks.Keys.ToArray();
         }
 
@@ -92,7 +91,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             };
         }
 
-        public TCell? GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
+        public TCell GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
             var chunkCoordinate = GetChunkCoordinate(x, y);
             var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
@@ -132,15 +131,14 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
             // Load chunk after all other options are validated
             chunk = GetChunk(x, y, out _);
-            if (chunk != null)
-            {
-                if (loadChunk && wasChunkLoaded)
-                    UnloadChunk(x, y);
-                // Return the non-modified cell
-                return _cellTypeConverter(x, y,
-                    chunk[remappedCoordinate.y * _width + remappedCoordinate.x]);
-            }
-            return null;
+            if (chunk == null)
+                throw new Exception("Something went wrong during chunk retrieval.");
+
+            if (loadChunk && wasChunkLoaded)
+                UnloadChunk(x, y);
+            // Return the non-modified cell
+            return _cellTypeConverter(x, y,
+                chunk[remappedCoordinate.y * _width + remappedCoordinate.x]);
         }
 
         public IReadOnlyList<TCell> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
@@ -203,9 +201,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 }
             }
         }
-
-        public void SetChunkCells(IEnumerable<TCell> cells, bool storeCellState) 
-            => SetChunkCells(cells, (s) => storeCellState);
 
         public delegate bool Checker(int x, int y, out (int x, int y)? coordinate, out int screenWidth);
         public void SetChunkCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
@@ -286,8 +281,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return false;
         }
 
-        public void LoadChunk(TCell cell) => LoadChunk(cell.X, cell.Y);
-
         public bool UnloadChunk(int x, int y, bool forceUnload = false)
         {
             var coordinate = GetChunkCoordinate(x, y);
@@ -308,8 +301,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return false;
         }
 
-        public void UnloadChunk(TCell cell) => UnloadChunk(cell.X, cell.Y);
-
         private TCellType[]? GetChunk(int x, int y, out (int x, int y) chunkCoordinate)
         {
             chunkCoordinate = GetChunkCoordinate(x, y);
@@ -320,18 +311,9 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         {
             // Get a unique hash seed based on the chunk (x,y) and the main seed
             var chunkSeed = Fnv1a.Hash32(coordinate.x, coordinate.y, _seed);
-
             // Generate chunk data
-            var chunk = _generator?.Generate(chunkSeed, _width, _height);
-            if (chunk == null || chunk.Length != (_width * _height))
-            {
-                throw new Exception(chunk == null ?
-                    "Chunk generator returned null chunk data." :
-                    "Chunk generator returned invalid sized chunk data, must be of length (width * height).");
-            }
-
+            var chunk = _generator.Generate(chunkSeed, _width, _height);
             _chunks.Add(coordinate, chunk);
-
             return chunk;
         }
 
@@ -346,15 +328,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return GetCoordinateBySizeNoConversion(x, y, _width, _height);
         }
 
-        private (int x, int y) GetCoordinateBySizeConversion(int x, int y, int width, int height)
-        {
-            // TODO: Performance test
-            var chunkX = (int)(width * Math.Floor(((double)x / width)));
-            var chunkY = (int)(height * Math.Floor(((double)y / height)));
-            return (chunkX, chunkY);
-        }
-
-        private (int x, int y) GetCoordinateBySizeNoConversion(int x, int y, int width, int height)
+        private static (int x, int y) GetCoordinateBySizeNoConversion(int x, int y, int width, int height)
         {
             if (x < 0 && x % width != 0) x -= width;
             if (y < 0 && y % height != 0) y -= height;

@@ -1,5 +1,6 @@
 using Venomaus.FlowVitae.Basics;
 using Venomaus.FlowVitae.Cells;
+using Venomaus.FlowVitae.Grids;
 
 namespace Venomaus.Tests.ImplTests
 {
@@ -14,6 +15,19 @@ namespace Venomaus.Tests.ImplTests
             ViewPortHeight = viewPortHeight;
             ChunkWidth = chunkWidth;
             ChunkHeight = chunkHeight;
+        }
+
+        [Test]
+        public void Grid_Constructors_Covered()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100, 50, 50, null), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100, null), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100, 50, 50, ProcGen), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100, ProcGen), Throws.Nothing);
+            });
         }
 
         [Test]
@@ -117,6 +131,11 @@ namespace Venomaus.Tests.ImplTests
 
             cellType = Grid.GetCellType(Grid.Width / 2, Grid.Height / 2);
             Assert.That(cellType, Is.EqualTo(-1));
+
+            Grid.SetCell(Grid.Width / 2, Grid.Height / 2, -1, true);
+
+            cellType = Grid.GetCellType(Grid.Width / 2, Grid.Height / 2);
+            Assert.That(cellType, Is.EqualTo(-1));
         }
 
         [Test]
@@ -194,18 +213,14 @@ namespace Venomaus.Tests.ImplTests
             var cells = Grid.GetViewPortCells();
             Assert.That(cells, Has.Length.EqualTo(Grid.Width * Grid.Height));
 
-            bool isValid = true;
             for (int x=0; x < Grid.Width; x++)
             {
                 for (int y = 0; y < Grid.Height; y++)
                 {
                     var cell = Grid.GetCell(x, y);
-                    isValid = cells[y * Grid.Width + x].Equals(cell);
-                    if (!isValid)
-                        break;
+                    Assert.That(cells[y * Grid.Width + x].Equals(cell), Is.True);
                 }
             }
-            Assert.That(isValid, Is.EqualTo(true));
         }
 
         [Test]
@@ -354,6 +369,23 @@ namespace Venomaus.Tests.ImplTests
 
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.Walkable, Is.EqualTo(false));
+        }
+
+        [Test]
+        public void CompareCellToCoordinate_Correct()
+        {
+            Cell<int> cell = new()
+            {
+                X = 5,
+                Y = 5
+            };
+            Cell<int> cell2 = new(5, 5, -5);
+            var coordinate = (5, 5);
+            Assert.That(cell.Equals(coordinate), Is.True);
+            coordinate = (4, 2);
+            Assert.That(cell.Equals(coordinate), Is.False);
+            Assert.That(cell.Equals(cell2), Is.True);
+            Assert.That(cell.Equals(null), Is.False);
         }
     }
 }
