@@ -8,14 +8,16 @@ namespace Venomaus.Tests.ImplTests
         where TCellType : struct
         where TCell : class, ICell<TCellType>, new()
     {
-        protected Grid<TCellType, TCell> Grid;
+        protected Grid<TCellType, TCell> Grid { get; private set; }
         protected virtual IProceduralGen<TCellType, TCell>? ProcGen { get; }
         protected virtual Func<int, int, TCellType, TCell>? CustomConverter { get; }
+
+        protected int ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight;
 
         [SetUp]
         public void Setup()
         {
-            Grid = new Grid<TCellType, TCell>(25, 25, ProcGen);
+            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, ProcGen);;
             Grid.SetCustomConverter(CustomConverter);
         }
     }

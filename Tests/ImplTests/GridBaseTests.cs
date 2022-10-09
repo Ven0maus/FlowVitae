@@ -3,8 +3,17 @@ using Venomaus.FlowVitae.Cells;
 
 namespace Venomaus.Tests.ImplTests
 {
+    [TestFixture(25, 25, 25, 25)]
     internal class GridBaseTests : BaseTests<int, Cell<int>>
     {
+        public GridBaseTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight)
+        {
+            ViewPortWidth = viewPortWidth;
+            ViewPortHeight = viewPortHeight;
+            ChunkWidth = chunkWidth;
+            ChunkHeight = chunkHeight;
+        }
+
         [Test]
         public void GetCell_Get_Correct()
         {
