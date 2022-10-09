@@ -1,6 +1,6 @@
 # FlowVitae
 FlowVitae is a memory and performance efficient 2D grid library designed for small to large scale procedural worlds.
-Can be integrated with most render engines.
+Can be easily integrated with most render engines.
 
 Tested with:
 - SadConsole V9
