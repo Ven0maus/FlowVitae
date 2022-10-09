@@ -5,6 +5,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Authors>Venomaus</Authors>
+    <Product>FlowVitae</Product>
+    <Description>FlowVitae is a memory and performance efficient 2D grid library written in .net 6.0 designed for small to large scale procedural worlds. Can be easily integrated with most render engines.</Description>
+    <Copyright></Copyright>
+    <PackageProjectUrl>https://github.com/Venom0us/FlowVitae</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Venom0us/FlowVitae</RepositoryUrl>
+    <PackageTags>2d;grid;flowvitae;efficient;memory;performance;chunking;chunks;chunkbased;chunk;procedural;grids;sadconsole</PackageTags>
+    <NeutralLanguage>en</NeutralLanguage>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -21,6 +33,17 @@
 
   <ItemGroup>
 	<InternalsVisibleTo Include="Venomaus.Tests" />
+  </ItemGroup>
+	
+  <ItemGroup>
+     <None Include="licenses\LICENSE.txt" Pack="true" PackagePath="LICENSE.txt"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 
