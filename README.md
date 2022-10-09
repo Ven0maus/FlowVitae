@@ -83,6 +83,30 @@ Then we also provided this functionality. You can adjust it like so:
 grid.RaiseOnlyOnCellTypeChange = false;
 ```
 
+# Custom cell conversion
+There are some ways to convert the underlying TCellType to TCell
+You can implement your own Grid class based on the GridBase<TCellType, TCell>
+and override Convert method
+Or you can simply call the method SetCustomConverter(converter) on the Grid
+	
+Here is an example of the method:
+```csharp
+_grid.SetCustomConverter(WorldGenerator.CellConverter);
+	
+public Cell<int> ConvertCell(int x, int y, int cellType)
+{
+	switch (cellType)
+	{
+		case 0:
+			return new Cell<int>(x, y, cellType);
+		case 1:
+			return new Cell<int>(x, y, walkable: false, cellType);
+		default:
+			return new Cell<int>(x, y, walkable: false, cellType);
+	}
+}
+```
+
 # Interaction with grids
 
 **Getting and setting cells**
