@@ -32,7 +32,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<InternalsVisibleTo Include="Venomaus.Tests" />
+	<InternalsVisibleTo Include="Venomaus.UnitTests" />
   </ItemGroup>
 	
   <ItemGroup>

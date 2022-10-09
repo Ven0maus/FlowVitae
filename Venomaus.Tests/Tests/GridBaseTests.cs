@@ -2,7 +2,7 @@ using Venomaus.FlowVitae.Basics;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
 
-namespace Venomaus.Tests.ImplTests
+namespace Venomaus.UnitTests.Tests
 {
     [TestFixture(25, 25, 25, 25)]
     [TestFixture(17, 28, 17, 28)]

@@ -1,10 +1,9 @@
 ﻿using Venomaus.FlowVitae.Basics;
 using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Basics.Procedural;
-using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
 
-namespace Venomaus.Tests.ImplTests
+namespace Venomaus.UnitTests.Tests
 {
     internal class BaseTests<TCellType, TCell>
         where TCellType : struct

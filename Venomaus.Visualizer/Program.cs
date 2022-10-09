@@ -5,7 +5,7 @@ namespace Venomaus.Visualizer
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             // Some settings
             Settings.ResizeMode = Settings.WindowResizeOptions.Stretch;

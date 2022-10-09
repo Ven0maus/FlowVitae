@@ -1,6 +1,6 @@
 ﻿using Venomaus.FlowVitae.Helpers;
 
-namespace Venomaus.Tests.ImplTests
+namespace Venomaus.UnitTests.Tests
 {
     internal class HelperTests
     {

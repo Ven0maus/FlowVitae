@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SadConsole.Host.MonoGame" Version="9.2.2" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
   </ItemGroup>
 
   <ItemGroup>

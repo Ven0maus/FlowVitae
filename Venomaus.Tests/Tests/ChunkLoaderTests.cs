@@ -5,7 +5,7 @@ using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
 using Direction = Venomaus.FlowVitae.Helpers.Direction;
 
-namespace Venomaus.Tests.ImplTests
+namespace Venomaus.UnitTests.Tests
 {
     [TestFixture(25, 25, 25, 25)]
     [TestFixture(50, 50, 25, 25)]
