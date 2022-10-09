@@ -511,5 +511,66 @@ namespace Venomaus.Tests.ImplTests
                 Assert.That(_screenPos3.y, Is.EqualTo(-30));
             });
         }
+
+        [Test]
+        public void ChunkLoading_CorrectDuring_Centering()
+        {
+            CenterTowards(0, 0, Direction.North);
+            CenterTowards(0, 0, Direction.East);
+            CenterTowards(0, 0, Direction.South);
+            CenterTowards(0, 0, Direction.West);
+        }
+
+        private void CenterTowards(int startX, int startY, Direction dir)
+        {
+            // Start at 0, 0 => Go in all directions
+            Grid.Center(startX, startY);
+
+            int dirX = 0, dirY = 0;
+            switch (dir)
+            {
+                case Direction.North:
+                    dirY = startY + Grid.Height;
+                    break;
+                case Direction.East:
+                    dirX = startX + Grid.Width;
+                    break;
+                case Direction.South:
+                    dirY = startY - Grid.Height;
+                    break;
+                case Direction.West:
+                    dirX = startX - Grid.Width;
+                    break;
+                default:
+                    throw new NotSupportedException("Not yet implemented.");
+            }
+
+            var loadedChunks = ChunkLoader.GetLoadedChunks();
+            Assert.Multiple(() =>
+            {
+                Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0));
+                Assert.That(loadedChunks.Any(a => a.x == dirX && a.y == dirY));
+            });
+
+            // Move upwards
+            for (int i = 0; i < 25; i++)
+            {
+                Grid.Center(dirX != 0 ? (dirX < 0 ? -i : i) : 0, dirY != 0 ? (dirY < 0 ? -i : i) : 0);
+                loadedChunks = ChunkLoader.GetLoadedChunks();
+                Assert.Multiple(() =>
+                {
+                    Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0));
+                    Assert.That(loadedChunks.Any(a => a.x == dirX && a.y == dirY));
+                });
+            }
+
+            Grid.Center(dirX != 0 ? dirX : 0, dirY != 0 ? dirY : 0);
+            loadedChunks = ChunkLoader.GetLoadedChunks();
+            Assert.Multiple(() =>
+            {
+                Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0));
+                Assert.That(!loadedChunks.Any(a => a.x == -dirX && a.y == -dirY));
+            });
+        }
     }
 }
