@@ -8,7 +8,8 @@ namespace Venomaus.Tests.ImplTests
     [TestFixture(25, 25, 25, 25)]
     [TestFixture(50, 50, 25, 25)]
     [TestFixture(80, 35, 80, 35)]
-    [TestFixture(70, 29, 27, 32)]
+    [TestFixture(69, 29, 13, 12)]
+    [TestOf(typeof(ChunkLoader<int, Cell<int>>))]
     internal class ChunkLoaderTests : BaseTests<int, Cell<int>>
     {
         private const int Seed = 1000;
@@ -44,28 +45,37 @@ namespace Venomaus.Tests.ImplTests
         [Test]
         public void StoreState_SetAndGet_Correct()
         {
+            int posX = ChunkLoader.CurrentChunk.x + (ChunkWidth / 2);
+            int posY = ChunkLoader.CurrentChunk.y + (ChunkHeight / 2);
+
             // Check if original cell is not 4
-            var cell = Grid.GetCell(5, 5);
+            var cell = Grid.GetCell(posX, posY);
             Assert.That(cell, Is.Not.Null);
-            Assert.That(cell.CellType, Is.Not.EqualTo(4));
+            Assert.That(cell.Walkable, Is.EqualTo(true));
 
             // Change cell to 4 with store state
-            Grid.SetCell(new Cell<int>(5, 5, false, 4), true);
+            Grid.SetCell(new Cell<int>(posX, posY, false, -10), true);
 
             // Verify if cell is 4 and number matches stored state
-            cell = Grid.GetCell(5, 5);
+            cell = Grid.GetCell(posX, posY);
             Assert.That(cell, Is.Not.Null);
-            Assert.That(cell.CellType, Is.EqualTo(4));
-            Assert.That(cell.Walkable, Is.EqualTo(false));
+            Assert.Multiple(() =>
+            {
+                Assert.That(cell.CellType, Is.EqualTo(-10));
+                Assert.That(cell.Walkable, Is.EqualTo(false));
+            });
 
             // Set cell to 1 with no store state
-            Grid.SetCell(5, 5, 1, false);
+            Grid.SetCell(posX, posY, -5, false);
 
             // Verify if cell is 1 and number is default again
-            cell = Grid.GetCell(5, 5);
+            cell = Grid.GetCell(posX, posY);
             Assert.That(cell, Is.Not.Null);
-            Assert.That(cell.CellType, Is.EqualTo(1));
-            Assert.That(cell.Walkable, Is.EqualTo(true));
+            Assert.Multiple(() =>
+            {
+                Assert.That(cell.CellType, Is.EqualTo(-5));
+                Assert.That(cell.Walkable, Is.Not.EqualTo(false));
+            });
         }
 
         [Test]
@@ -308,24 +318,27 @@ namespace Venomaus.Tests.ImplTests
         [Test]
         public void GetChunkCell_Get_Correct()
         {
+            var posX = ChunkLoader.CurrentChunk.x + ChunkWidth / 2;
+            var posY = ChunkLoader.CurrentChunk.y + ChunkHeight / 2;
+
             Cell<int>? cell = null;
-            Assert.That(() => cell = ChunkLoader.GetChunkCell(5, 5), Throws.Nothing);
+            Assert.That(() => cell = ChunkLoader.GetChunkCell(posX, posY), Throws.Nothing);
             Assert.That(cell, Is.Not.Null);
             Assert.Multiple(() =>
             {
-                Assert.That(cell.X, Is.EqualTo(5));
-                Assert.That(cell.Y, Is.EqualTo(5));
+                Assert.That(cell.X, Is.EqualTo(posX));
+                Assert.That(cell.Y, Is.EqualTo(posY));
             });
 
-            Assert.That(() => cell = ChunkLoader.GetChunkCell(150, 150), Throws.Nothing);
+            Assert.That(() => cell = ChunkLoader.GetChunkCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Throws.Nothing);
             Assert.That(cell, Is.Null);
 
-            Assert.That(() => cell = ChunkLoader.GetChunkCell(150, 150, true), Throws.Nothing);
+            Assert.That(() => cell = ChunkLoader.GetChunkCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, true), Throws.Nothing);
             Assert.That(cell, Is.Not.Null);
             Assert.Multiple(() =>
             {
-                Assert.That(cell.X, Is.EqualTo(150));
-                Assert.That(cell.Y, Is.EqualTo(150));
+                Assert.That(cell.X, Is.EqualTo(ViewPortWidth + ChunkWidth * 5));
+                Assert.That(cell.Y, Is.EqualTo(ViewPortHeight + ChunkHeight * 5));
             });
         }
 
@@ -349,19 +362,22 @@ namespace Venomaus.Tests.ImplTests
         [Test]
         public void SetChunkCell_Set_Correct()
         {
-            var cell = ChunkLoader.GetChunkCell(5, 5);
+            int posX = ChunkLoader.CurrentChunk.x + (ChunkWidth / 2);
+            int posY = ChunkLoader.CurrentChunk.y + (ChunkHeight / 2);
+
+            var cell = ChunkLoader.GetChunkCell(posX, posY);
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.Walkable, Is.EqualTo(true));
 
-            ChunkLoader.SetChunkCell(new Cell<int>(5, 5, false, 1));
+            ChunkLoader.SetChunkCell(new Cell<int>(posX, posY, false, 1), false, null, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells);
 
-            var changedCell = ChunkLoader.GetChunkCell(5, 5);
+            var changedCell = ChunkLoader.GetChunkCell(posX, posY, false, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells);
             Assert.That(changedCell, Is.Not.Null);
             Assert.Multiple(() =>
             {
                 Assert.That(changedCell.CellType, Is.EqualTo(1));
                 Assert.That(() => ChunkLoader.SetChunkCell(new Cell<int>(Grid.Width + 5, Grid.Height + 5, false, 1)), Throws.Nothing);
-                Assert.That(() => ChunkLoader.SetChunkCell(new Cell<int>(-5, -5, false, 1)), Throws.Nothing);
+                Assert.That(() => ChunkLoader.SetChunkCell(new Cell<int>(-Grid.Width - 5, -Grid.Height - 5, false, 1)), Throws.Nothing);
             });
         }
 
@@ -374,11 +390,11 @@ namespace Venomaus.Tests.ImplTests
             {
                 Assert.That(!loadedChunks.Any(loadedChunk => loadedChunk.x == x &&
                             loadedChunk.y == y), "(X,Y) chunk was available.");
-                Assert.That(loadedChunks.Any(loadedChunk => loadedChunk.x == 0 &&
-                    loadedChunk.y == 0), "No base (0,0) chunk available.");
+                Assert.That(loadedChunks.Any(loadedChunk => loadedChunk.x == ChunkLoader.CurrentChunk.x &&
+                    loadedChunk.y == ChunkLoader.CurrentChunk.y), "No base chunk available.");
 
                 // Can't load already loaded chunk
-                Assert.That(ChunkLoader.LoadChunk(0, 0), Is.False, "Was able to load base chunk."); 
+                Assert.That(ChunkLoader.LoadChunk(ChunkLoader.CurrentChunk.x, ChunkLoader.CurrentChunk.y), Is.False, "Was able to load base chunk."); 
                 Assert.That(ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Is.True, "Was not able to load new chunk.");
             });
             loadedChunks = ChunkLoader.GetLoadedChunks();
@@ -393,12 +409,12 @@ namespace Venomaus.Tests.ImplTests
             var loadedChunks = ChunkLoader.GetLoadedChunks();
             Assert.Multiple(() =>
             {
-                Assert.That(loadedChunks.Any(loadedChunk => loadedChunk.x == 0 &&
-                            loadedChunk.y == 0), "No (0, 0) chunk loaded");
+                Assert.That(loadedChunks.Any(loadedChunk => loadedChunk.x == ChunkLoader.CurrentChunk.x &&
+                            loadedChunk.y == ChunkLoader.CurrentChunk.y), "No base chunk loaded");
                 // Can't unload mandatory chunk
-                Assert.That(ChunkLoader.UnloadChunk(0, 0), Is.False, "Could unload base chunk (0,0)");
+                Assert.That(ChunkLoader.UnloadChunk(ChunkLoader.CurrentChunk.x, ChunkLoader.CurrentChunk.y), Is.False, "Could unload base chunk");
                 // Force unload it
-                Assert.That(ChunkLoader.UnloadChunk(0, 0, true), Is.True, "Could not force unload (0,0)");
+                Assert.That(ChunkLoader.UnloadChunk(ChunkLoader.CurrentChunk.x, ChunkLoader.CurrentChunk.y, true), Is.True, "Could not force unload");
                 // Load an arbitrary chunk
                 Assert.That(ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Is.True);
                 // See if it can be non force unloaded
@@ -406,8 +422,8 @@ namespace Venomaus.Tests.ImplTests
             });
             loadedChunks = ChunkLoader.GetLoadedChunks();
 
-            Assert.That(!loadedChunks.Any(loadedChunk => loadedChunk.x == 0 &&
-                            loadedChunk.y == 0), "(0, 0) was still loaded.");
+            Assert.That(!loadedChunks.Any(loadedChunk => loadedChunk.x == ChunkLoader.CurrentChunk.x &&
+                            loadedChunk.y == ChunkLoader.CurrentChunk.y), "Base chunk was still loaded.");
         }
 
         [Test]
@@ -587,13 +603,14 @@ namespace Venomaus.Tests.ImplTests
             });
 
             // Move upwards
-            for (int i = 0; i < 25; i++)
+            var sizeDir = dirX != 0 ? ChunkWidth : ChunkHeight;
+            for (int i = 0; i < sizeDir; i++)
             {
                 Grid.Center(dirX != 0 ? (dirX < 0 ? -i : i) : 0, dirY != 0 ? (dirY < 0 ? -i : i) : 0);
                 loadedChunks = ChunkLoader.GetLoadedChunks();
                 Assert.Multiple(() =>
                 {
-                    Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0));
+                    Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), "Chunk (0, 0) not loaded");
                     Assert.That(loadedChunks.Any(a => a.x == dirX && a.y == dirY));
                 });
             }
@@ -602,17 +619,53 @@ namespace Venomaus.Tests.ImplTests
             loadedChunks = ChunkLoader.GetLoadedChunks();
             Assert.Multiple(() =>
             {
-                Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0));
+                Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), "Chunk (0, 0) not loaded");
                 Assert.That(!loadedChunks.Any(a => a.x == -dirX && a.y == -dirY));
             });
         }
 
-        /*
         [Test]
         public void Center_CellInUnloadedChunk_AvailableOnViewPort_DoesNot_LoadChunk()
         {
-            // TODO
+            if (ChunkWidth >= (ViewPortWidth / 2) || ChunkHeight >= (ViewPortHeight / 2))
+                Assert.Pass("Test ignored because chunk size is higher or equal to half the viewport size.");
+
+            Assert.That(ChunkWidth < (ViewPortWidth / 2) && ChunkHeight < (ViewPortHeight / 2), Is.True);
+
+            Grid.Center(0, 0);
+
+            var loadedChunks = ChunkLoader.GetLoadedChunks();
+            Assert.That(loadedChunks, Has.Length.EqualTo(9));
+
+            int halfViewPortX = ViewPortWidth / 2;
+            int halfViewPortY = ViewPortHeight / 2;
+
+            // Get cell out of chunk range, but within viewport
+            var (x, y) = (halfViewPortX - (ChunkWidth / 2), halfViewPortY - (ChunkHeight / 2));
+            var (x2, y2) = (-halfViewPortX + (ChunkWidth / 2), -halfViewPortY + (ChunkHeight / 2));
+
+            // Check both coordinates are on screen
+            Assert.Multiple(() =>
+            {
+                Assert.That(Grid.IsWorldCoordinateOnScreen(x, y, out _, out _), Is.True);
+                Assert.That(Grid.IsWorldCoordinateOnScreen(x2, y2, out _, out _), Is.True);
+            });
+
+            // Chunks retrieved are null without proper method call
+            var cells = new[]
+            {
+                ChunkLoader.GetChunkCell(x, y, false),
+                ChunkLoader.GetChunkCell(x2, y2, false)
+            };
+            Assert.That(cells.All(a => a == null));
+
+            // Chunks retrieved are not null with proper method call with load chunks false
+            cells = new[]
+            {
+                ChunkLoader.GetChunkCell(x, y, false, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells),
+                ChunkLoader.GetChunkCell(x2, y2, false, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells)
+            };
+            Assert.That(cells.All(a => a != null));
         }
-        */
     }
 }

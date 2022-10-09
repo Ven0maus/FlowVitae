@@ -91,28 +91,36 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             };
         }
 
-        public TCell? GetChunkCell(int x, int y, bool loadChunk = false)
+        public TCell? GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
+            var chunkCoordinate = GetChunkCoordinate(x, y);
+            var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
+
+            // Check if there are modified cell tiles within this chunk
+            if (_modifiedCellsInChunks != null && _modifiedCellsInChunks
+                .TryGetValue(chunkCoordinate, out var cells) &&
+                cells.TryGetValue(remappedCoordinate, out var cell))
+            {
+                // Return the modified cell if it exists
+                return cell;
+            }
+
+            // Check if coordinate is within viewport
+            if (isWorldCoordinateOnScreen != null && screenCells != null &&
+                isWorldCoordinateOnScreen.Invoke(x, y, out (int x, int y)? screenCoordinate, out var screenWidth) &&
+                screenCoordinate != null)
+            {
+                return _cellTypeConverter(x, y, screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x]);
+            }
+
             bool wasChunkLoaded = false;
             if (loadChunk)
                 wasChunkLoaded = LoadChunk(x, y);
 
-            var chunk = GetChunk(x, y, out var chunkCoordinate);
+            // Load chunk after all other options are validated
+            var chunk = GetChunk(x, y, out _);
             if (chunk != null)
             {
-                var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
-
-                // Check if there are modified cell tiles within this chunk
-                if (_modifiedCellsInChunks != null && _modifiedCellsInChunks
-                    .TryGetValue(chunkCoordinate, out var cells) &&
-                    cells.TryGetValue(remappedCoordinate, out var cell))
-                {
-                    if (loadChunk && wasChunkLoaded)
-                        UnloadChunk(x, y);
-                    // Return the modified cell if it exists
-                    return cell;
-                }
-
                 if (loadChunk && wasChunkLoaded)
                     UnloadChunk(x, y);
                 // Return the non-modified cell
@@ -122,7 +130,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return null;
         }
 
-        public IReadOnlyList<TCell> GetChunkCells(IEnumerable<(int x, int y)> positions)
+        public IReadOnlyList<TCell> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
             var loadedChunks = new List<(int x, int y)>();
             var cells = new List<TCell>();
@@ -130,7 +138,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             {
                 if (LoadChunk(x, y))
                     loadedChunks.Add((x, y));
-                var cell = GetChunkCell(x, y);
+                var cell = GetChunkCell(x, y, false, isWorldCoordinateOnScreen, screenCells);
                 if (cell != null)
                     cells.Add(cell);
             }
@@ -139,57 +147,48 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return cells;
         }
 
-        public void SetChunkCell(TCell cell, bool storeState = false, bool loadChunk = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
+        public void SetChunkCell(TCell cell, bool storeState = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
-            bool wasChunkLoaded = false;
-            if (loadChunk)
-                wasChunkLoaded = LoadChunk(cell.X, cell.Y);
+            var chunkCoordinate = GetChunkCoordinate(cell.X, cell.Y);
+            var remappedCoordinate = RemapChunkCoordinate(cell.X, cell.Y, chunkCoordinate);
 
-            var chunk = GetChunk(cell.X, cell.Y, out var chunkCoordinate);
-            if (chunk != null)
+            if (!storeState && _modifiedCellsInChunks != null && _modifiedCellsInChunks.TryGetValue(chunkCoordinate, out var storedCells))
             {
-                var remappedCoordinate = RemapChunkCoordinate(cell.X, cell.Y, chunkCoordinate);
-                if (!storeState && _modifiedCellsInChunks != null && _modifiedCellsInChunks.TryGetValue(chunkCoordinate, out var storedCells))
+                storedCells.Remove(remappedCoordinate);
+                if (storedCells.Count == 0)
+                    _modifiedCellsInChunks.Remove(chunkCoordinate);
+                if (_modifiedCellsInChunks.Count == 0)
+                    _modifiedCellsInChunks = null;
+            }
+            else if (storeState)
+            {
+                // Check if there are modified cell tiles within this chunk
+                if (_modifiedCellsInChunks == null)
+                    _modifiedCellsInChunks = new Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>(new TupleComparer<int>());
+                if (!_modifiedCellsInChunks.TryGetValue(chunkCoordinate, out storedCells))
                 {
-                    storedCells.Remove(remappedCoordinate);
-                    if (storedCells.Count == 0)
-                        _modifiedCellsInChunks.Remove(chunkCoordinate);
-                    if (_modifiedCellsInChunks.Count == 0)
-                        _modifiedCellsInChunks = null;
+                    storedCells = new Dictionary<(int x, int y), TCell>(new TupleComparer<int>());
+                    _modifiedCellsInChunks.Add(chunkCoordinate, storedCells);
                 }
-                else if (storeState)
-                {
-                    // Check if there are modified cell tiles within this chunk
-                    if (_modifiedCellsInChunks == null)
-                        _modifiedCellsInChunks = new Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>(new TupleComparer<int>());
-                    if (!_modifiedCellsInChunks.TryGetValue(chunkCoordinate, out storedCells))
-                    {
-                        storedCells = new Dictionary<(int x, int y), TCell>(new TupleComparer<int>());
-                        _modifiedCellsInChunks.Add(chunkCoordinate, storedCells);
-                    }
-                    storedCells[remappedCoordinate] = cell;
-                }
-
-                var prev = chunk[remappedCoordinate.y * _width + remappedCoordinate.x];
-
-                // Adjust chunk cell & stored cell
-                chunk[remappedCoordinate.y * _width + remappedCoordinate.x] = cell.CellType;
-
-                if (isWorldCoordinateOnScreen != null && screenCells != null &&
-                    isWorldCoordinateOnScreen(cell.X, cell.Y, out (int x, int y)? screenCoordinate, out int screenWidth) &&
-                    screenCoordinate != null)
-                {
-                    screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = cell.CellType;
-
-                    if (!storeState && !prev.Equals(cell.CellType))
-                        onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
-                    else if (storeState)
-                        onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
-                }
+                storedCells[remappedCoordinate] = cell;
             }
 
-            if (loadChunk && wasChunkLoaded)
-                UnloadChunk(cell.X, cell.Y);
+            if (isWorldCoordinateOnScreen != null && screenCells != null &&
+                isWorldCoordinateOnScreen(cell.X, cell.Y, out var screenCoordinate, out var screenWidth)
+                && screenCoordinate != null)
+            {
+                var prev = screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x];
+                screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = cell.CellType;
+
+                if (!prev.Equals(cell.CellType))
+                    onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
+
+                var chunk = GetChunk(cell.X, cell.Y, out _);
+                if (chunk != null)
+                {
+                    chunk[remappedCoordinate.y * _width + remappedCoordinate.x] = cell.CellType;
+                }
+            }
         }
 
         public void SetChunkCells(IEnumerable<TCell> cells, bool storeCellState) 
@@ -198,15 +197,8 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         public delegate bool Checker(int x, int y, out (int x, int y)? coordinate, out int screenWidth);
         public void SetChunkCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
-            var loadedChunks = new List<(int x, int y)>();
             foreach (var cell in cells)
-            {
-                if (LoadChunk(cell.X, cell.Y))
-                    loadedChunks.Add((cell.X, cell.Y));
                 SetChunkCell(cell, storeCellStateFunc?.Invoke(cell) ?? false, onCellUpdate: onCellUpdate, isWorldCoordinateOnScreen: isWorldCoordinateOnScreen, screenCells: screenCells);
-            }
-            foreach (var (x, y) in loadedChunks)
-                UnloadChunk(x, y);
         }
 
         public (int x, int y) GetNeighborChunk(int x, int y, Direction direction)

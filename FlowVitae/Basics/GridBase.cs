@@ -25,7 +25,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <summary>
         /// Internal cell container for the defined cell type
         /// </summary>
-        private readonly TCellType[] ScreenCells;
+        internal readonly TCellType[] ScreenCells;
 
         /// <summary>
         /// Represents the real coordinate that is located in the center of the screen cells.
@@ -245,20 +245,17 @@ namespace Venomaus.FlowVitae.Basics
             int y = cell.Y;
 
             if (_chunkLoader == null && !InBounds(x, y)) return;
-
-            var worldCoordinate = _chunkLoader != null ? _chunkLoader.RemapChunkCoordinate(x, y) : (x, y);
-
-            // Update internal screen cells if the world coordinate is currently displayed
-            if (IsWorldCoordinateOnScreen(worldCoordinate.x, worldCoordinate.y, out (int x, int y)? screenCoordinate, out _) &&
-                screenCoordinate != null)
+            if (_chunkLoader == null)
             {
-                var prev = ScreenCells[screenCoordinate.Value.y * Width + screenCoordinate.Value.x];
-                ScreenCells[screenCoordinate.Value.y * Width + screenCoordinate.Value.x] = cell.CellType;
+                if (IsWorldCoordinateOnScreen(x, y, out var screenCoordinate, out _) &&
+                    screenCoordinate != null)
+                {
+                    var prev = ScreenCells[screenCoordinate.Value.y * Width + screenCoordinate.Value.x];
+                    ScreenCells[screenCoordinate.Value.y * Width + screenCoordinate.Value.x] = cell.CellType;
 
-                if (!storeState && !prev.Equals(cell.CellType))
-                    OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
-                else if (storeState)
-                    OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
+                    if (!prev.Equals(cell.CellType))
+                        OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
+                }
             }
 
             // Storage and chunking
@@ -324,7 +321,7 @@ namespace Venomaus.FlowVitae.Basics
                 return cell;
             if (_chunkLoader != null)
             {
-                cell = _chunkLoader.GetChunkCell(x, y, true);
+                cell = _chunkLoader.GetChunkCell(x, y, true, IsWorldCoordinateOnScreen, ScreenCells);
                 if (cell == null) throw new Exception("Something went wrong during cell retrieval from chunk.");
                 return cell;
             }
@@ -355,7 +352,7 @@ namespace Venomaus.FlowVitae.Basics
             else
             {
                 // Handle chunkloaded grid
-                return _chunkLoader.GetChunkCells(positions);
+                return _chunkLoader.GetChunkCells(positions, IsWorldCoordinateOnScreen, ScreenCells);
             }
         }
 
@@ -418,7 +415,7 @@ namespace Venomaus.FlowVitae.Basics
                     _storage = null;
             }
             else if (_chunkLoader != null)
-                _chunkLoader.SetChunkCell(cell, storeState, storeState);
+                _chunkLoader.SetChunkCell(cell, storeState, OnCellUpdate, IsWorldCoordinateOnScreen, ScreenCells);
         }
 
         /// <summary>
@@ -432,7 +429,7 @@ namespace Venomaus.FlowVitae.Basics
             return IsWorldCoordinateOnScreen(x, y, out _, out _);
         }
 
-        private bool IsWorldCoordinateOnScreen(int x, int y, out (int x, int y)? screenCoordinate, out int screenWidth)
+        internal bool IsWorldCoordinateOnScreen(int x, int y, out (int x, int y)? screenCoordinate, out int screenWidth)
         {
             screenWidth = Width;
 

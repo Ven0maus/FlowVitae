@@ -5,6 +5,7 @@ namespace Venomaus.Tests.ImplTests
 {
     [TestFixture(25, 25, 25, 25)]
     [TestFixture(17, 28, 17, 28)]
+    [TestOf(typeof(GridBase<int, Cell<int>>))]
     internal class GridBaseTests : BaseTests<int, Cell<int>>
     {
         public GridBaseTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight)
@@ -109,12 +110,12 @@ namespace Venomaus.Tests.ImplTests
         [Test]
         public void GetCellType_Get_Correct()
         {
-            var cellType = Grid.GetCellType(5, 5);
+            var cellType = Grid.GetCellType(Grid.Width / 2, Grid.Height / 2);
             Assert.That(cellType, Is.Not.EqualTo(-1));
 
-            Grid.SetCell(5, 5, -1);
+            Grid.SetCell(Grid.Width / 2, Grid.Height / 2, -1);
 
-            cellType = Grid.GetCellType(5, 5);
+            cellType = Grid.GetCellType(Grid.Width / 2, Grid.Height / 2);
             Assert.That(cellType, Is.EqualTo(-1));
         }
 
