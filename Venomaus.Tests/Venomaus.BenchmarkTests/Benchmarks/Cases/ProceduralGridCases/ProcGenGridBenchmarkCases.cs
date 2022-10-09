@@ -72,7 +72,9 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
         [Benchmark]
         public void Center()
         {
-            Grid.Center(ViewPortWidth / 2, ViewPortHeight / 2);
+            var posX = Random.Next(-(ViewPortWidth + ChunkWidth * 3), ViewPortWidth + ChunkWidth * 3);
+            var posY = Random.Next(-(ViewPortWidth + ChunkWidth * 3), ViewPortWidth + ChunkWidth * 3);
+            Grid.Center(posX, posY);
         }
 
         [Benchmark]

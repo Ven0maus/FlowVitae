@@ -54,7 +54,9 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.StaticGridCases
         [Benchmark]
         public void Center()
         {
-            Grid.Center(ViewPortWidth / 2, ViewPortHeight / 2);
+            var posX = Random.Next(0, ViewPortWidth);
+            var posY = Random.Next(0, ViewPortHeight);
+            Grid.Center(posX, posY);
         }
 
         [Benchmark]

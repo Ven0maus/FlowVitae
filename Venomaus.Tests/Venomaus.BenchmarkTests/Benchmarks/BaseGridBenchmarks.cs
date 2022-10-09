@@ -25,6 +25,7 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         protected (int x, int y)[] ProceduralPositions { get; private set; }
         protected (int x, int y)[] ProceduralPositionsInView { get; private set; }
         protected abstract int Seed { get; }
+        protected Random Random { get; private set; }
 
         [GlobalSetup]
         public void Setup()
@@ -34,6 +35,7 @@ namespace Venomaus.BenchmarkTests.Benchmarks
             Grid.OnCellUpdate += OnCellUpdate;
 
             // Initialize benchmark data
+            Random = new Random(Seed);
             Cells = PopulateCellsArray(false);
             ProceduralCells = PopulateCellsArray(true);
             Positions = PopulatePositionsArray(false, false);
@@ -49,7 +51,6 @@ namespace Venomaus.BenchmarkTests.Benchmarks
             var width10Procent = (ChunkWidth / 100 * 10);
             var height10Procent = (ChunkHeight / 100 * 10);
             var positions = new (int x, int y)[width10Procent * height10Procent];
-            var rand = new Random(Seed);
 
             var center = (x: ViewPortWidth / 2, y: ViewPortHeight / 2);
             var minCoord = (x: center.x - center.x, y: center.y - center.y);
@@ -64,13 +65,13 @@ namespace Venomaus.BenchmarkTests.Benchmarks
                         int randX, randY;
                         if (inView)
                         {
-                            randX = rand.Next(minCoord.x, maxCoord.x);
-                            randY = rand.Next(minCoord.y, maxCoord.y);
+                            randX = Random.Next(minCoord.x, maxCoord.x);
+                            randY = Random.Next(minCoord.y, maxCoord.y);
                         }
                         else
                         {
-                            randX = rand.Next(-(ViewPortWidth * ChunkWidth * 5), ViewPortWidth * ChunkWidth * 5);
-                            randY = rand.Next(-(ViewPortHeight * ChunkHeight * 5), ViewPortHeight * ChunkHeight * 5);
+                            randX = Random.Next(-(ViewPortWidth * ChunkWidth * 5), ViewPortWidth * ChunkWidth * 5);
+                            randY = Random.Next(-(ViewPortHeight * ChunkHeight * 5), ViewPortHeight * ChunkHeight * 5);
                         }
                         positions[y * width10Procent + x] = (randX, randY);
                     }
@@ -89,7 +90,6 @@ namespace Venomaus.BenchmarkTests.Benchmarks
             var width10Procent = (ChunkWidth / 100 * 10);
             var height10Procent = (ChunkHeight / 100 * 10);
             var cells = new Cell<int>[width10Procent * height10Procent];
-            var rand = new Random(Seed);
 
             for (int x = 0; x < width10Procent; x++)
             {
@@ -97,13 +97,13 @@ namespace Venomaus.BenchmarkTests.Benchmarks
                 {
                     if (procedural)
                     {
-                        var randX = rand.Next(-(ViewPortWidth * ChunkWidth * 5), ViewPortWidth * ChunkWidth * 5);
-                        var randY = rand.Next(-(ViewPortHeight * ChunkHeight * 5), ViewPortHeight * ChunkHeight * 5);
-                        cells[y * width10Procent + x] = new Cell<int>(randX, randY, rand.Next(-10, 11));
+                        var randX = Random.Next(-(ViewPortWidth * ChunkWidth * 5), ViewPortWidth * ChunkWidth * 5);
+                        var randY = Random.Next(-(ViewPortHeight * ChunkHeight * 5), ViewPortHeight * ChunkHeight * 5);
+                        cells[y * width10Procent + x] = new Cell<int>(randX, randY, Random.Next(-10, 11));
                     }
                     else
                     {
-                        cells[y * width10Procent + x] = new Cell<int>(x, y, rand.Next(-10, 11));
+                        cells[y * width10Procent + x] = new Cell<int>(x, y, Random.Next(-10, 11));
                     }
                 }
             }
