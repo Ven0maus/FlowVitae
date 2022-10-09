@@ -107,11 +107,15 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             }
 
             // Check if coordinate is within viewport
+            var chunk = GetChunk(x, y, out _);
             if (isWorldCoordinateOnScreen != null && screenCells != null &&
                 isWorldCoordinateOnScreen.Invoke(x, y, out (int x, int y)? screenCoordinate, out var screenWidth) &&
                 screenCoordinate != null)
             {
-                return _cellTypeConverter(x, y, screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x]);
+                var cellType = chunk != null ? chunk[remappedCoordinate.y * _width + remappedCoordinate.x] :
+                    screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x];
+
+                return _cellTypeConverter(x, y, cellType);
             }
 
             bool wasChunkLoaded = false;
@@ -119,7 +123,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 wasChunkLoaded = LoadChunk(x, y);
 
             // Load chunk after all other options are validated
-            var chunk = GetChunk(x, y, out _);
+            chunk = GetChunk(x, y, out _);
             if (chunk != null)
             {
                 if (loadChunk && wasChunkLoaded)
