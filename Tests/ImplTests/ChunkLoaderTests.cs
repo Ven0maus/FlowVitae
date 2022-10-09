@@ -1,14 +1,14 @@
 ﻿using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Basics.Procedural;
-using Venomaus.Tests.TestObjects;
+using Venomaus.FlowVitae.Cells;
 using Direction = Venomaus.FlowVitae.Helpers.Direction;
 
 namespace Venomaus.Tests.ImplTests
 {
-    internal class ChunkLoaderTests : BaseTests<int, TestCell<int>>
+    internal class ChunkLoaderTests : BaseTests<int, Cell<int>>
     {
         private const int Seed = 1000;
-        protected override IProceduralGen<int, TestCell<int>>? ProcGen => new ProceduralGenerator<int, TestCell<int>>(Seed, GenerateChunk);
+        protected override IProceduralGen<int, Cell<int>>? ProcGen => new ProceduralGenerator<int, Cell<int>>(Seed, GenerateChunk);
 
         private void GenerateChunk(Random random, int[] chunk, int width, int height)
         {
@@ -21,7 +21,7 @@ namespace Venomaus.Tests.ImplTests
             }
         }
 
-        private ChunkLoader<int, TestCell<int>> ChunkLoader { get { return Grid._chunkLoader ?? throw new Exception("Chunkloader not initialized"); } }
+        private ChunkLoader<int, Cell<int>> ChunkLoader { get { return Grid._chunkLoader ?? throw new Exception("Chunkloader not initialized"); } }
 
         [Test]
         public void ChunkLoader_Is_Not_Null()
@@ -38,13 +38,13 @@ namespace Venomaus.Tests.ImplTests
             Assert.That(cell.CellType, Is.Not.EqualTo(4));
 
             // Change cell to 4 with store state
-            Grid.SetCell(new TestCell<int>(5, 5, 4, 10), true);
+            Grid.SetCell(new Cell<int>(5, 5, false, 4), true);
 
             // Verify if cell is 4 and number matches stored state
             cell = Grid.GetCell(5, 5);
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(4));
-            Assert.That(cell.Number, Is.EqualTo(10));
+            Assert.That(cell.Walkable, Is.EqualTo(false));
 
             // Set cell to 1 with no store state
             Grid.SetCell(5, 5, 1, false);
@@ -53,7 +53,7 @@ namespace Venomaus.Tests.ImplTests
             cell = Grid.GetCell(5, 5);
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(1));
-            Assert.That(cell.Number, Is.EqualTo(default(int)));
+            Assert.That(cell.Walkable, Is.EqualTo(true));
         }
 
         [Test]
@@ -281,7 +281,7 @@ namespace Venomaus.Tests.ImplTests
         [Test]
         public void GetChunkCell_Get_Correct()
         {
-            TestCell<int>? cell = null;
+            Cell<int>? cell = null;
             Assert.That(() => cell = ChunkLoader.GetChunkCell(5, 5), Throws.Nothing);
             Assert.That(cell, Is.Not.Null);
             Assert.Multiple(() =>
@@ -326,15 +326,15 @@ namespace Venomaus.Tests.ImplTests
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(5));
 
-            ChunkLoader.SetChunkCell(new TestCell<int>(5, 5, 1, 0));
+            ChunkLoader.SetChunkCell(new Cell<int>(5, 5, false, 1));
 
             var changedCell = ChunkLoader.GetChunkCell(5, 5);
             Assert.That(changedCell, Is.Not.Null);
             Assert.Multiple(() =>
             {
                 Assert.That(changedCell.CellType, Is.EqualTo(1));
-                Assert.That(() => ChunkLoader.SetChunkCell(new TestCell<int>(Grid.Width + 5, Grid.Height + 5, 1, 0)), Throws.Nothing);
-                Assert.That(() => ChunkLoader.SetChunkCell(new TestCell<int>(-5, -5, 1, 0)), Throws.Nothing);
+                Assert.That(() => ChunkLoader.SetChunkCell(new Cell<int>(Grid.Width + 5, Grid.Height + 5, false, 1)), Throws.Nothing);
+                Assert.That(() => ChunkLoader.SetChunkCell(new Cell<int>(-5, -5, false, 1)), Throws.Nothing);
             });
         }
 

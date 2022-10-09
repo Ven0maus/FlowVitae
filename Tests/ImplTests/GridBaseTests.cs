@@ -1,16 +1,16 @@
 using Venomaus.FlowVitae.Basics;
-using Venomaus.Tests.TestObjects;
+using Venomaus.FlowVitae.Cells;
 
 namespace Venomaus.Tests.ImplTests
 {
-    internal class GridBaseTests : BaseTests<int, TestCell<int>>
+    internal class GridBaseTests : BaseTests<int, Cell<int>>
     {
         [Test]
         public void GetCell_Get_Correct()
         {
             var cell = Grid.GetCell(5, 5);
             Assert.That(cell, Is.Not.Null);
-            Assert.That(cell, Is.EqualTo(new TestCell<int>(5, 5)));
+            Assert.That(cell, Is.EqualTo(new Cell<int>(5, 5)));
 
             cell = Grid.GetCell(-5, -5);
             Assert.That(cell, Is.Null);
@@ -41,9 +41,9 @@ namespace Venomaus.Tests.ImplTests
         {
             var cells = new[] 
             { 
-                new TestCell<int>(5, 5, 1, 1), 
-                new TestCell<int>(3, 2, 2, 2), 
-                new TestCell<int>(4, 4, 3, 3) 
+                new Cell<int>(5, 5, false, 1), 
+                new Cell<int>(3, 2, false, 2), 
+                new Cell<int>(4, 4, true, 3) 
             };
             Assert.That(() => Grid.SetCells(cells, true), Throws.Nothing);
 
@@ -57,7 +57,7 @@ namespace Venomaus.Tests.ImplTests
                     Assert.That(newCells[i].X, Is.EqualTo(cells[i].X));
                     Assert.That(newCells[i].Y, Is.EqualTo(cells[i].Y));
                     Assert.That(newCells[i].CellType, Is.EqualTo(cells[i].CellType), "Cell type is invalid");
-                    Assert.That(newCells[i].Number, Is.EqualTo(cells[i].Number), "Cell number is invalid");
+                    Assert.That(newCells[i].Walkable, Is.EqualTo(cells[i].Walkable), "Cell number is invalid");
                 });
             }
 
@@ -72,7 +72,7 @@ namespace Venomaus.Tests.ImplTests
                     Assert.That(newCells[i].X, Is.EqualTo(cells[i].X));
                     Assert.That(newCells[i].Y, Is.EqualTo(cells[i].Y));
                     Assert.That(newCells[i].CellType, Is.EqualTo(cells[i].CellType), "Cell type is invalid");
-                    Assert.That(newCells[i].Number, Is.EqualTo(default(int)), "Cell number is invalid");
+                    Assert.That(newCells[i].Walkable, Is.EqualTo(true), "Cell number is invalid");
                 });
             }
         }
@@ -115,7 +115,7 @@ namespace Venomaus.Tests.ImplTests
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(0));
 
-            var customCell = new TestCell<int>(5, 5, 1, 20);
+            var customCell = new Cell<int>(5, 5, false, 20);
             Grid.SetCell(customCell, true);
 
             var changedCell = Grid.GetCell(5, 5);
@@ -123,7 +123,7 @@ namespace Venomaus.Tests.ImplTests
             Assert.Multiple(() =>
             {
                 Assert.That(changedCell.CellType, Is.EqualTo(customCell.CellType));
-                Assert.That(changedCell.Number, Is.EqualTo(customCell.Number));
+                Assert.That(changedCell.Walkable, Is.EqualTo(customCell.Walkable));
             });
 
             Grid.SetCell(5, 5, 1, true);
@@ -133,7 +133,7 @@ namespace Venomaus.Tests.ImplTests
             Assert.Multiple(() =>
             {
                 Assert.That(changedCell.CellType, Is.EqualTo(1));
-                Assert.That(changedCell.Number, Is.EqualTo(default(int)));
+                Assert.That(changedCell.Walkable, Is.EqualTo(true));
             });
         }
 
@@ -212,14 +212,14 @@ namespace Venomaus.Tests.ImplTests
         public void OnCellUpdate_Raised_Correct()
         {
             object? sender = null;
-            CellUpdateArgs<int, TestCell<int>>? args = null;
+            CellUpdateArgs<int, Cell<int>>? args = null;
             Grid.OnCellUpdate += (cellSender, cellArgs) =>
             {
                 sender = cellSender;
                 args = cellArgs;
             };
 
-            Grid.SetCell(new TestCell<int>(5, 5, -1, 20));
+            Grid.SetCell(new Cell<int>(5, 5, false, -1));
 
             Assert.That(args, Is.Not.Null);
             Assert.Multiple(() =>
@@ -230,7 +230,7 @@ namespace Venomaus.Tests.ImplTests
                 Assert.That(args.Cell.X, Is.EqualTo(5));
                 Assert.That(args.Cell.Y, Is.EqualTo(5));
                 Assert.That(args.Cell.CellType, Is.EqualTo(-1));
-                Assert.That(args.Cell.Number, Is.EqualTo(20));
+                Assert.That(args.Cell.Walkable, Is.EqualTo(false));
             });
         }
 
@@ -241,7 +241,7 @@ namespace Venomaus.Tests.ImplTests
             {
                 Assert.That(() => Grid.SetCustomConverter((int x, int y, int cellType) =>
                 {
-                    return new TestCell<int>(x, y, cellType, cellType == -1 ? 20 : 0);
+                    return new Cell<int>(x, y, cellType != -1, cellType);
                 }), Throws.Nothing);
 
                 Assert.That(() => Grid.SetCell(5, 5, -1), Throws.Nothing);
@@ -250,7 +250,7 @@ namespace Venomaus.Tests.ImplTests
             var cell = Grid.GetCell(5, 5);
 
             Assert.That(cell, Is.Not.Null);
-            Assert.That(cell.Number, Is.EqualTo(20));
+            Assert.That(cell.Walkable, Is.EqualTo(false));
         }
     }
 }
