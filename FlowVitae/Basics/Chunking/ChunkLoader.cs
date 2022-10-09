@@ -15,6 +15,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         private Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>? _modifiedCellsInChunks;
 
         public (int x, int y) CurrentChunk { get; private set; }
+        public bool RaiseOnlyOnCellTypeChange { get; set; } = true;
 
         public ChunkLoader(int width, int height, IProceduralGen<TCellType, TCell> generator, Func<int, int, TCellType, TCell> cellTypeConverter)
         {
@@ -180,9 +181,9 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 var prev = screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x];
                 screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = cell.CellType;
 
-                if (!prev.Equals(cell.CellType))
+                if (!RaiseOnlyOnCellTypeChange || !prev.Equals(cell.CellType))
                     onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
-
+                
                 var chunk = GetChunk(cell.X, cell.Y, out _);
                 if (chunk != null)
                 {

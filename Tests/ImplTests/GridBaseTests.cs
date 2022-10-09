@@ -220,7 +220,7 @@ namespace Venomaus.Tests.ImplTests
         }
 
         [Test]
-        public void OnCellUpdate_Raised_Correct()
+        public void OnCellUpdate_SetCell_Raised_Correct()
         {
             object? sender = null;
             CellUpdateArgs<int, Cell<int>>? args = null;
@@ -230,19 +230,111 @@ namespace Venomaus.Tests.ImplTests
                 args = cellArgs;
             };
 
-            Grid.SetCell(new Cell<int>(5, 5, false, -1));
+            // Set cell within the view port
+            Grid.SetCell(new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1));
 
+            // Verify if args are received properly
             Assert.That(args, Is.Not.Null);
             Assert.Multiple(() =>
             {
                 Assert.That(sender, Is.Null);
-                Assert.That(args.ScreenX, Is.EqualTo(5));
-                Assert.That(args.ScreenY, Is.EqualTo(5));
-                Assert.That(args.Cell.X, Is.EqualTo(5));
-                Assert.That(args.Cell.Y, Is.EqualTo(5));
+                Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
+                Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
+                Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
                 Assert.That(args.Cell.CellType, Is.EqualTo(-1));
                 Assert.That(args.Cell.Walkable, Is.EqualTo(false));
             });
+
+            args = null;
+
+            // Set cell within the view port, but no cell type change
+            Grid.SetCell(new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1));
+            // Verify no args are received
+            Assert.That(args, Is.Null);
+
+            // Set cell within the view port, but no cell type change, with adjusted raise flag
+            Grid.RaiseOnlyOnCellTypeChange = false;
+            Grid.SetCell(new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1));
+
+            // Verify if args are received properly
+            Assert.That(args, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(sender, Is.Null);
+                Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
+                Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
+                Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.Cell.CellType, Is.EqualTo(-1));
+                Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+            });
+
+            args = null;
+
+            // Set cell outside of the view port
+            Grid.SetCell(new Cell<int>(Grid.Width + 5, Grid.Height + 5, false, -2));
+            // Verify no args are received
+            Assert.That(args, Is.Null);
+        }
+
+        [Test]
+        public void OnCellUpdate_SetCells_Raised_Correct()
+        {
+            object? sender = null;
+            CellUpdateArgs<int, Cell<int>>? args = null;
+            Grid.OnCellUpdate += (cellSender, cellArgs) =>
+            {
+                sender = cellSender;
+                args = cellArgs;
+            };
+
+            // Set cell within the view port
+            Grid.SetCells(new[] { new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1) });
+
+            // Verify if args are received properly
+            Assert.That(args, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(sender, Is.Null);
+                Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
+                Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
+                Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.Cell.CellType, Is.EqualTo(-1));
+                Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+            });
+
+            args = null;
+
+            // Set cell within the view port, but no cell type change
+            Grid.SetCells(new[] { new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1) });
+            // Verify no args are received
+            Assert.That(args, Is.Null);
+
+            // Set cell within the view port, but no cell type change, with adjusted raise flag
+            Grid.RaiseOnlyOnCellTypeChange = false;
+            Grid.SetCells(new[] { new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1) });
+
+            // Verify if args are received properly
+            Assert.That(args, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(sender, Is.Null);
+                Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
+                Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
+                Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.Cell.CellType, Is.EqualTo(-1));
+                Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+            });
+
+            args = null;
+
+            // Set cell outside of the view port
+            Grid.SetCells(new[] { new Cell<int>(Grid.Width + 5, Grid.Height + 5, false, -2) });
+            // Verify no args are received
+            Assert.That(args, Is.Null);
         }
 
         [Test]

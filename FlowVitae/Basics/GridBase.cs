@@ -45,9 +45,29 @@ namespace Venomaus.FlowVitae.Basics
         internal readonly ChunkLoader<TCellType, TCell>? _chunkLoader;
 
         /// <summary>
-        /// Raised every time a cell is updated, can be used for rendering updated cell to screen.
+        /// Raised every time a screen cell is updated, can be used for rendering updates.
         /// </summary>
+        /// <remarks>See <see cref="RaiseOnlyOnCellTypeChange"/> to control how this event is raised.</remarks>
         public event EventHandler<CellUpdateArgs<TCellType, TCell>>? OnCellUpdate;
+
+        private bool _raiseOnlyOnCellTypeChange = true;
+        /// <summary>
+        /// When false, it will always raise when the cell is set within the viewport, default true.
+        /// </summary>
+        /// <remarks>This can be useful when you require the full cell data when it is set on the <see cref="OnCellUpdate"/> event, even when the cell type does not change.</remarks>
+        public bool RaiseOnlyOnCellTypeChange
+        {
+            get
+            {
+                return _raiseOnlyOnCellTypeChange;
+            }
+            set
+            {
+                _raiseOnlyOnCellTypeChange = value;
+                if (_chunkLoader != null)
+                    _chunkLoader.RaiseOnlyOnCellTypeChange = value;
+            }
+        }
 
         /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
@@ -253,7 +273,7 @@ namespace Venomaus.FlowVitae.Basics
                     var prev = ScreenCells[screenCoordinate.Value.y * Width + screenCoordinate.Value.x];
                     ScreenCells[screenCoordinate.Value.y * Width + screenCoordinate.Value.x] = cell.CellType;
 
-                    if (!prev.Equals(cell.CellType))
+                    if (!RaiseOnlyOnCellTypeChange || !prev.Equals(cell.CellType))
                         OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
                 }
             }
