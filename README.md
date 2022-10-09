@@ -1,5 +1,5 @@
 # FlowVitae
-FlowVitae is a memory and performance efficient 2D grid library designed for small to large scale procedural worlds.
+FlowVitae is a memory and performance efficient 2D grid library written in .net 6.0 designed for small to large scale procedural worlds.
 Can be easily integrated with most render engines.
 
 Tested with:
