@@ -118,6 +118,7 @@ grid.SetCells(cells);
 ```
 
 **Center viewport on a coordinate for procedural grids**
+	
 This is especially useful when you want your player to always be centered in the middle of the screen.
 But during movement, the viewport adjusts to show the right cells based on the position of the player
 For this you can use the Center(x, y) method Grid provides.
