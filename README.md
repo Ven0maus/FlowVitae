@@ -40,7 +40,7 @@ var grid = new Grid<int, Cell<int>>(width, height);
 **Procedural Grid Creation**
 ```csharp
 var procGen = new ProceduralGenerator<int, Cell<int>>(Seed, GenerateChunkMethod);
-var grid = new Grid<int, Cell<int>>(width, height, chunkWidth, chunkHeight, IProceduralGen implementation);
+var grid = new Grid<int, Cell<int>>(width, height, chunkWidth, chunkHeight, procGen);
 ```
 
 GenerateChunkMethod can look something like this:
