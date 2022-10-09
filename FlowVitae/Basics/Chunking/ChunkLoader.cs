@@ -112,10 +112,18 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 isWorldCoordinateOnScreen.Invoke(x, y, out (int x, int y)? screenCoordinate, out var screenWidth) &&
                 screenCoordinate != null)
             {
-                var cellType = chunk != null ? chunk[remappedCoordinate.y * _width + remappedCoordinate.x] :
-                    screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x];
+                if (chunk != null)
+                {
+                    // Adjust screen cell if it doesn't match with chunk cell && no modified cell was stored
+                    var screenCell = screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x];
+                    var chunkCell = chunk[remappedCoordinate.y * _width + remappedCoordinate.x];
+                    if (!screenCell.Equals(chunkCell))
+                    {
+                        screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = chunkCell;
+                    }
+                }
 
-                return _cellTypeConverter(x, y, cellType);
+                return _cellTypeConverter(x, y, screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x]);
             }
 
             bool wasChunkLoaded = false;

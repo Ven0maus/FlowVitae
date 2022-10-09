@@ -786,5 +786,36 @@ namespace Venomaus.Tests.ImplTests
             // Verify no args are received
             Assert.That(args, Is.Null);
         }
+
+        [Test]
+        public void GetCell_ReturnsCorrectChunkScreenCell_IfScreenCell_WasNotYetAdjusted()
+        {
+            AdjustProceduralGridGen(Seed, (rand, chunk, width, height) =>
+            {
+                // Set default to -5 on all cells
+                for (int x=0; x < width; x++)
+                {
+                    for (int y = 0; y < height; y++)
+                    {
+                        chunk[y * width + x] = -5;
+                    }
+                }
+            });
+
+            // Verify that all cells have this default value set properly
+            var viewPortCells = Grid.GetViewPortCells();
+            Assert.That(viewPortCells.Count(a => a.CellType == -5), Is.EqualTo(viewPortCells.Length));
+
+            // Verify that GetCell has this default value set properly
+            var cell = Grid.GetCell(0, 0);
+            Assert.That(cell, Is.Not.Null);
+            Assert.That(cell.CellType, Is.EqualTo(-5));
+
+            // Verify that GetCells has this default value set properly
+            var cells = Grid.GetCells(new[] { (0, 0) });
+            cell = cells.SingleOrDefault();
+            Assert.That(cell, Is.Not.Null);
+            Assert.That(cell.CellType, Is.EqualTo(-5));
+        }
     }
 }
