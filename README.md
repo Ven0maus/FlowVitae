@@ -105,6 +105,44 @@ public Cell<int> ConvertCell(int x, int y, int cellType)
 	}
 }
 ```
+	
+# Creating your own Cell implementation
+It can be easily done by inheriting from CellBase or ICell<TCellType>
+When you want your cell to be able to base of some render engine cell such as ColoredGlyph from Sadconsole,
+you can easily do it by using ColoredGlyph, ICell<TCellType> as your inheritance.
+	
+Here is an example:
+```csharp
+internal class VisualCell<TCellType> : ICell<TCellType>
+	where TCellType : struct
+{
+	public int X { get; set; }
+	public int Y { get; set; }
+	public TCellType CellType { get; set; }
+	public bool Walkable { get; set; } = true;
+	public bool BlocksFieldOfView { get; set; } // Some custom properties
+	public bool HasLightSource { get; set; } // Some custom properties
+
+	public VisualCell() { }
+
+	public VisualCell(int x, int y, TCellType cellType)
+	{
+		X = x;
+		Y = y;
+		CellType = cellType;
+	}
+
+	public bool Equals(ICell<TCellType>? other)
+	{
+		return other != null && other.X == X && other.Y == Y;
+	}
+
+	public bool Equals((int x, int y) other)
+	{
+		return other.x == X && other.y == Y;
+	}
+}
+```
 
 # Interaction with grids
 
@@ -118,6 +156,7 @@ grid.SetCells(cells);
 ```
 
 **Center viewport on a coordinate for procedural grids**
+	
 This is especially useful when you want your player to always be centered in the middle of the screen.
 But during movement, the viewport adjusts to show the right cells based on the position of the player
 For this you can use the Center(x, y) method Grid provides.
