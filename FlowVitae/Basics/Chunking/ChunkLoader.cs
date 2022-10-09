@@ -158,7 +158,10 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return cells;
         }
 
-        public void SetChunkCell(TCell cell, bool storeState = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
+        public void SetChunkCell(TCell cell, bool storeState = false, 
+            EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, 
+            Checker? isWorldCoordinateOnScreen = null, 
+            TCellType[]? screenCells = null)
         {
             var chunkCoordinate = GetChunkCoordinate(cell.X, cell.Y);
             var remappedCoordinate = RemapChunkCoordinate(cell.X, cell.Y, chunkCoordinate);

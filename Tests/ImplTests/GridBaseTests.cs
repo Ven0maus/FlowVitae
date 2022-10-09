@@ -18,6 +18,16 @@ namespace Venomaus.Tests.ImplTests
         }
 
         [Test]
+        public void ChunkLoader_Is_Null()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(Grid._chunkLoader, Is.Null);
+                Assert.That(() => ChunkLoader, Throws.Exception);
+            });
+        }
+
+        [Test]
         public void Grid_Constructors_Covered()
         {
             Assert.Multiple(() =>
@@ -136,6 +146,9 @@ namespace Venomaus.Tests.ImplTests
 
             cellType = Grid.GetCellType(Grid.Width / 2, Grid.Height / 2);
             Assert.That(cellType, Is.EqualTo(-1));
+
+            cellType = Grid.GetCellType(Grid.Width * 5, Grid.Height * 5);
+            Assert.That(cellType, Is.EqualTo(default(int)));
         }
 
         [Test]

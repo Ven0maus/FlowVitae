@@ -267,15 +267,12 @@ namespace Venomaus.FlowVitae.Basics
             if (_chunkLoader == null && !InBounds(x, y)) return;
             if (_chunkLoader == null)
             {
-                if (IsWorldCoordinateOnScreen(x, y, out var screenCoordinate, out _) &&
-                    screenCoordinate != null)
-                {
-                    var prev = ScreenCells[screenCoordinate.Value.y * Width + screenCoordinate.Value.x];
-                    ScreenCells[screenCoordinate.Value.y * Width + screenCoordinate.Value.x] = cell.CellType;
+                var screenCoordinate = WorldToScreenCoordinate(x, y);
+                var prev = ScreenCells[screenCoordinate.y * Width + screenCoordinate.x];
+                ScreenCells[screenCoordinate.y * Width + screenCoordinate.x] = cell.CellType;
 
-                    if (!RaiseOnlyOnCellTypeChange || !prev.Equals(cell.CellType))
-                        OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
-                }
+                if (!RaiseOnlyOnCellTypeChange || !prev.Equals(cell.CellType))
+                    OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate, cell));
             }
 
             // Storage and chunking

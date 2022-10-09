@@ -28,8 +28,6 @@ namespace Venomaus.Tests.ImplTests
             }
         }
 
-        private ChunkLoader<int, Cell<int>> ChunkLoader { get { return Grid._chunkLoader ?? throw new Exception("Chunkloader not initialized"); } }
-
         public ChunkLoaderTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight)
         {
             ViewPortWidth = viewPortWidth;
@@ -41,7 +39,11 @@ namespace Venomaus.Tests.ImplTests
         [Test]
         public void ChunkLoader_Is_Not_Null()
         {
-            Assert.That(() => ChunkLoader, Throws.Nothing);
+            Assert.Multiple(() =>
+            {
+                Assert.That(ChunkLoader, Is.Not.Null);
+                Assert.That(() => ChunkLoader, Throws.Nothing);
+            });
         }
 
         [Test]
@@ -517,6 +519,8 @@ namespace Venomaus.Tests.ImplTests
             int moduloHeight = (100 % ChunkHeight);
             var baseChunk = (x: 100 - moduloWidth, y: 100 - moduloHeight);
 
+            var cellsUpdated = new List<Cell<int>>();
+            Grid.OnCellUpdate += (sender, args) => cellsUpdated.Add(args.Cell);
             loadedChunks = ChunkLoader.GetLoadedChunks();
             Assert.Multiple(() =>
             {
@@ -526,8 +530,11 @@ namespace Venomaus.Tests.ImplTests
                 Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(baseChunk.y));
             });
             loadedChunks = ChunkLoader.GetLoadedChunks().OrderBy(a => a.x).ThenBy(a => a.y).ToArray();
-            Assert.That(loadedChunks, Has.Length.EqualTo(9));
-
+            Assert.Multiple(() =>
+            {
+                Assert.That(loadedChunks, Has.Length.EqualTo(9));
+                Assert.That(cellsUpdated, Has.Count.EqualTo(viewPort.Length));
+            });
 
             var mapping = new[]
             {
@@ -626,9 +633,6 @@ namespace Venomaus.Tests.ImplTests
                     break;
                 case Direction.West:
                     dirX = startX - ChunkWidth;
-                    break;
-                default:
-                    Assert.Fail("Invalid direction provided.");
                     break;
             }
 

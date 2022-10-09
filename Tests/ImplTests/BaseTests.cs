@@ -1,5 +1,7 @@
 ﻿using Venomaus.FlowVitae.Basics;
+using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Basics.Procedural;
+using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
 
 namespace Venomaus.Tests.ImplTests
@@ -11,6 +13,8 @@ namespace Venomaus.Tests.ImplTests
         protected Grid<TCellType, TCell> Grid { get; private set; }
         protected virtual IProceduralGen<TCellType, TCell>? ProcGen { get; }
         protected virtual Func<int, int, TCellType, TCell>? CustomConverter { get; }
+
+        protected ChunkLoader<TCellType, TCell> ChunkLoader => Grid._chunkLoader ?? throw new Exception("Chunkloader null");
 
         protected int ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight;
 
