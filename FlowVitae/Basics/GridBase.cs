@@ -175,7 +175,7 @@ namespace Venomaus.FlowVitae.Basics
         public (int x, int y) ScreenToWorldCoordinate(int x, int y)
         {
             if (!InBounds(x, y)) 
-                throw new Exception("Invalid screen coordinate, must be within screen bounds (Width * Height).");
+                throw new Exception("Invalid screen coordinate, must be within screen bounds (Width, Height).");
             
             int minX = _centerCoordinate.x - Width / 2;
             int minY = _centerCoordinate.y - Height / 2;
@@ -337,24 +337,25 @@ namespace Venomaus.FlowVitae.Basics
         /// </summary>
         /// <param name="positions"></param>
         /// <returns></returns>
-        public IEnumerable<TCell> GetCells(IEnumerable<(int, int)> positions)
+        public IReadOnlyList<TCell> GetCells(IEnumerable<(int, int)> positions)
         {
             if (_chunkLoader == null)
             {
                 // Handle non chunkloaded grid
+                var cells = new List<TCell>();
                 foreach (var pos in positions)
                 {
                     if (!InBounds(pos.Item1, pos.Item2)) continue;
                     var cell = GetCell(pos.Item1, pos.Item2);
                     if (cell != null)
-                        yield return cell;
+                        cells.Add(cell);
                 }
+                return cells;
             }
             else
             {
                 // Handle chunkloaded grid
-                foreach (var cell in _chunkLoader.GetChunkCells(positions))
-                    yield return cell;
+                return _chunkLoader.GetChunkCells(positions);
             }
         }
 
@@ -387,7 +388,6 @@ namespace Venomaus.FlowVitae.Basics
         /// <returns><see langword="true"/> or <see langword="false"/></returns>
         public bool InBounds(int x, int y)
         {
-            if (_chunkLoader != null) return true;
             return x >= 0 && y >= 0 && x < Width && y < Height;
         }
 
@@ -399,7 +399,6 @@ namespace Venomaus.FlowVitae.Basics
         /// <returns><see langword="true"/> or <see langword="false"/></returns>
         public bool InBounds(TCell cell)
         {
-            if (_chunkLoader != null) return true;
             return InBounds(cell.X, cell.Y);
         }
 

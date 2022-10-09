@@ -405,5 +405,111 @@ namespace Venomaus.Tests.ImplTests
                 Assert.That(y, Is.EqualTo(-25));
             });
         }
+
+        [Test]
+        public void Center_ViewPort_PositiveCoords_Correct()
+        {
+            var viewPort = Grid.GetViewPortCells();
+            Assert.That(viewPort.All(cell => cell.CellType != -10));
+
+            var loadedChunks = ChunkLoader.GetLoadedChunks();
+            foreach (var (x, y) in loadedChunks)
+                ChunkLoader.UnloadChunk(x, y, true);
+
+            // Set cells beforehand
+            var positions = new List<(int x, int y)>();
+            for (int x = 88; x < 113; x++)
+            {
+                for (int y = 88; y < 113; y++)
+                {
+                    positions.Add((x, y));
+                }
+            }
+            var cells = Grid.GetCells(positions);
+            foreach (var cell in cells)
+            {
+                cell.CellType = -10;
+            }
+            Grid.SetCells(cells, true);
+
+            loadedChunks = ChunkLoader.GetLoadedChunks();
+            Assert.Multiple(() =>
+            {
+                Assert.That(loadedChunks, Has.Length.EqualTo(0));
+                Assert.That(() => Grid.Center(100, 100), Throws.Nothing);
+                Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(100));
+                Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(100));
+            });
+            loadedChunks = ChunkLoader.GetLoadedChunks().OrderBy(a => a.x).ThenBy(a => a.y).ToArray();
+            Assert.That(loadedChunks, Has.Length.EqualTo(9));
+
+            var mapping = new[]
+            {
+                (100, 100),
+                (100, 125),
+                (125, 100),
+                (100, 75),
+                (75, 100),
+                (125, 125),
+                (75, 125),
+                (125, 75),
+                (75, 75)
+            }.OrderBy(a => a.Item1).ThenBy(a => a.Item2).ToArray();
+
+            for (int i=0; i < loadedChunks.Length; i++)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(loadedChunks[i].x, Is.EqualTo(mapping[i].Item1));
+                    Assert.That(loadedChunks[i].y, Is.EqualTo(mapping[i].Item2));
+                });
+            }
+
+            // Check if view port matches now
+            viewPort = Grid.GetViewPortCells();
+            Assert.That(viewPort.All(cell => cell.CellType == -10));
+        }
+
+        [Test]
+        public void ScreenToWorldPoint_Get_Correct()
+        {
+            var screenPosX = 5;
+            var screenPosY = 5;
+            var (x, y) = Grid.ScreenToWorldCoordinate(screenPosX, screenPosY);
+            Assert.Multiple(() =>
+            {
+                Assert.That(x, Is.EqualTo(screenPosX));
+                Assert.That(y, Is.EqualTo(screenPosY));
+                Assert.That(() => Grid.ScreenToWorldCoordinate(Grid.Width + 5, Grid.Height + 5), Throws.Exception);
+                Assert.That(() => Grid.ScreenToWorldCoordinate(-5, -5), Throws.Exception);
+                Assert.That(() => Grid.ScreenToWorldCoordinate(-(Grid.Width + 5), -(Grid.Height + 5)), Throws.Exception);
+            });
+        }
+
+        [Test]
+        public void WorldToScreenPoint_Get_Correct()
+        {
+            var worldPosX = 5;
+            var worldPosY = 5;
+            var (x, y) = Grid.WorldToScreenCoordinate(worldPosX, worldPosY);
+            (int x, int y) _screenPos1 = (0, 0), _screenPos2 = (0, 0), _screenPos3 = (0, 0);
+            Assert.Multiple(() =>
+            {
+                Assert.That(x, Is.EqualTo(worldPosX));
+                Assert.That(y, Is.EqualTo(worldPosY));
+                Assert.That(() => _screenPos1 = Grid.WorldToScreenCoordinate(Grid.Width + 5, Grid.Height + 5), Throws.Nothing);
+                Assert.That(() => _screenPos2 = Grid.WorldToScreenCoordinate(-5, -5), Throws.Nothing);
+                Assert.That(() => _screenPos3 = Grid.WorldToScreenCoordinate(-(Grid.Width + 5), -(Grid.Height + 5)), Throws.Nothing);
+            });
+            Assert.Multiple(() =>
+            {
+                Assert.That(_screenPos1.x, Is.EqualTo(30));
+                Assert.That(_screenPos1.y, Is.EqualTo(30));
+                Assert.That(_screenPos2.x, Is.EqualTo(-5));
+                Assert.That(_screenPos2.y, Is.EqualTo(-5));
+                Assert.That(_screenPos3.x, Is.EqualTo(-30));
+                Assert.That(_screenPos3.y, Is.EqualTo(-30));
+            });
+        }
     }
 }

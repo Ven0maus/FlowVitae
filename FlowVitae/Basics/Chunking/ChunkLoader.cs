@@ -122,19 +122,21 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return null;
         }
 
-        public IEnumerable<TCell> GetChunkCells(IEnumerable<(int x, int y)> positions)
+        public IReadOnlyList<TCell> GetChunkCells(IEnumerable<(int x, int y)> positions)
         {
             var loadedChunks = new List<(int x, int y)>();
+            var cells = new List<TCell>();
             foreach (var (x, y) in positions)
             {
                 if (LoadChunk(x, y))
                     loadedChunks.Add((x, y));
                 var cell = GetChunkCell(x, y);
                 if (cell != null)
-                    yield return cell;
+                    cells.Add(cell);
             }
             foreach (var (x, y) in loadedChunks)
                 UnloadChunk(x, y);
+            return cells;
         }
 
         public void SetChunkCell(TCell cell, bool storeState = false, bool loadChunk = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
