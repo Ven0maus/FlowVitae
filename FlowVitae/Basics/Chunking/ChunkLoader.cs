@@ -275,7 +275,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
             if (!_chunks.ContainsKey(coordinate))
             {
-                System.Diagnostics.Debug.WriteLine($"Loaded chunk ({coordinate.x},{coordinate.y})");
                 GenerateChunk(coordinate);
                 return true;
             }
