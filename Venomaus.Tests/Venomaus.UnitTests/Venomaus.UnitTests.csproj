@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Venomaus.FlowVitae\Venomaus.FlowVitae.csproj" />
+    <ProjectReference Include="..\..\Venomaus.FlowVitae\Venomaus.FlowVitae.csproj" />
   </ItemGroup>
 
 </Project>

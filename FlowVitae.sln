@@ -5,11 +5,11 @@ VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Venomaus.FlowVitae", "Venomaus.FlowVitae\Venomaus.FlowVitae.csproj", "{4AFB4DBF-16AF-41E1-B60C-829E492E7EC3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Venomaus.UnitTests", "Venomaus.UnitTests\Venomaus.UnitTests.csproj", "{78BC0C4C-623B-4A9C-BC59-50FD6AD51F9C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Venomaus.UnitTests", "Venomaus.Tests\Venomaus.UnitTests\Venomaus.UnitTests.csproj", "{78BC0C4C-623B-4A9C-BC59-50FD6AD51F9C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Venomaus.Visualizer", "Venomaus.Visualizer\Venomaus.Visualizer.csproj", "{8C9FD2F6-F0E5-4450-AFDF-68E10D85AD04}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Venomaus.BenchmarkTests", "Venomaus.BenchmarkTests\Venomaus.BenchmarkTests.csproj", "{4B252078-898D-45D3-8352-82D1E35C8BE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Venomaus.BenchmarkTests", "Venomaus.Tests\Venomaus.BenchmarkTests\Venomaus.BenchmarkTests.csproj", "{4B252078-898D-45D3-8352-82D1E35C8BE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
