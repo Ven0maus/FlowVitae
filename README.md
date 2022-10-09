@@ -73,7 +73,7 @@ private void Grid_OnCellUpdate(object? sender, CellUpdateArgs<int, Cell<int>> ar
 {
   // Pseudo code
   var screenGraphic = ConvertCellTypeToGraphic(args.Cell.CellType);
-	SomeRenderEngine.SetScreenGraphic(args.ScreenX, args.ScreenY, screenGraphic);
+  SomeRenderEngine.SetScreenGraphic(args.ScreenX, args.ScreenY, screenGraphic);
 }
 ```
 This event is by default only raised when the TCellType value on the viewport is changed during a SetCell/SetCells
