@@ -4,6 +4,7 @@ using Venomaus.FlowVitae.Cells;
 namespace Venomaus.Tests.ImplTests
 {
     [TestFixture(25, 25, 25, 25)]
+    [TestFixture(17, 28, 17, 28)]
     internal class GridBaseTests : BaseTests<int, Cell<int>>
     {
         public GridBaseTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight)
