@@ -172,6 +172,13 @@ var isInBounds = grid.InBounds(x, y);
 var isInViewPort = grid.IsWorldCoordinateOnViewPort(x,y);
 ```
 
+**Reset grid state**
+
+(available in V1.0.2)
+```csharp
+grid.ClearCache(); // Removes all stored cell data
+```
+
 # Integration with SadConsole
 
 Checkout the Visualizer project, it is an example project that integrates the FlowVitae grid with SadConsole V9 render engine.
