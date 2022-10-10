@@ -229,7 +229,7 @@ namespace Venomaus.FlowVitae.Basics
         /// </summary>
         /// <remarks>Cell (x, y) are adjusted to match the viewport (x, y).</remarks>
         /// <returns><typeparamref name="TCell"/>[]</returns>
-        public TCell[] GetViewPortCells()
+        public IEnumerable<TCell> GetViewPortCells()
         {
             var positions = new (int, int)[Width * Height];
             for (int x=0; x < Width; x++)
@@ -240,14 +240,14 @@ namespace Venomaus.FlowVitae.Basics
                 }
             }
 
-            var cells = GetCells(positions).ToArray();
-            foreach (var cell in cells)
+            return GetCells(positions)
+                .Select(cell =>
             {
                 var (x, y) = WorldToScreenCoordinate(cell.X, cell.Y);
                 cell.X = x;
                 cell.Y = y;
-            }
-            return cells;
+                return cell;
+            });
         }
 
         /// <summary>
@@ -348,25 +348,24 @@ namespace Venomaus.FlowVitae.Basics
         /// </summary>
         /// <param name="positions"></param>
         /// <returns></returns>
-        public IReadOnlyList<TCell> GetCells(IEnumerable<(int, int)> positions)
+        public IEnumerable<TCell> GetCells(IEnumerable<(int, int)> positions)
         {
             if (_chunkLoader == null)
             {
                 // Handle non chunkloaded grid
-                var cells = new List<TCell>();
                 foreach (var pos in positions)
                 {
                     if (!InBounds(pos.Item1, pos.Item2)) continue;
                     var cell = GetCell(pos.Item1, pos.Item2);
                     if (cell != null)
-                        cells.Add(cell);
+                        yield return cell;
                 }
-                return cells;
             }
             else
             {
                 // Handle chunkloaded grid
-                return _chunkLoader.GetChunkCells(positions, IsWorldCoordinateOnScreen, ScreenCells);
+                foreach (var cell in _chunkLoader.GetChunkCells(positions, IsWorldCoordinateOnScreen, ScreenCells))
+                    yield return cell;
             }
         }
 

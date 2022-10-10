@@ -490,8 +490,8 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void Center_ViewPort_PositiveCoords_Correct()
         {
-            var viewPort = Grid.GetViewPortCells();
-            Assert.That(viewPort.All(cell => cell.CellType != -10));
+            var viewPort = Grid.GetViewPortCells().ToArray();
+            Assert.That(viewPort.All(cell => cell.CellType != -10), "Initial viewport is not correct");
 
             var loadedChunks = ChunkLoader.GetLoadedChunks();
             foreach (var (x, y) in loadedChunks)
@@ -508,7 +508,7 @@ namespace Venomaus.UnitTests.Tests
                     positions.Add((x, y));
                 }
             }
-            var cells = Grid.GetCells(positions);
+            var cells = Grid.GetCells(positions).ToArray();
             foreach (var cell in cells)
             {
                 cell.CellType = -10;
@@ -524,16 +524,16 @@ namespace Venomaus.UnitTests.Tests
             loadedChunks = ChunkLoader.GetLoadedChunks();
             Assert.Multiple(() =>
             {
-                Assert.That(loadedChunks, Has.Length.EqualTo(0));
-                Assert.That(() => Grid.Center(100, 100), Throws.Nothing);
-                Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(baseChunk.x));
-                Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(baseChunk.y));
+                Assert.That(loadedChunks, Has.Length.EqualTo(0), "Loaded chunks not equal to 0");
+                Assert.That(() => Grid.Center(100, 100), Throws.Nothing, "Exception was thrown");
+                Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(baseChunk.x), "Current chunk x is not correct");
+                Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(baseChunk.y), "Current chunk y is not correct");
             });
             loadedChunks = ChunkLoader.GetLoadedChunks().OrderBy(a => a.x).ThenBy(a => a.y).ToArray();
             Assert.Multiple(() =>
             {
-                Assert.That(loadedChunks, Has.Length.EqualTo(9));
-                Assert.That(cellsUpdated, Has.Count.EqualTo(viewPort.Length));
+                Assert.That(loadedChunks, Has.Length.EqualTo(9), "Loaded chunks not equal to 9");
+                Assert.That(cellsUpdated, Has.Count.EqualTo(viewPort.Length), "cellsUpdated not equal to viewport length");
             });
 
             var mapping = new[]
@@ -553,14 +553,13 @@ namespace Venomaus.UnitTests.Tests
             {
                 Assert.Multiple(() =>
                 {
-                    Assert.That(loadedChunks[i].x, Is.EqualTo(mapping[i].Item1));
-                    Assert.That(loadedChunks[i].y, Is.EqualTo(mapping[i].Item2));
+                    Assert.That(loadedChunks[i].x, Is.EqualTo(mapping[i].Item1), "Mapping x is not correct");
+                    Assert.That(loadedChunks[i].y, Is.EqualTo(mapping[i].Item2), "Mapping y is not correct");
                 });
             }
 
             // Check if view port matches now
-            viewPort = Grid.GetViewPortCells();
-            Assert.That(viewPort.All(cell => cell.CellType == -10));
+            Assert.That(Grid.GetViewPortCells().All(cell => cell.CellType == -10), "Viewport cells don't match center changes");
         }
 
         [Test]
@@ -837,7 +836,7 @@ namespace Venomaus.UnitTests.Tests
             });
 
             // Verify that all cells have this default value set properly
-            var viewPortCells = Grid.GetViewPortCells();
+            var viewPortCells = Grid.GetViewPortCells().ToArray();
             Assert.That(viewPortCells.Count(a => a.CellType == -5), Is.EqualTo(viewPortCells.Length));
 
             // Verify that GetCell has this default value set properly

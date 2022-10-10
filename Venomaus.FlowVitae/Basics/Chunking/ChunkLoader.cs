@@ -141,7 +141,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 chunk[remappedCoordinate.y * _width + remappedCoordinate.x]);
         }
 
-        public IReadOnlyList<TCell> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
+        public IEnumerable<TCell> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
             var loadedChunks = new List<(int x, int y)>();
             var cells = new List<TCell>();
@@ -150,12 +150,10 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 if (LoadChunk(x, y))
                     loadedChunks.Add((x, y));
                 var cell = GetChunkCell(x, y, false, isWorldCoordinateOnScreen, screenCells);
-                if (cell != null)
-                    cells.Add(cell);
+                yield return cell;
             }
             foreach (var (x, y) in loadedChunks)
                 UnloadChunk(x, y);
-            return cells;
         }
 
         public void SetChunkCell(TCell cell, bool storeState = false, 
