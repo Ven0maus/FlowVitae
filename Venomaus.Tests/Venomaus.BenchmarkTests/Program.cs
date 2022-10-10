@@ -9,8 +9,8 @@ namespace Venomaus.BenchmarkTests
 {
     internal class Program
     {
-        private const int GridSize = 50;
-        private static readonly Job JobType = Job.Default;
+        private const int GridSize = 25;
+        private static readonly Job JobType = Job.ShortRun;
 
         private static void Main(string[] args)
         {
@@ -37,7 +37,7 @@ namespace Venomaus.BenchmarkTests
         {
             return ManualConfig
                 .CreateMinimumViable()
-                .WithOptions(ConfigOptions.DisableLogFile)
+                .WithOptions(ConfigOptions.DisableLogFile | ConfigOptions.JoinSummary)
                 .AddExporter(HtmlExporter.Default)
                 .KeepBenchmarkFiles(false)
                 .AddJob(JobType);

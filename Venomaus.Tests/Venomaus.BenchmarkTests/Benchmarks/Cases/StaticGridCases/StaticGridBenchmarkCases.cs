@@ -4,7 +4,6 @@ using Venomaus.FlowVitae.Cells;
 namespace Venomaus.BenchmarkTests.Benchmarks.Cases.StaticGridCases
 {
     [MemoryDiagnoser]
-    [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.SlowestToFastest)]
     public class StaticGridBenchmarkCases : BaseGridBenchmarks<int, Cell<int>>
     {
         protected override int Seed => 1000;
