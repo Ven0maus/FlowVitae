@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Engines;
 using Venomaus.FlowVitae.Basics;
 using Venomaus.FlowVitae.Basics.Procedural;
 using Venomaus.FlowVitae.Cells;
@@ -25,6 +26,8 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         [ParamsSource(nameof(ValueChunkHeight))]
         public int ChunkHeight { get; set; }
 
+        protected readonly Consumer Consumer = new();
+
         protected virtual bool ProcGenEnabled { get; }
         protected virtual bool DivideChunk { get; }
 
@@ -37,7 +40,7 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         protected Random Random { get; private set; }
 
         [GlobalSetup]
-        public void Setup()
+        public virtual void Setup()
         {
             Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, DivideChunk ? (int)((double)ViewPortWidth / 100 * 30) : ChunkWidth, DivideChunk ? (int)((double)ViewPortHeight / 100 * 30) : ChunkHeight, InitializeProcGen());
 

@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Engines;
 using Venomaus.FlowVitae.Cells;
 
 namespace Venomaus.BenchmarkTests.Benchmarks.Cases.StaticGridCases
@@ -35,35 +36,27 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.StaticGridCases
         }
 
         [Benchmark]
-        public void GetCellType()
+        public int GetCellType()
         {
-            Grid.GetCellType(ViewPortWidth / 2, ViewPortHeight / 2);
+            return Grid.GetCellType(ViewPortWidth / 2, ViewPortHeight / 2);
         }
 
         [Benchmark]
-        public void GetCell()
+        public Cell<int>? GetCell()
         {
-            Grid.GetCell(ViewPortWidth / 2, ViewPortHeight / 2);
+            return Grid.GetCell(ViewPortWidth / 2, ViewPortHeight / 2);
         }
 
         [Benchmark]
         public void GetCells()
         {
-            Grid.GetCells(Positions);
-        }
-
-        [Benchmark]
-        public void Center()
-        {
-            var posX = Random.Next(0, ViewPortWidth);
-            var posY = Random.Next(0, ViewPortHeight);
-            Grid.Center(posX, posY);
+            Grid.GetCells(Positions).Consume(Consumer);
         }
 
         [Benchmark]
         public void GetViewPortCells()
         {
-            Grid.GetViewPortCells();
+            Grid.GetViewPortCells().Consume(Consumer);
         }
     }
 }
