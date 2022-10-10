@@ -9,36 +9,11 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
         protected override int Seed => 1000;
         protected override bool ProcGenEnabled => true;
 
-        private (int x, int y) NextChunkCoordinate;
-        private (int x, int y) SameChunkPlus1Pos;
-
         protected override void GenerateChunk(Random random, int[] chunk, int width, int height)
         {
             for (int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++)
                     chunk[y * width + x] = random.Next(-10, 10);
-        }
-
-        private (int x, int y) GetChunkCoordinate(int x, int y)
-        {
-            if (x < 0 && x % ChunkWidth != 0) x -= ChunkWidth;
-            if (y < 0 && y % ChunkHeight != 0) y -= ChunkHeight;
-            var chunkX = ChunkWidth * (x / ChunkWidth);
-            var chunkY = ChunkHeight * (y / ChunkHeight);
-            return (chunkX, chunkY);
-        }
-
-        public override void Setup()
-        {
-            base.Setup();
-
-            Program.WriteLine("Setup override is called!");
-
-            var (x, y) = (Grid.Width / 2, Grid.Height / 2);
-            NextChunkCoordinate = GetChunkCoordinate(x + ChunkWidth, y);
-
-            var center = (x: Grid.Width / 2, y: Grid.Height / 2);
-            SameChunkPlus1Pos = (center.x + 1, center.y);
         }
 
         [Benchmark]

@@ -11,6 +11,7 @@ namespace Venomaus.BenchmarkTests
     {
         private const int GridSize = 25;
         private static readonly Job JobType = Job.ShortRun;
+        private const bool UseDefaultConfig = true;
 
         private static void Main(string[] args)
         {
@@ -33,7 +34,7 @@ namespace Venomaus.BenchmarkTests
             };
         }
 
-        private static ManualConfig ConfigDefiner()
+        private static IConfig GetCustomConfig()
         {
             return ManualConfig
                 .CreateMinimumViable()
@@ -41,6 +42,14 @@ namespace Venomaus.BenchmarkTests
                 .AddExporter(HtmlExporter.Default)
                 .KeepBenchmarkFiles(false)
                 .AddJob(JobType);
+        }
+
+        private static IConfig GetDefaultConfig()
+        {
+            return DefaultConfig.Instance
+                .WithOptions(ConfigOptions.DisableLogFile | ConfigOptions.JoinSummary)
+                .AddExporter(HtmlExporter.Default)
+                .KeepBenchmarkFiles(false);
         }
 
         public static void WriteLine(string text)
@@ -67,7 +76,7 @@ namespace Venomaus.BenchmarkTests
             ChunkWidth = chunkWidth;
             ChunkHeight = chunkHeight;
 
-            BenchmarkRunner.Run(BenchmarkCases(), ConfigDefiner());
+            BenchmarkRunner.Run(BenchmarkCases(), UseDefaultConfig ? GetDefaultConfig() : GetCustomConfig());
         }
 
         private static int ViewPortWidth = 0;

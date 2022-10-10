@@ -39,8 +39,11 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         protected abstract int Seed { get; }
         protected Random Random { get; private set; }
 
+        protected (int x, int y) NextChunkCoordinate;
+        protected (int x, int y) SameChunkPlus1Pos;
+
         [GlobalSetup]
-        public virtual void Setup()
+        public void Setup()
         {
             Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, DivideChunk ? (int)((double)ViewPortWidth / 100 * 30) : ChunkWidth, DivideChunk ? (int)((double)ViewPortHeight / 100 * 30) : ChunkHeight, InitializeProcGen());
 
@@ -51,6 +54,21 @@ namespace Venomaus.BenchmarkTests.Benchmarks
             Positions = PopulatePositionsArray(false, false);
             ProceduralPositions = PopulatePositionsArray(true, false);
             ProceduralPositionsInView = PopulatePositionsArray(true, true);
+
+            var (x, y) = (Grid.Width / 2, Grid.Height / 2);
+            NextChunkCoordinate = GetChunkCoordinate(x + ChunkWidth, y);
+
+            var center = (x: Grid.Width / 2, y: Grid.Height / 2);
+            SameChunkPlus1Pos = (center.x + 1, center.y);
+        }
+
+        private (int x, int y) GetChunkCoordinate(int x, int y)
+        {
+            if (x < 0 && x % ChunkWidth != 0) x -= ChunkWidth;
+            if (y < 0 && y % ChunkHeight != 0) y -= ChunkHeight;
+            var chunkX = ChunkWidth * (x / ChunkWidth);
+            var chunkY = ChunkHeight * (y / ChunkHeight);
+            return (chunkX, chunkY);
         }
 
         public static IEnumerable<int> ValueViewPortWidth()
