@@ -5,11 +5,11 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
 {
     [MemoryDiagnoser]
     [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.SlowestToFastest)]
-    public class ProcGenGridBenchmarkCases : BaseGridBenchmarks<int, Cell<int>>
+    public class ProcGenGridHalfChunkBenchmarkCases : BaseGridBenchmarks<int, Cell<int>>
     {
         protected override int Seed => 1000;
         protected override bool ProcGenEnabled => true;
-        protected override bool DivideChunk => false;
+        protected override bool DivideChunk => true;
 
         protected override void GenerateChunk(Random random, int[] chunk, int width, int height)
         {

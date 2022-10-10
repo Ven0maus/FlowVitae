@@ -10,13 +10,22 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         where TCellType : struct
         where TCell : class, ICell<TCellType>, new()
     {
-        protected Grid<TCellType, TCell> Grid { get; private set; }
+        protected Grid<TCellType, TCell> Grid { get; set; }
 
-        protected virtual int ViewPortWidth { get; }
-        protected virtual int ViewPortHeight { get; }
-        protected virtual int ChunkWidth { get; }
-        protected virtual int ChunkHeight { get; }
+        [ParamsSource(nameof(ValueViewPortWidth))]
+        public int ViewPortWidth { get; set; }
+
+        [ParamsSource(nameof(ValueViewPortHeight))]
+        public int ViewPortHeight { get; set; }
+
+        [ParamsSource(nameof(ValueChunkWidth))]
+        public int ChunkWidth { get; set; }
+
+        [ParamsSource(nameof(ValueChunkHeight))]
+        public int ChunkHeight { get; set; }
+
         protected virtual bool ProcGenEnabled { get; }
+        protected virtual bool DivideChunk { get; }
 
         protected Cell<int>[] Cells { get; private set; }
         protected Cell<int>[] ProceduralCells { get; private set; }
@@ -29,7 +38,7 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
-            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, InitializeProcGen());
+            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, DivideChunk ? (ChunkWidth / 2) : ChunkWidth, DivideChunk ? (ChunkHeight / 2) : ChunkHeight, InitializeProcGen());
 
             // Initialize benchmark data
             Random = new Random(Seed);
@@ -40,7 +49,27 @@ namespace Venomaus.BenchmarkTests.Benchmarks
             ProceduralPositionsInView = PopulatePositionsArray(true, true);
         }
 
-        private IProceduralGen<TCellType, TCell>? InitializeProcGen()
+        public static IEnumerable<int> ValueViewPortWidth()
+        {
+            yield return Program.GetBenchmarkSettings().ViewPortWidth;
+        }
+
+        public static IEnumerable<int> ValueViewPortHeight()
+        {
+            yield return Program.GetBenchmarkSettings().ViewPortHeight;
+        }
+
+        public static IEnumerable<int> ValueChunkWidth()
+        {
+            yield return Program.GetBenchmarkSettings().ChunkWidth;
+        }
+
+        public static IEnumerable<int> ValueChunkHeight()
+        {
+            yield return Program.GetBenchmarkSettings().ChunkHeight;
+        }
+
+        protected IProceduralGen<TCellType, TCell>? InitializeProcGen()
         {
             return ProcGenEnabled ? new ProceduralGenerator<TCellType, TCell>(Seed, GenerateChunk) : null;
         }
