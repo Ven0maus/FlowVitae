@@ -10,7 +10,7 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         where TCellType : struct
         where TCell : class, ICell<TCellType>, new()
     {
-        protected Grid<TCellType, TCell> Grid { get; set; }
+        protected Grid<TCellType, TCell> Grid { get; private set; }
 
         [ParamsSource(nameof(ValueViewPortWidth))]
         public int ViewPortWidth { get; set; }
@@ -38,7 +38,7 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
-            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, DivideChunk ? (ChunkWidth / 2) : ChunkWidth, DivideChunk ? (ChunkHeight / 2) : ChunkHeight, InitializeProcGen());
+            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, DivideChunk ? (int)((double)ViewPortWidth / 100 * 30) : ChunkWidth, DivideChunk ? (int)((double)ViewPortHeight / 100 * 30) : ChunkHeight, InitializeProcGen());
 
             // Initialize benchmark data
             Random = new Random(Seed);

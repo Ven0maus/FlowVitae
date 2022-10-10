@@ -3,17 +3,14 @@ using Venomaus.FlowVitae.Cells;
 
 namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
 {
-    [MemoryDiagnoser]
-    [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.SlowestToFastest)]
-    public class ProcGenGridHalfChunkBenchmarkCases : BaseGridBenchmarks<int, Cell<int>>
+    public class ProcGenBaseBenchmarks : BaseGridBenchmarks<int, Cell<int>>
     {
         protected override int Seed => 1000;
         protected override bool ProcGenEnabled => true;
-        protected override bool DivideChunk => true;
 
         protected override void GenerateChunk(Random random, int[] chunk, int width, int height)
         {
-            for (int x=0; x < width; x++)
+            for (int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++)
                     chunk[y * width + x] = random.Next(-10, 10);
         }
