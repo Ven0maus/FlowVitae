@@ -411,5 +411,11 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(newGrid, Is.Null);
             });
         }
+
+        [Test]
+        public void Center_DoesNot_Throw()
+        {
+            Assert.That(() => Grid.Center(0, 0), Throws.Nothing);
+        }
     }
 }
