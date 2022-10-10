@@ -1,4 +1,6 @@
-﻿namespace Venomaus.FlowVitae.Helpers
+﻿using System.Linq;
+
+namespace Venomaus.FlowVitae.Helpers
 {
     internal static class Fnv1a
     {

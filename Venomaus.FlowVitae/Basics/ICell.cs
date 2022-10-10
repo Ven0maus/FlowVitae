@@ -1,4 +1,6 @@
-﻿namespace Venomaus.FlowVitae.Basics
+﻿using System;
+
+namespace Venomaus.FlowVitae.Basics
 {
     /// <summary>
     /// Interface for a <typeparamref name="TCellType"/> wrapper used in <see cref="IGrid{TCellType, TCell}"/>

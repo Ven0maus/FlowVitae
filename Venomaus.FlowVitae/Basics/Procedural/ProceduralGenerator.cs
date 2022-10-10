@@ -1,4 +1,6 @@
-﻿namespace Venomaus.FlowVitae.Basics.Procedural
+﻿using System;
+
+namespace Venomaus.FlowVitae.Basics.Procedural
 {
     /// <summary>
     /// Basic procedural generator implementation
