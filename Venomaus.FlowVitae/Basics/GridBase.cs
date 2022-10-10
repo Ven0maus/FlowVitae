@@ -241,10 +241,12 @@ namespace Venomaus.FlowVitae.Basics
             return GetCells(positions)
                 .Select(cell =>
             {
-                var (x, y) = WorldToScreenCoordinate(cell.X, cell.Y);
-                cell.X = x;
-                cell.Y = y;
-                return cell;
+                // We clone here, because we don't want to modify stored cell positions
+                var cellClone = Convert(cell.X, cell.Y, cell.CellType);
+                var (x, y) = WorldToScreenCoordinate(cellClone.X, cellClone.Y);
+                cellClone.X = x;
+                cellClone.Y = y;
+                return cellClone;
             });
         }
 

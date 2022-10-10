@@ -928,5 +928,25 @@ namespace Venomaus.UnitTests.Tests
 
             Assert.That(cells.SequenceEqual(prevState, new CellFullComparer<int>()), "Cells are not reset.");
         }
+
+        [Test]
+        public void GetViewPortCells_DoesntOverwrite_Position_WhenCellStored()
+        {
+            var cell = new Cell<int>(500, 500, false, -5);
+            Grid.SetCell(cell, true);
+
+            Grid.Center(500, 500);
+            _ = Grid.GetViewPortCells().ToArray();
+
+            cell = Grid.GetCell(cell.X, cell.Y);
+            Assert.That(cell, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(cell.Walkable, Is.False);
+                Assert.That(cell.CellType, Is.EqualTo(-5));
+                Assert.That(cell.X, Is.EqualTo(500));
+                Assert.That(cell.Y, Is.EqualTo(500));
+            });
+        }
     }
 }
