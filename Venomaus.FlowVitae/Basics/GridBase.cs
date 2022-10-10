@@ -128,7 +128,7 @@ namespace Venomaus.FlowVitae.Basics
         /// Overwrites the Convert method with a custom implementation without having to create a new <see cref="GridBase{TCellType, TCell}"/> implementation.
         /// </summary>
         /// <param name="converter">Converter func that resembles the Convert method</param>
-        public void SetCustomConverter(Func<int, int, TCellType, TCell>? converter)
+        public virtual void SetCustomConverter(Func<int, int, TCellType, TCell>? converter)
         {
             _customConverter = converter;
         }
@@ -139,7 +139,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <remarks>Can only be used for grids that use chunking.</remarks>
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
-        public void Center(int x, int y)
+        public virtual void Center(int x, int y)
         {
             if (_chunkLoader == null) return;
 
@@ -197,7 +197,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
         /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
-        internal (int x, int y) ScreenToWorldCoordinate(int x, int y)
+        public (int x, int y) ScreenToWorldCoordinate(int x, int y)
         {
             if (!InBounds(x, y)) 
                 throw new Exception("Invalid screen coordinate, must be within screen bounds (Width, Height).");
@@ -215,7 +215,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="y">Coordinate Y</param>
         /// <remarks>Only useful when using a chunkloaded grid, static grids will just return input coordinate.</remarks>
         /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
-        internal (int x, int y) WorldToScreenCoordinate(int x, int y)
+        public (int x, int y) WorldToScreenCoordinate(int x, int y)
         {
             if (_chunkLoader == null)
             {
@@ -264,7 +264,7 @@ namespace Venomaus.FlowVitae.Basics
         /// </param>
         /// <remarks>When storeState is <see langword="false"/>, and <typeparamref name="TCellType"/> is modified <see cref="OnCellUpdate"/> will be raised.
         /// When storeState is <see langword="true"/> <see cref="OnCellUpdate"/> will always be raised.</remarks>
-        public void SetCell(TCell cell, bool storeState = false)
+        public virtual void SetCell(TCell cell, bool storeState = false)
         {
             int x = cell.X;
             int y = cell.Y;
@@ -294,7 +294,7 @@ namespace Venomaus.FlowVitae.Basics
         /// This value is always true when the grid uses chunks.
         /// </param>
         /// <remarks>When setting multiple cells at once, use <see cref="SetCells(IEnumerable{TCell}, bool)"/> instead.</remarks>
-        public void SetCell(int x, int y, TCellType cellType, bool storeState = false) 
+        public virtual void SetCell(int x, int y, TCellType cellType, bool storeState = false) 
             => SetCell(Convert(x, y, cellType), storeState);
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="cells">Collection of <typeparamref name="TCell"/></param>
         /// <param name="storeCellState">If <see langword="true"/>, stores all properties and field values of all <paramref name="cells"/>.</param>
         /// <remarks>If you want to control which cells to store state for, use the <see cref="SetCells(IEnumerable{TCell}, Func{TCell, bool}?)"/> overload.</remarks>
-        public void SetCells(IEnumerable<TCell> cells, bool storeCellState) 
+        public virtual void SetCells(IEnumerable<TCell> cells, bool storeCellState) 
             => SetCells(cells, (s) => storeCellState);
 
         /// <summary>
@@ -311,7 +311,7 @@ namespace Venomaus.FlowVitae.Basics
         /// </summary>
         /// <param name="cells">Collection of <typeparamref name="TCell"/></param>
         /// <param name="storeCellStateFunc">Method to decide which cell to store state for or not, default false if null.</param>
-        public void SetCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null)
+        public virtual void SetCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null)
         {
             if (_chunkLoader == null)
             {
@@ -336,7 +336,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="y">Coordinate Y</param>
         /// <remarks>When setting multiple cells at once, use <see cref="GetCells(IEnumerable{ValueTuple{int, int}})"/> instead.</remarks>
         /// <returns><typeparamref name="TCell"/>?</returns>
-        public TCell? GetCell(int x, int y)
+        public virtual TCell? GetCell(int x, int y)
         {
             if (_chunkLoader == null && !InBounds(x, y)) return default;
             if (_chunkLoader == null && _storage != null && _storage.TryGetValue((x, y), out TCell? cell))
@@ -353,7 +353,7 @@ namespace Venomaus.FlowVitae.Basics
         /// </summary>
         /// <param name="positions"></param>
         /// <returns></returns>
-        public IEnumerable<TCell> GetCells(IEnumerable<(int, int)> positions)
+        public virtual IEnumerable<TCell> GetCells(IEnumerable<(int, int)> positions)
         {
             if (_chunkLoader == null)
             {
@@ -380,7 +380,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
         /// <returns><typeparamref name="TCellType"/></returns>
-        public TCellType GetCellType(int x, int y)
+        public virtual TCellType GetCellType(int x, int y)
         {
             if (_chunkLoader == null && !InBounds(x, y)) return default;
             if (_chunkLoader == null && _storage != null && _storage.TryGetValue((x, y), out TCell? cell))
