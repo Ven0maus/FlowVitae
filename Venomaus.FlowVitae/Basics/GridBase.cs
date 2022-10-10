@@ -78,7 +78,7 @@ namespace Venomaus.FlowVitae.Basics
         public GridBase(int width, int height)
         {
             if (width <= 0 || height <= 0)
-                throw new Exception("Cannot define a grid with a width/height smaller or equal to 0");
+                throw new Exception("Cannot define a grid with a viewport width/height smaller or equal to 0");
 
             Width = width;
             Height = height;
