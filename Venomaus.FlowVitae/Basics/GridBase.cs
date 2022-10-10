@@ -77,6 +77,9 @@ namespace Venomaus.FlowVitae.Basics
         /// <param name="height"></param>
         public GridBase(int width, int height)
         {
+            if (width <= 0 || height <= 0)
+                throw new Exception("Cannot define a grid with a width/height smaller or equal to 0");
+
             Width = width;
             Height = height;
             ScreenCells = new TCellType[Width * Height];
@@ -96,6 +99,8 @@ namespace Venomaus.FlowVitae.Basics
             : this (viewPortWidth, viewPortHeight)
         {
             if (generator == null) return;
+            if (chunkWidth <= 0 || chunkHeight <= 0)
+                throw new Exception("Cannot define a grid with a chunk width/height smaller or equal to 0");
 
             // Initialize chunkloader if grid uses chunks
             _chunkLoader = new ChunkLoader<TCellType, TCell>(chunkWidth, chunkHeight, generator, Convert);

@@ -400,5 +400,16 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(cell.Equals(cell2), Is.True);
             Assert.That(cell.Equals(null), Is.False);
         }
+
+        [Test]
+        public void SetZeroViewportSize_Throws_Exception()
+        {
+            Grid<int, Cell<int>>? newGrid = null;
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => newGrid = new Grid<int, Cell<int>>(0, 0), Throws.Exception);
+                Assert.That(newGrid, Is.Null);
+            });
+        }
     }
 }

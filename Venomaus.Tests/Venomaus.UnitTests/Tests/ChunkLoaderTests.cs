@@ -850,5 +850,16 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(-5));
         }
+
+        [Test]
+        public void SetZeroChunkSize_Throws_Exception()
+        {
+            Grid<int, Cell<int>>? newGrid = null;
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => newGrid = new Grid<int, Cell<int>>(100, 100, 0, 0, ProcGen), Throws.Exception);
+                Assert.That(newGrid, Is.Null);
+            });
+        }
     }
 }
