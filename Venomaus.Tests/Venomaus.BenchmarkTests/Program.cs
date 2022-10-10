@@ -9,8 +9,8 @@ namespace Venomaus.BenchmarkTests
 {
     internal class Program
     {
-        private const int GridSize = 15;
-        private static Job JobType = Job.ShortRun;
+        private const int GridSize = 50;
+        private static readonly Job JobType = Job.Default;
 
         private static void Main(string[] args)
         {

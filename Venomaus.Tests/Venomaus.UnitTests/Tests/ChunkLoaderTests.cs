@@ -1,8 +1,11 @@
-﻿using Venomaus.FlowVitae.Basics;
+﻿using System.Linq;
+using Venomaus.FlowVitae.Basics;
 using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Basics.Procedural;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
+using Venomaus.FlowVitae.Helpers;
+using Venomaus.UnitTests.Tools;
 using Direction = Venomaus.FlowVitae.Helpers.Direction;
 
 namespace Venomaus.UnitTests.Tests
@@ -17,6 +20,8 @@ namespace Venomaus.UnitTests.Tests
         private const int Seed = 1000;
         protected override IProceduralGen<int, Cell<int>>? ProcGen => new ProceduralGenerator<int, Cell<int>>(Seed, GenerateChunk);
 
+        private event EventHandler<int[]>? onGenerateChunk;
+
         private void GenerateChunk(Random random, int[] chunk, int width, int height)
         {
             for (int x = 0; x < width; x++)
@@ -26,6 +31,7 @@ namespace Venomaus.UnitTests.Tests
                     chunk[y * width + x] = random.Next(0, 10);
                 }
             }
+            onGenerateChunk?.Invoke(this, chunk);
         }
 
         public ChunkLoaderTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight)
@@ -287,8 +293,8 @@ namespace Venomaus.UnitTests.Tests
             }
 
             // Load useless chunks
-            ChunkLoader.LoadChunk(250, 250);
-            ChunkLoader.LoadChunk(150, 150);
+            ChunkLoader.LoadChunk(250, 250, out _);
+            ChunkLoader.LoadChunk(150, 150, out _);
 
             newLoadedChunks = ChunkLoader.GetLoadedChunks();
             Assert.That(newLoadedChunks, Has.Length.EqualTo(11));
@@ -419,8 +425,8 @@ namespace Venomaus.UnitTests.Tests
                     loadedChunk.y == ChunkLoader.CurrentChunk.y), "No base chunk available.");
 
                 // Can't load already loaded chunk
-                Assert.That(ChunkLoader.LoadChunk(ChunkLoader.CurrentChunk.x, ChunkLoader.CurrentChunk.y), Is.False, "Was able to load base chunk."); 
-                Assert.That(ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Is.True, "Was not able to load new chunk.");
+                Assert.That(ChunkLoader.LoadChunk(ChunkLoader.CurrentChunk.x, ChunkLoader.CurrentChunk.y, out _), Is.False, "Was able to load base chunk."); 
+                Assert.That(ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, out _), Is.True, "Was not able to load new chunk.");
             });
             loadedChunks = ChunkLoader.GetLoadedChunks();
             
@@ -444,7 +450,7 @@ namespace Venomaus.UnitTests.Tests
                 // Force unload it
                 Assert.That(ChunkLoader.UnloadChunk(ChunkLoader.CurrentChunk.x, ChunkLoader.CurrentChunk.y, true), Is.True, "Could not force unload");
                 // Load an arbitrary chunk
-                Assert.That(ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Is.True);
+                Assert.That(ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, out _), Is.True);
                 // See if it can be non force unloaded
                 Assert.That(ChunkLoader.UnloadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Is.True);
             });
@@ -860,6 +866,67 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(() => newGrid = new Grid<int, Cell<int>>(100, 100, 0, 0, ProcGen), Throws.Exception);
                 Assert.That(newGrid, Is.Null);
             });
+        }
+
+        [Test]
+        public void GenerateChunk_ChunkData_IsAlwaysSame()
+        {
+            int chunkX = ViewPortWidth + ChunkWidth * 10;
+            int chunkY = ViewPortHeight + ChunkHeight * 10;
+            var chunkCoords = ChunkLoader.GetChunkCoordinate(chunkX, chunkY);
+
+            Assert.That(() => ChunkLoader.LoadChunk(chunkX, chunkY, out _), Is.True);
+
+            // Collect current chunk data
+            int[] chunkData = new int[ChunkWidth * ChunkHeight];
+            for (int x=0; x < ChunkWidth; x++)
+            {
+                for (int y = 0; y < ChunkHeight; y++)
+                {
+                    var cell = Grid.GetCell(chunkCoords.x + x, chunkCoords.y + y);
+                    Assert.That(cell, Is.Not.Null);
+                    chunkData[y * ChunkWidth + x] = cell.CellType;
+                }
+            }
+
+            Assert.That(() => ChunkLoader.UnloadChunk(chunkX, chunkY), Is.True);
+
+            bool eventRaised = false;
+            void genCheck(object? sender, int[] chunk)
+            {
+                Assert.That(chunkData.SequenceEqual(chunk));
+                eventRaised = true;
+            }
+            onGenerateChunk += genCheck;
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => ChunkLoader.LoadChunk(chunkX, chunkY, out _), Is.True);
+                Assert.That(eventRaised, Is.True);
+            });
+            onGenerateChunk -= genCheck;
+        }
+
+        [Test]
+        public void ClearGridCache_Throws_NoException()
+        {
+            // Populate the grid cache
+            var cells = new List<Cell<int>>();
+            for (int x=Grid.Width / 2; x < (Grid.Width / 2) + 10; x++)
+            {
+                for (int y = Grid.Height / 2; y < (Grid.Height / 2) + 10; y++)
+                {
+                    cells.Add(new Cell<int>(x, y, -10));
+                }
+            }
+
+            List<Cell<int>> prevState = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToList();
+            Grid.SetCells(cells, true);
+
+            Assert.That(() => Grid.ClearCache(), Throws.Nothing);
+
+            cells = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToList();
+
+            Assert.That(cells.SequenceEqual(prevState, new CellFullComparer<int>()), "Cells are not reset.");
         }
     }
 }

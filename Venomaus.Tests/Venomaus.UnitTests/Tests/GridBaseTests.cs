@@ -1,6 +1,7 @@
 using Venomaus.FlowVitae.Basics;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
+using Venomaus.UnitTests.Tools;
 
 namespace Venomaus.UnitTests.Tests
 {
@@ -416,6 +417,29 @@ namespace Venomaus.UnitTests.Tests
         public void Center_DoesNot_Throw()
         {
             Assert.That(() => Grid.Center(0, 0), Throws.Nothing);
+        }
+
+        [Test]
+        public void ClearGridCache_Throws_NoException()
+        {
+            // Populate the grid cache
+            var cells = new List<Cell<int>>();
+            for (int x = Grid.Width / 2; x < (Grid.Width / 2) + 10; x++)
+            {
+                for (int y = Grid.Height / 2; y < (Grid.Height / 2) + 10; y++)
+                {
+                    cells.Add(new Cell<int>(x, y, false, -10));
+                }
+            }
+
+            List<Cell<int>> prevState = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToList();
+            Grid.SetCells(cells, true);
+
+            Assert.That(() => Grid.ClearCache(), Throws.Nothing);
+
+            cells = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToList();
+
+            Assert.That(cells.SequenceEqual(prevState, new CellWalkableComparer<int>()));
         }
     }
 }

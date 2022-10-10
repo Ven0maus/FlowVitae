@@ -6,6 +6,7 @@ using Venomaus.FlowVitae.Grids;
 
 namespace Venomaus.BenchmarkTests.Benchmarks
 {
+    [HideColumns("ViewPortWidth", "ViewPortHeight", "ChunkWidth", "ChunkHeight")]
     public abstract class BaseGridBenchmarks<TCellType, TCell>
         where TCellType : struct
         where TCell : class, ICell<TCellType>, new()

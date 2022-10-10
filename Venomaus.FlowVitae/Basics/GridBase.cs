@@ -125,6 +125,24 @@ namespace Venomaus.FlowVitae.Basics
         { }
 
         /// <summary>
+        /// Sets all cells of which the state was stored, to be eligible for garbage collection.
+        /// </summary>
+        /// <remarks>Use this when you want to remove all stored states from the grid, Note: this also resets the viewport cells for chunkloaded grids.</remarks>
+        public void ClearCache()
+        {
+            _storage = null;
+            _chunkLoader?.ClearGridCache();
+
+            // Reload all chunks
+            if (_chunkLoader != null)
+            {
+                foreach (var chunk in _chunkLoader.GetLoadedChunks())
+                    _chunkLoader.UnloadChunk(chunk.x, chunk.y, true);
+                _chunkLoader.LoadChunksAround(_centerCoordinate.x, _centerCoordinate.y, true);
+            }
+        }
+
+        /// <summary>
         /// Overwrites the Convert method with a custom implementation without having to create a new <see cref="GridBase{TCellType, TCell}"/> implementation.
         /// </summary>
         /// <param name="converter">Converter func that resembles the Convert method</param>
@@ -145,33 +163,8 @@ namespace Venomaus.FlowVitae.Basics
 
             _centerCoordinate = (x, y);
 
-            var minX = x - (Width / 2);
-            var minY = y - (Height / 2);
-
-            // Update the current chunk
-            var centerChunk = _chunkLoader.GetChunkCoordinate(x, y);
-            _chunkLoader.SetCurrentChunk(centerChunk.x, centerChunk.y);
-
-            // Collect all positions
-            var positions = new (int, int)[Width * Height]; 
-            for (var xX = 0; xX < Width; xX++)
-            {
-                for (var yY = 0; yY < Height; yY++)
-                {
-                    var cellX = minX + xX;
-                    var cellY = minY + yY;
-                    positions[yY * Width + xX] = (cellX, cellY);
-                }
-            }
-
-            // Set cells properly to cell type
-            var cells = GetCells(positions);
-            foreach (var cell in cells)
-            {
-                var screenCoordinate = WorldToScreenCoordinate(cell.X, cell.Y);
-                ScreenCells[screenCoordinate.y * Width + screenCoordinate.x] = cell.CellType;
-                OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate, cell));
-            }
+            _chunkLoader.CenterViewPort(x, y, Width, Height, _centerCoordinate,
+                IsWorldCoordinateOnScreen, ScreenCells, OnCellUpdate);
         }
 
         /// <summary>
@@ -223,10 +216,7 @@ namespace Venomaus.FlowVitae.Basics
                     throw new Exception("Invalid world coordinate, must be within screen bounds (Width * Height).");
                 return (x, y);
             }
-            var halfCenterX = _centerCoordinate.x - (Width / 2);
-            var halfCenterY = _centerCoordinate.y - (Height / 2);
-            var modifiedPos = (x:  x - halfCenterX, y: y - halfCenterY);
-            return modifiedPos;
+            return ChunkLoader<TCellType, TCell>.WorldToScreenCoordinate(x, y, Width, Height, _centerCoordinate);
         }
 
         /// <summary>

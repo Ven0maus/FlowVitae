@@ -15,6 +15,15 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
                     chunk[y * width + x] = random.Next(-10, 10);
         }
 
+        private (int x, int y) GetChunkCoordinate(int x, int y)
+        {
+            if (x < 0 && x % ChunkWidth != 0) x -= ChunkWidth;
+            if (y < 0 && y % ChunkHeight != 0) y -= ChunkHeight;
+            var chunkX = ChunkWidth * (x / ChunkWidth);
+            var chunkY = ChunkHeight * (y / ChunkHeight);
+            return (chunkX, chunkY);
+        }
+
         [Benchmark]
         public void SetCell_NoStoreState()
         {
@@ -76,11 +85,19 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
         }
 
         [Benchmark]
-        public void Center()
+        public void Center_NextChunk()
         {
-            var posX = Random.Next(-(ViewPortWidth + ChunkWidth * 3), ViewPortWidth + ChunkWidth * 3);
-            var posY = Random.Next(-(ViewPortWidth + ChunkWidth * 3), ViewPortWidth + ChunkWidth * 3);
-            Grid.Center(posX, posY);
+            var center = (x: Grid.Width / 2, y: Grid.Height / 2);
+            var chunkCoord = GetChunkCoordinate(center.x, center.y);
+            // Move center to the next chunk
+            Grid.Center(chunkCoord.x + ChunkWidth, center.y);
+        }
+
+        [Benchmark]
+        public void Center_SameChunk()
+        {
+            var center = (x: Grid.Width / 2, y: Grid.Height / 2);
+            Grid.Center(center.x + 1, center.y);
         }
 
         [Benchmark]
