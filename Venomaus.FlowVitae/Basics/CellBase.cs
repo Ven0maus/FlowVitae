@@ -3,7 +3,7 @@
     /// <summary>
     /// Base class which provides basic cell functionality
     /// </summary>
-    /// <typeparam name="TCellType">The cell type to be used within the <see cref="IGrid{TCellType, TCell}"/></typeparam>
+    /// <typeparam name="TCellType">The cell type to be used within the <see cref="GridBase{TCellType, TCell}"/></typeparam>
     public abstract class CellBase<TCellType> : ICell<TCellType>
         where TCellType : struct
     {
@@ -25,7 +25,7 @@
         /// </summary>
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
-        /// <param name="cellType">The cell type to be used within the <see cref="IGrid{TCellType, TCell}"/></param>
+        /// <param name="cellType">The cell type to be used within the <see cref="GridBase{TCellType, TCell}"/></param>
         public CellBase(int x, int y, TCellType cellType = default)
         {
             X = x;

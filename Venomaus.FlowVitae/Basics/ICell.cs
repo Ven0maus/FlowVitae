@@ -3,9 +3,9 @@
 namespace Venomaus.FlowVitae.Basics
 {
     /// <summary>
-    /// Interface for a <typeparamref name="TCellType"/> wrapper used in <see cref="IGrid{TCellType, TCell}"/>
+    /// Interface for a <typeparamref name="TCellType"/> wrapper used in <see cref="GridBase{TCellType, TCell}"/>
     /// </summary>
-    /// <typeparam name="TCellType">The cell type for a <see cref="IGrid{TCellType, TCell}"/></typeparam>
+    /// <typeparam name="TCellType">The cell type for a <see cref="GridBase{TCellType, TCell}"/></typeparam>
     public interface ICell<TCellType> : IEquatable<ICell<TCellType>>, IEquatable<(int x, int y)>
         where TCellType : struct
     {
