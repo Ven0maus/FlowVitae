@@ -64,7 +64,7 @@ int[] chunk represent the chunk, int[] will be your TCellType[]
 
 Chunks are generated automatically and they will use this method as reference to build the chunk.
 
-**Setting custom chunk data**
+# Setting custom chunk data						     
 (available in v1.0.5)
 
 It is possible to set custom data, per chunk which can be directly retrieved from the grid.
