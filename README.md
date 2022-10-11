@@ -138,9 +138,10 @@ where TCellType : struct
 ```csharp
 var cell = grid.GetCell(x, y); // returns TCell
 var cellType = grid.GetCelLType(x,y); // returns TCellType
-grid.SetCell(x, y);
+grid.SetCell(x, y, cellType, storeState);
+grid.SetCell(cell, storeState);
 var cells = grid.GetCells(new [] {(0,0), (1,1)}); // returns collection of TCell
-grid.SetCells(cells);
+grid.SetCells(cells, storeState);
 ```
 
 **Center viewport on a coordinate for procedural grids**
