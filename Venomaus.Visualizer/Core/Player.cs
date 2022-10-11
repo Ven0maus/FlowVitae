@@ -7,21 +7,23 @@ namespace Venomaus.Visualizer.Core
 {
     internal class Player : Entity
     {
+        public Point WorldPosition { get; private set; }
+
         public Player(Point position, ColoredGlyph appearance, int zIndex) : base(appearance, zIndex)
         {
-            IsFocused = true;
-            Position = position;
-            GameLoop.Instance.EntityRenderer.Add(this);
-        }
+            var (x, y) = (Constants.GridSettings.ChunkWidth / 2, Constants.GridSettings.ChunkHeight / 2);
+            WorldPosition = new Point(x, y);
+            GameLoop.Instance.Grid.Center(WorldPosition.X, WorldPosition.Y);
 
-        protected override void OnPositionChanged(Point oldPosition, Point newPosition)
-        {
-            GameLoop.Instance.Grid.Center(newPosition.X, newPosition.Y);
+            // Sadconsole related things
+            Position = position;
+            IsFocused = true;
+            GameLoop.Instance.EntityRenderer.Add(this);
         }
 
         public void MoveTowards(Direction dir, bool checkCanMove = true)
         {
-            var point = Position;
+            var point = WorldPosition;
             point += dir;
             MoveTowards(point.X, point.Y, checkCanMove);
         }
@@ -31,7 +33,8 @@ namespace Venomaus.Visualizer.Core
             var cell = GameLoop.Instance.Grid.GetCell(x, y);
             if (cell == null || (checkCanMove && !cell.Walkable)) return;
 
-            Position = cell.Position;
+            WorldPosition = new Point(x, y);
+            GameLoop.Instance.Grid.Center(WorldPosition.X, WorldPosition.Y);
         }
 
         public override bool ProcessKeyboard(Keyboard keyboard)
