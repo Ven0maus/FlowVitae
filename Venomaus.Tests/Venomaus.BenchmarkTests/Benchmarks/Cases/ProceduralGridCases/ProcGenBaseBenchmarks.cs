@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
+using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Cells;
 
 namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
@@ -14,6 +15,12 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
             for (int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++)
                     chunk[y * width + x] = random.Next(-10, 10);
+        }
+
+        [Benchmark]
+        public IChunkData? GetChunkData()
+        {
+            return Grid.GetChunkData(ViewPortWidth / 2, ViewPortHeight / 2);
         }
 
         [Benchmark]

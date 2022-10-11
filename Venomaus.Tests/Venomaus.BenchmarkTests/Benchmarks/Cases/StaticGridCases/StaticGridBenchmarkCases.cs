@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
+using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Cells;
 
 namespace Venomaus.BenchmarkTests.Benchmarks.Cases.StaticGridCases
@@ -10,6 +11,12 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.StaticGridCases
     {
         protected override int Seed => 1000;
         protected override bool ProcGenEnabled => false;
+
+        [Benchmark]
+        public IChunkData? GetChunkData()
+        {
+            return Grid.GetChunkData(ViewPortWidth / 2, ViewPortHeight / 2);
+        }
 
         [Benchmark]
         public void SetCell_NoStoreState()
