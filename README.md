@@ -64,6 +64,47 @@ int[] chunk represent the chunk, int[] will be your TCellType[]
 
 Chunks are generated automatically and they will use this method as reference to build the chunk.
 
+**Setting custom chunk data**
+(available in v1.0.5)
+
+It is possible to set custom data, per chunk which can be directly retrieved from the grid.
+This custom data, can be any class that implements IChunkData interface. An example implementation:
+```csharp
+internal class TestChunkData : IChunkData
+{
+	public int Seed { get; set; }
+	public List<(int x, int y)>? Trees { get; set; }
+}
+// Custom chunk generation implementation
+Func<Random, int[], int, int, TestChunkData> chunkGenerationMethod = (random, chunk, width, height) =>
+{
+	// Define custom chunk data
+	var chunkData = new TestChunkData
+	{
+		Trees = new List<(int x, int y)>()
+	};
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			chunk[y * width + x] = random.Next(-10, 10);
+			// Every 0 value is a tree, lets keep it for easy pathfinding access
+			if (chunk[y * width + x] == 0)
+				chunkData.Trees.Add((x, y));
+		}
+	}
+	return chunkData;
+};
+
+// Initialize the custom implementations
+var customProcGen = new ProceduralGenerator<int, Cell<int>, TestChunkData>(Seed, chunkGenerationMethod);
+var customGrid = new Grid<int, Cell<int>, TestChunkData>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, customProcGen);
+
+// Retrieve the chunk data, for the whole chunk where position (5, 5) resides in
+var chunkData = customGrid.GetChunkData(5, 5);
+Console.WriteLine("Trees in chunk: " + chunkData.Trees != null ? chunkData.Trees.Count : 0);
+```
+
 # Rendering to a render engine
 FlowVitae provides an event that is raised when a cell on the viewport is updated
 ```csharp
