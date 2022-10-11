@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Venomaus.FlowVitae.Basics.Procedural;
@@ -340,9 +340,10 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             var minX = x - (viewPortWidth / 2);
             var minY = y - (viewPortHeight / 2);
 
-            // Update the current chunk
+            // Update the current chunk only if the center isn't the current
             var centerChunk = GetChunkCoordinate(x, y);
-            SetCurrentChunk(centerChunk.x, centerChunk.y);
+            if (CurrentChunk.x != centerChunk.x || CurrentChunk.y != centerChunk.y)
+                SetCurrentChunk(centerChunk.x, centerChunk.y);
 
             for (var xX = 0; xX < viewPortWidth; xX++)
             {

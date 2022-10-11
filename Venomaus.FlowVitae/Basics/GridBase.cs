@@ -111,9 +111,8 @@ namespace Venomaus.FlowVitae.Basics
             _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(chunkWidth, chunkHeight, generator, Convert);
             _chunkLoader.LoadChunksAround(0, 0, true);
 
-            // By default center on the middle of the viewport
-            // This helps reduce chunks when the chunk width/height is the same as viewport
-            Center(viewPortWidth / 2, viewPortHeight / 2);
+            // Default center on the middle of the viewport
+            Center(viewPortWidth / 2, viewPortHeight / 2);      
         }
 
         /// <summary>
