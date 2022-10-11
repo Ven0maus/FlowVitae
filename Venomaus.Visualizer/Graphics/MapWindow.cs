@@ -16,7 +16,8 @@ namespace Venomaus.Visualizer.Graphics
 
         private void Grid_OnCellUpdate(object? sender, CellUpdateArgs<int, VisualCell<int>> args)
         {
-            Surface.SetGlyph(args.ScreenX, args.ScreenY, args.Cell);
+            // Copy cell appearance onto the surface and sync visibility
+            args.Cell.CopyAppearanceTo(Surface[args.ScreenX, args.ScreenY]);
             Surface[args.ScreenX, args.ScreenY].IsVisible = args.Cell.IsVisible;
         }
     }

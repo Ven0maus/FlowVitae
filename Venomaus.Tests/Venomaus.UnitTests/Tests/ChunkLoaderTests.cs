@@ -1,10 +1,8 @@
-﻿using System.Linq;
-using Venomaus.FlowVitae.Basics;
+﻿using Venomaus.FlowVitae.Basics;
 using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Basics.Procedural;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
-using Venomaus.FlowVitae.Helpers;
 using Venomaus.UnitTests.Tools;
 using Direction = Venomaus.FlowVitae.Helpers.Direction;
 
@@ -14,13 +12,13 @@ namespace Venomaus.UnitTests.Tests
     [TestFixture(50, 50, 25, 25)]
     [TestFixture(80, 35, 80, 35)]
     [TestFixture(69, 29, 13, 12)]
-    [TestOf(typeof(ChunkLoader<int, Cell<int>>))]
+    [TestOf(typeof(ChunkLoader<int, Cell<int>, IChunkData>))]
     internal class ChunkLoaderTests : BaseTests<int, Cell<int>>
     {
         private const int Seed = 1000;
         protected override IProceduralGen<int, Cell<int>>? ProcGen => new ProceduralGenerator<int, Cell<int>>(Seed, GenerateChunk);
 
-        private event EventHandler<int[]>? onGenerateChunk;
+        private event EventHandler<int[]>? OnGenerateChunk;
 
         private void GenerateChunk(Random random, int[] chunk, int width, int height)
         {
@@ -31,7 +29,7 @@ namespace Venomaus.UnitTests.Tests
                     chunk[y * width + x] = random.Next(0, 10);
                 }
             }
-            onGenerateChunk?.Invoke(this, chunk);
+            OnGenerateChunk?.Invoke(this, chunk);
         }
 
         public ChunkLoaderTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight)
@@ -897,13 +895,13 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(chunkData.SequenceEqual(chunk));
                 eventRaised = true;
             }
-            onGenerateChunk += genCheck;
+            OnGenerateChunk += genCheck;
             Assert.Multiple(() =>
             {
                 Assert.That(() => ChunkLoader.LoadChunk(chunkX, chunkY, out _), Is.True);
                 Assert.That(eventRaised, Is.True);
             });
-            onGenerateChunk -= genCheck;
+            OnGenerateChunk -= genCheck;
         }
 
         [Test]
@@ -947,6 +945,51 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(cell.X, Is.EqualTo(500));
                 Assert.That(cell.Y, Is.EqualTo(500));
             });
+        }
+
+        [Test]
+        public void GetChunkData_ChunkedGrid_WithNoDataProvided_ReturnsNull()
+        {
+            Assert.That(Grid.GetChunkData(0, 0), Is.Null);
+        }
+
+        [Test]
+        public void GetChunkData_Returns_ValidData()
+        {
+            // Custom chunk generation implementation
+            Func<Random, int[], int, int, TestChunkData> chunkGenerationMethod = (random, chunk, width, height) =>
+            {
+                // Define custom chunk data
+                var chunkData = new TestChunkData
+                {
+                    Trees = new List<(int x, int y)>()
+                };
+                for (int x = 0; x < width; x++)
+                {
+                    for (int y = 0; y < height; y++)
+                    {
+                        // Every chunk will have a tree at 0, 0
+                        if (x == 0 && y == 0)
+                            chunkData.Trees.Add((x, y));
+                        chunk[y * width + x] = random.Next(-10, 10);
+                    }
+                }
+                return chunkData;
+            };
+
+            // Initialize the custom implementations
+            var customProcGen = new ProceduralGenerator<int, Cell<int>, TestChunkData>(Seed, chunkGenerationMethod);
+            var customGrid = new Grid<int, Cell<int>, TestChunkData>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, customProcGen);
+
+            // Chunk data retrieval
+            TestChunkData? customChunkData = null;
+            Assert.That(() => customChunkData = customGrid.GetChunkData(0, 0), Throws.Nothing);
+
+            // Chunk data verification
+            Assert.That(customChunkData, Is.Not.Null);
+            Assert.That(customChunkData.Trees, Is.Not.Null);
+            Assert.That(customChunkData.Trees, Has.Count.EqualTo(1));
+            Assert.That(customChunkData.Trees[0], Is.EqualTo((0, 0)));
         }
     }
 }

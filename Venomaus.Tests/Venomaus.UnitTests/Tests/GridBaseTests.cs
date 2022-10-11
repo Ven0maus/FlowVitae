@@ -1,4 +1,5 @@
 using Venomaus.FlowVitae.Basics;
+using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
 using Venomaus.UnitTests.Tools;
@@ -36,8 +37,13 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(() => new Grid<int, Cell<int>>(100, 100), Throws.Nothing);
                 Assert.That(() => new Grid<int, Cell<int>>(100, 100, 50, 50, null), Throws.Nothing);
                 Assert.That(() => new Grid<int, Cell<int>>(100, 100, null), Throws.Nothing);
-                Assert.That(() => new Grid<int, Cell<int>>(100, 100, 50, 50, ProcGen), Throws.Nothing);
                 Assert.That(() => new Grid<int, Cell<int>>(100, 100, ProcGen), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>>(100, 100, 50, 50, ProcGen), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>, IChunkData>(100, 100), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>, IChunkData>(100, 100, ProcGen), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>, IChunkData>(100, 100, 50, 50, ProcGen), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>, IChunkData>(100, 100, 50, 50, null), Throws.Nothing);
+                Assert.That(() => new Grid<int, Cell<int>, IChunkData>(100, 100, null), Throws.Nothing);
             });
         }
 
@@ -440,6 +446,12 @@ namespace Venomaus.UnitTests.Tests
             cells = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToList();
 
             Assert.That(cells.SequenceEqual(prevState, new CellWalkableComparer<int>()));
+        }
+
+        [Test]
+        public void GetChunkData_NonChunkedGrid_ReturnsNull()
+        {
+            Assert.That(Grid.GetChunkData(0, 0), Is.Null);
         }
     }
 }

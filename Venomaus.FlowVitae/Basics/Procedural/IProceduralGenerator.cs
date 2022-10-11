@@ -1,13 +1,27 @@
-﻿namespace Venomaus.FlowVitae.Basics.Procedural
+﻿using Venomaus.FlowVitae.Basics.Chunking;
+
+namespace Venomaus.FlowVitae.Basics.Procedural
 {
     /// <summary>
     /// Interface for procedural generation that can be supplied to <see cref="GridBase{TCellType, TCell}"/>
     /// </summary>
     /// <typeparam name="TCellType"></typeparam>
     /// <typeparam name="TCell"></typeparam>
-    public interface IProceduralGen<TCellType, TCell>
+    public interface IProceduralGen<TCellType, TCell> : IProceduralGen<TCellType, TCell, IChunkData>
         where TCellType : struct
         where TCell : class, ICell<TCellType>, new()
+    { }
+
+    /// <summary>
+    /// Interface for procedural generation that can be supplied to <see cref="GridBase{TCellType, TCell}"/>
+    /// </summary>
+    /// <typeparam name="TCellType"></typeparam>
+    /// <typeparam name="TCell"></typeparam>
+    /// <typeparam name="TChunkData"></typeparam>
+    public interface IProceduralGen<TCellType, TCell, TChunkData>
+        where TCellType : struct
+        where TCell : class, ICell<TCellType>, new()
+        where TChunkData : class, IChunkData
     {
         /// <summary>
         /// The procedural generation seed
@@ -21,6 +35,6 @@
         /// <param name="width">Area width</param>
         /// <param name="height">Area height</param>
         /// <returns><typeparamref name="TCellType"/>[width*height]</returns>
-        TCellType[] Generate(int seed, int width, int height);
+        (TCellType[] chunkCells, TChunkData? chunkData) Generate(int seed, int width, int height);
     }
 }
