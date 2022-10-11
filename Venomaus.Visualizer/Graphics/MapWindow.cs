@@ -17,6 +17,7 @@ namespace Venomaus.Visualizer.Graphics
         private void Grid_OnCellUpdate(object? sender, CellUpdateArgs<int, VisualCell<int>> args)
         {
             Surface.SetGlyph(args.ScreenX, args.ScreenY, args.Cell);
+            Surface[args.ScreenX, args.ScreenY].IsVisible = args.Cell.IsVisible;
         }
     }
 }
