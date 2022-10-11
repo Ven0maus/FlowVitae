@@ -17,8 +17,9 @@ namespace Venomaus.Visualizer.Graphics
         private void Grid_OnCellUpdate(object? sender, CellUpdateArgs<int, VisualCell<int>> args)
         {
             // Copy cell appearance onto the surface and sync visibility
-            args.Cell.CopyAppearanceTo(Surface[args.ScreenX, args.ScreenY]);
-            Surface[args.ScreenX, args.ScreenY].IsVisible = args.Cell.IsVisible;
+            args.Cell.CopyAppearanceTo(Surface[args.ScreenY * Width + args.ScreenX]);
+            Surface[args.ScreenY * Width + args.ScreenX].IsVisible = args.Cell.IsVisible;
+            Surface.IsDirty = true;
         }
     }
 }
