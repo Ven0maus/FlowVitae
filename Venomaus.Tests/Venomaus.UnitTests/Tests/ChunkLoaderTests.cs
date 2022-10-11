@@ -3,6 +3,7 @@ using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Basics.Procedural;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
+using Venomaus.FlowVitae.Helpers;
 using Venomaus.UnitTests.Tools;
 using Direction = Venomaus.FlowVitae.Helpers.Direction;
 
@@ -981,6 +982,8 @@ namespace Venomaus.UnitTests.Tests
             var customProcGen = new ProceduralGenerator<int, Cell<int>, TestChunkData>(Seed, chunkGenerationMethod);
             var customGrid = new Grid<int, Cell<int>, TestChunkData>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, customProcGen);
 
+            Assert.That(customGrid._chunkLoader, Is.Not.Null);
+
             // Chunk data retrieval
             TestChunkData? customChunkData = null;
             Assert.That(() => customChunkData = customGrid.GetChunkData(0, 0), Throws.Nothing);
@@ -990,6 +993,11 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(customChunkData.Trees, Is.Not.Null);
             Assert.That(customChunkData.Trees, Has.Count.EqualTo(1));
             Assert.That(customChunkData.Trees[0], Is.EqualTo((0, 0)));
+
+            // Check if seed matches
+            var chunkCoordinate = customGrid._chunkLoader.GetChunkCoordinate(0, 0);
+            var seed = Fnv1a.Hash32(chunkCoordinate.x, chunkCoordinate.y, Seed);
+            Assert.That(customChunkData.Seed, Is.EqualTo(seed));
         }
     }
 }
