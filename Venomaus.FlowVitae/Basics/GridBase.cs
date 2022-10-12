@@ -74,6 +74,8 @@ namespace Venomaus.FlowVitae.Basics
             }
         }
 
+        private bool _viewPortInitialized = false;
+
         /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
         /// </summary>
@@ -112,7 +114,8 @@ namespace Venomaus.FlowVitae.Basics
             _chunkLoader.LoadChunksAround(0, 0, true);
 
             // Default center on the middle of the viewport
-            Center(viewPortWidth / 2, viewPortHeight / 2);      
+            Center(viewPortWidth / 2, viewPortHeight / 2);
+            _viewPortInitialized = true;
         }
 
         /// <summary>
@@ -176,10 +179,11 @@ namespace Venomaus.FlowVitae.Basics
         {
             if (_chunkLoader == null) return;
 
+            var prevCenterCoordinate = _centerCoordinate;
             _centerCoordinate = (x, y);
 
-            _chunkLoader.CenterViewPort(x, y, Width, Height, _centerCoordinate,
-                IsWorldCoordinateOnScreen, ScreenCells, OnCellUpdate);
+            _chunkLoader.CenterViewPort(x, y, Width, Height, prevCenterCoordinate, _centerCoordinate,
+                IsWorldCoordinateOnScreen, ScreenCells, OnCellUpdate, _viewPortInitialized);
         }
 
         /// <summary>

@@ -333,9 +333,9 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return GetCoordinateBySizeNoConversion(x, y, _width, _height);
         }
 
-        public void CenterViewPort(int x, int y, int viewPortWidth, int viewPortHeight, 
+        public void CenterViewPort(int x, int y, int viewPortWidth, int viewPortHeight, (int x, int y) prevCenterCoordinate,
             (int x, int y) centerCoordinate, Checker isWorldCoordinateOnScreen, TCellType[] screenCells,
-            EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate)
+            EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate, bool viewPortInitialized)
         {
             var minX = x - (viewPortWidth / 2);
             var minY = y - (viewPortHeight / 2);
@@ -345,26 +345,61 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             if (CurrentChunk.x != centerChunk.x || CurrentChunk.y != centerChunk.y)
                 SetCurrentChunk(centerChunk.x, centerChunk.y);
 
-            for (var xX = 0; xX < viewPortWidth; xX++)
+            var diffX = -(centerCoordinate.x - prevCenterCoordinate.x);
+            var diffY = -(centerCoordinate.y - prevCenterCoordinate.y);
+
+            // This basically shifts the cells to the opposite direction as to where you are centering from->to.
+            // Eg center from left to right, it will shift cells left
+            // The inverse loop here makes sure that when going from 0,0 to right, it won't copy over the same value
+            // If diffX or diffY > 0 then inverse the loop
+            if (diffX > 0 || diffY > 0)
             {
-                for (var yY = 0; yY < viewPortHeight; yY++)
-                {
-                    var cellX = minX + xX;
-                    var cellY = minY + yY;
-
-                    if (LoadChunk(cellX, cellY, out var chunkCoordinate))
-                        _tempLoadedChunks.Add(chunkCoordinate);
-
-                    var cell = GetChunkCell(cellX, cellY, false, isWorldCoordinateOnScreen, screenCells);
-                    var screenCoordinate = WorldToScreenCoordinate(cell.X, cell.Y, viewPortWidth, viewPortHeight, centerCoordinate);
-                    screenCells[screenCoordinate.y * viewPortWidth + screenCoordinate.x] = cell.CellType;
-                    onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate, cell));
-                }
+                for (var xX = viewPortWidth - 1; xX >= 0; xX--)
+                    for (var yY = viewPortHeight - 1; yY >= 0; yY--)
+                        SyncViewportCellOnCenter(minX, minY, xX, yY, viewPortWidth, viewPortHeight,
+                            centerCoordinate, diffX, diffY, viewPortInitialized, isWorldCoordinateOnScreen,
+                            screenCells, onCellUpdate);
+            }
+            else
+            {
+                for (var xX = 0; xX < viewPortWidth; xX++)
+                    for (var yY = 0; yY < viewPortHeight; yY++)
+                        SyncViewportCellOnCenter(minX, minY, xX, yY, viewPortWidth, viewPortHeight,
+                            centerCoordinate, diffX, diffY, viewPortInitialized, isWorldCoordinateOnScreen,
+                            screenCells, onCellUpdate);
             }
 
             foreach (var chunk in _tempLoadedChunks)
                 UnloadChunk(chunk.x, chunk.y);
             _tempLoadedChunks.Clear();
+        }
+
+        private void SyncViewportCellOnCenter(int minX, int minY, int xX, int yY, int viewPortWidth, int viewPortHeight, 
+            (int x, int y) centerCoordinate, int diffX, int diffY, bool viewPortInitialized, Checker isWorldCoordinateOnScreen, 
+            TCellType[] screenCells, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate)
+        {
+            var cellX = minX + xX;
+            var cellY = minY + yY;
+            var newScreenCoordinate = WorldToScreenCoordinate(cellX, cellY, viewPortWidth, viewPortHeight, centerCoordinate);
+
+            var prevValue = (x: cellX - diffX, y: cellY - diffY);
+            var prevScreenCoord = WorldToScreenCoordinate(prevValue.x, prevValue.y, viewPortWidth, viewPortHeight, centerCoordinate);
+            if (isWorldCoordinateOnScreen.Invoke(prevValue.x, prevValue.y, out _, out _) && viewPortInitialized)
+            {
+                var prevScreenType = screenCells[prevScreenCoord.y * viewPortWidth + prevScreenCoord.x];
+
+                // Update viewport cell with previous cell
+                screenCells[newScreenCoordinate.y * viewPortWidth + newScreenCoordinate.x] = prevScreenType;
+                onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(newScreenCoordinate, _cellTypeConverter(cellX, cellY, prevScreenType)));
+                return;
+            }
+
+            if (LoadChunk(cellX, cellY, out var chunkCoordinate))
+                _tempLoadedChunks.Add(chunkCoordinate);
+
+            var cell = GetChunkCell(cellX, cellY, false, isWorldCoordinateOnScreen, screenCells);
+            screenCells[newScreenCoordinate.y * viewPortWidth + newScreenCoordinate.x] = cell.CellType;
+            onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(newScreenCoordinate, cell));
         }
 
         public static (int x, int y) WorldToScreenCoordinate(int x, int y, int viewPortWidth, int viewPortHeight, (int x, int y) centerCoordinate)

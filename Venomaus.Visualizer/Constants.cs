@@ -11,8 +11,8 @@
 
         public class GridSettings
         {
-            public const int ChunkWidth = 80;
-            public const int ChunkHeight = 35;
+            public const int ChunkWidth = 100;
+            public const int ChunkHeight = 100;
         }
     }
 }
