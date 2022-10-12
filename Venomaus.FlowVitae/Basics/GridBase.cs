@@ -50,6 +50,24 @@ namespace Venomaus.FlowVitae.Basics
         internal readonly ChunkLoader<TCellType, TCell, TChunkData>? _chunkLoader;
 
         /// <summary>
+        /// True if chunks should be loaded in a seperate thread if possible, this improves performance.
+        /// This is by default enabled.
+        /// </summary>
+        /// <remarks>This property works only for chunked grids.</remarks>
+        public bool UseThreading
+        {
+            get
+            {
+                return _chunkLoader != null && _chunkLoader.UseThreading;
+            }
+            set
+            {
+                if (_chunkLoader != null)
+                    _chunkLoader.UseThreading = value;
+            }
+        }
+
+        /// <summary>
         /// Raised every time a screen cell is updated, can be used for rendering updates.
         /// </summary>
         /// <remarks>See <see cref="RaiseOnlyOnCellTypeChange"/> to control how this event is raised.</remarks>
@@ -109,13 +127,17 @@ namespace Venomaus.FlowVitae.Basics
             if (chunkWidth <= 0 || chunkHeight <= 0)
                 throw new Exception("Cannot define a grid with a chunk width/height smaller or equal to 0");
 
+            // Disable for initial load
+            UseThreading = false;
+
             // Initialize chunkloader if grid uses chunks
-            _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(chunkWidth, chunkHeight, generator, Convert);
+            _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert);
             _chunkLoader.LoadChunksAround(0, 0, true);
 
             // Default center on the middle of the viewport
             Center(viewPortWidth / 2, viewPortHeight / 2);
             _viewPortInitialized = true;
+            UseThreading = true;
         }
 
         /// <summary>

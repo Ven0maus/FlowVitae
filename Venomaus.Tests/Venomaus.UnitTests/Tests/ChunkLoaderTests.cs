@@ -534,10 +534,9 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(baseChunk.x), "Current chunk x is not correct");
                 Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(baseChunk.y), "Current chunk y is not correct");
             });
-            loadedChunks = ChunkLoader.GetLoadedChunks().OrderBy(a => a.x).ThenBy(a => a.y).ToArray();
             Assert.Multiple(() =>
             {
-                Assert.That(loadedChunks, Has.Length.EqualTo(9), "Loaded chunks not equal to 9");
+                Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks().OrderBy(a => a.x).ThenBy(a => a.y).ToArray(), Has.Length.EqualTo(9).After(2).Seconds.PollEvery(100).MilliSeconds, "Loaded chunks not equal to 9");
                 Assert.That(cellsUpdated, Has.Count.EqualTo(viewPort.Length), "cellsUpdated not equal to viewport length");
             });
 
@@ -640,7 +639,8 @@ namespace Venomaus.UnitTests.Tests
                     break;
             }
 
-            var loadedChunks = ChunkLoader.GetLoadedChunks();
+            (int x, int y)[] loadedChunks = Array.Empty<(int x, int y)>();
+            Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(10).MilliSeconds);
             Assert.Multiple(() =>
             {
                 Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), "Base chunk not loaded!");
@@ -652,7 +652,7 @@ namespace Venomaus.UnitTests.Tests
             for (int i = 0; i < sizeDir; i++)
             {
                 Grid.Center(dirX != 0 ? (dirX < 0 ? -i : i) : 0, dirY != 0 ? (dirY < 0 ? -i : i) : 0);
-                loadedChunks = ChunkLoader.GetLoadedChunks();
+                Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(10).MilliSeconds);
                 Assert.Multiple(() =>
                 {
                     Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), "Chunk (0, 0) not loaded");
@@ -661,7 +661,7 @@ namespace Venomaus.UnitTests.Tests
             }
 
             Grid.Center(dirX != 0 ? dirX : 0, dirY != 0 ? dirY : 0);
-            loadedChunks = ChunkLoader.GetLoadedChunks();
+            Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(10).MilliSeconds);
             Assert.Multiple(() =>
             {
                 Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), "Chunk (0, 0) not loaded");
