@@ -101,8 +101,8 @@ namespace Venomaus.BenchmarkTests.Benchmarks
 
         protected virtual (int x, int y)[] PopulatePositionsArray(bool procedural, bool inView)
         {
-            var width10Procent = (ChunkWidth / 100 * 10);
-            var height10Procent = (ChunkHeight / 100 * 10);
+            var width10Procent = (int)((double)ChunkWidth / 100 * 10);
+            var height10Procent = (int)((double)ChunkHeight / 100 * 10);
             var positions = new (int x, int y)[width10Procent * height10Procent];
 
             var center = (x: ViewPortWidth / 2, y: ViewPortHeight / 2);
@@ -140,8 +140,8 @@ namespace Venomaus.BenchmarkTests.Benchmarks
 
         protected virtual Cell<int>[] PopulateCellsArray(bool procedural)
         {
-            var width10Procent = (ChunkWidth / 100 * 10);
-            var height10Procent = (ChunkHeight / 100 * 10);
+            var width10Procent = (int)((double)ChunkWidth / 100 * 10);
+            var height10Procent = (int)((double)ChunkHeight / 100 * 10);
             var cells = new Cell<int>[width10Procent * height10Procent];
 
             for (int x = 0; x < width10Procent; x++)

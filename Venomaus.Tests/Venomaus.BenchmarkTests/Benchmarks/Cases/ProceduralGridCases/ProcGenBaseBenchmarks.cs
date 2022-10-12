@@ -18,12 +18,6 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
         }
 
         [Benchmark]
-        public IChunkData? GetChunkData()
-        {
-            return Grid.GetChunkData(ViewPortWidth / 2, ViewPortHeight / 2);
-        }
-
-        [Benchmark]
         public void SetCell_NoStoreState()
         {
             Grid.SetCell(ViewPortWidth / 2, ViewPortHeight / 2, 5);
