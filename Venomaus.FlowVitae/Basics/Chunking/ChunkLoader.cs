@@ -112,10 +112,12 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             foreach (var chunk in onScreenChunks)
                 LoadChunk(chunk.x, chunk.y, out _);
 
+            foreach (var chunk in nonMandatoryChunks)
+                UnloadChunk(chunk.x, chunk.y);
+
             // Load the rest off thread
             // ToArray required so foreach doesn't influence _chunks
             LoadChunksThreaded(offScreenChunks);
-            UnloadChunksThreaded(nonMandatoryChunks);
         }
 
         private void LoadChunksThreaded(IEnumerable<(int x, int y)> chunks)
@@ -127,20 +129,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                     if (_lockedChunks.Contains(chunk)) continue;
                     _lockedChunks.Add(chunk);
                     LoadChunk(chunk.x, chunk.y, out _);
-                    _lockedChunks.Remove(chunk);
-                }
-            }).ConfigureAwait(false);
-        }
-
-        private void UnloadChunksThreaded(IEnumerable<(int x, int y)> chunks)
-        {
-            _ = Task.Factory.StartNew(() =>
-            {
-                foreach (var chunk in chunks)
-                {
-                    if (_lockedChunks.Contains(chunk)) continue;
-                    _lockedChunks.Add(chunk);
-                    UnloadChunk(chunk.x, chunk.y);
                     _lockedChunks.Remove(chunk);
                 }
             }).ConfigureAwait(false);
