@@ -185,12 +185,12 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(chunkCoordinate.x));
             Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(chunkCoordinate.y));
 
-            ChunkLoader.SetCurrentChunk(250, 250);
+            ChunkLoader.SetCurrentChunk(250, 250, Grid.IsWorldCoordinateOnScreen);
             chunkCoordinate = ChunkLoader.GetChunkCoordinate(250, 250);
             Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(chunkCoordinate.x));
             Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(chunkCoordinate.y));
 
-            ChunkLoader.SetCurrentChunk(-250, -250);
+            ChunkLoader.SetCurrentChunk(-250, -250, Grid.IsWorldCoordinateOnScreen);
             chunkCoordinate = ChunkLoader.GetChunkCoordinate(-250, -250);
             Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(chunkCoordinate.x));
             Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(chunkCoordinate.y));
