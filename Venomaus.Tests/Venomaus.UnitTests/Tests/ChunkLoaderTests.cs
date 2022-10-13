@@ -493,7 +493,26 @@ namespace Venomaus.UnitTests.Tests
         }
 
         [Test]
-        public void Center_ViewPort_PositiveCoords_Correct()
+        public void Center_NoThreading_Works()
+        {
+            Grid.UseThreading = false;
+            Assert.That(Grid.UseThreading, Is.EqualTo(false));
+            Center_ViewPort_Correct();
+        }
+
+        [Test]
+        public void Center_Viewport_UsesScreenCells()
+        {
+            bool triggered = false;
+            Grid.UseThreading = false;
+            Grid.OnCellUpdate += (sender, args) => { triggered = true; };
+            Grid.Center(0, 0);
+            Grid.Center(1, 0);
+            Assert.That(triggered, Is.True);
+        }
+
+        [Test]
+        public void Center_ViewPort_Correct()
         {
             var viewPort = Grid.GetViewPortCells().ToArray();
             Assert.That(viewPort.All(cell => cell.CellType != -10), "Initial viewport is not correct");
@@ -1006,16 +1025,22 @@ namespace Venomaus.UnitTests.Tests
             // Attempt to store chunk data with some different data
             customChunkData.Trees.Add((5, 5));
             customGrid.StoreChunkData(customChunkData);
+            // Check double save works fine
+            Assert.That(() => customGrid.StoreChunkData(customChunkData), Throws.Nothing);
             // Reload chunk data
             customChunkData = customGrid.GetChunkData(0, 0);
             Assert.That(customChunkData, Is.Not.Null);
             Assert.That(customChunkData.Trees, Contains.Item((5, 5)));
 
-            customGrid.RemoveChunkData(customChunkData);
+            // Reload chunk
+            customGrid._chunkLoader.UnloadChunk(0, 0, true);
+            customGrid._chunkLoader.LoadChunk(0, 0, out _);
 
-            // Reload chunk to re-populate the chunk data
-            customGrid._chunkLoader.UnloadChunk(chunkCoordinate.x, chunkCoordinate.y, true);
-            customGrid._chunkLoader.LoadChunk(chunkCoordinate.x, chunkCoordinate.y, out _);
+            customChunkData = customGrid.GetChunkData(0, 0);
+            Assert.That(customChunkData, Is.Not.Null);
+            Assert.That(customChunkData.Trees, Contains.Item((5, 5)));
+
+            customGrid.RemoveChunkData(customChunkData, true);
 
             // Reload chunk data
             customChunkData = customGrid.GetChunkData(0, 0);

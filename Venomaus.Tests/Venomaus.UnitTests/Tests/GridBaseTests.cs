@@ -455,5 +455,12 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(() => Grid.RemoveChunkData(new TestChunkData()), Throws.Nothing);
             Assert.That(Grid.GetChunkData(0, 0), Is.Null);
         }
+
+        [Test]
+        public void UseThreading_DoesNotWork_StaticGrid()
+        {
+            Grid.UseThreading = true;
+            Assert.That(Grid.UseThreading, Is.False);
+        }
     }
 }

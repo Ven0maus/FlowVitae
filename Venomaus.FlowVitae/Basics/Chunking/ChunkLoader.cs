@@ -528,9 +528,6 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         private (TCellType[] chunkCells, TChunkData? chunkData) GenerateChunk((int x, int y) coordinate)
         {
-            if (_chunks.TryGetValue(coordinate, out var chunkValue))
-                return chunkValue;
-
             // Get a unique hash seed based on the chunk (x,y) and the main seed
             var chunkSeed = Fnv1a.Hash32(coordinate.x, coordinate.y, _seed);
             var chunk = _generator.Generate(chunkSeed, _width, _height);
@@ -545,8 +542,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 chunk.chunkData.Seed = chunkSeed;
                 chunk.chunkData.ChunkCoordinate = coordinate;
             }
-            if (!_chunks.TryAdd(coordinate, chunk))
-                chunk = _chunks[coordinate];
+            _chunks.TryAdd(coordinate, chunk);
             return chunk;
         }
 
