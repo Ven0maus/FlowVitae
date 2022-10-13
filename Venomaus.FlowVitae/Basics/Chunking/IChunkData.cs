@@ -9,5 +9,7 @@
         /// The unique chunk seed
         /// </summary>
         public int Seed { get; set; }
-    }
+
+        internal (int x, int y) ChunkCoordinate {get; set;}
+}
 }

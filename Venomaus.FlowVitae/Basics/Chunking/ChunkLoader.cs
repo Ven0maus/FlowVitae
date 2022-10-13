@@ -18,6 +18,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         private readonly int _viewPortWidth, _viewPortHeight;
         private readonly IProceduralGen<TCellType, TCell, TChunkData> _generator;
         private readonly Func<int, int, TCellType, TCell> _cellTypeConverter;
+        private readonly Dictionary<(int x, int y), TChunkData> _chunkDataCache;
         private readonly ConcurrentDictionary<(int x, int y), (TCellType[] chunkCells, TChunkData? chunkData)> _chunks;
         private readonly HashSet<(int x, int y)> _tempLoadedChunks;
         private Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>? _modifiedCellsInChunks;
@@ -39,11 +40,13 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             _cellTypeConverter = cellTypeConverter;
             _tempLoadedChunks = new HashSet<(int x, int y)>(new TupleComparer<int>());
             _chunks = new ConcurrentDictionary<(int x, int y), (TCellType[], TChunkData?)>(new TupleComparer<int>());
+            _chunkDataCache = new Dictionary<(int x, int y), TChunkData>(new TupleComparer<int>());
         }
 
         public void ClearGridCache()
         {
             _modifiedCellsInChunks = null;
+            _chunkDataCache.Clear();
         }
 
         /// <summary>
@@ -180,11 +183,26 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public TChunkData? GetChunkData(int x, int y)
         {
+            if (_chunkDataCache.TryGetValue((x, y), out TChunkData? chunkData))
+                return chunkData;
+
             bool wasLoaded = LoadChunk(x, y, out var chunkCoordinate);
-            var chunkData = _chunks[chunkCoordinate].chunkData;
+            chunkData = _chunks[chunkCoordinate].chunkData;
             if (wasLoaded)
                 UnloadChunk(chunkCoordinate.x, chunkCoordinate.y);
             return chunkData;
+        }
+
+        public void StoreChunkData(TChunkData chunkData)
+        {
+            if (_chunkDataCache.ContainsKey(chunkData.ChunkCoordinate))
+                return;
+            _chunkDataCache.Add(chunkData.ChunkCoordinate, chunkData);
+        }
+
+        public void RemoveChunkData(TChunkData chunkData)
+        {
+            _chunkDataCache.Remove(chunkData.ChunkCoordinate);
         }
 
         public TCell GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true)
@@ -526,6 +544,11 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             var chunkX = width * (x / width);
             var chunkY = height * (y / height);
             return (chunkX, chunkY);
+        }
+
+        public IEnumerable<TChunkData> GetStoredChunkData()
+        {
+            return _chunkDataCache.Select(a => a.Value);
         }
     }
 }

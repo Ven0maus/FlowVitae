@@ -165,8 +165,11 @@ namespace Venomaus.FlowVitae.Basics
             // Reload all chunks
             if (_chunkLoader != null)
             {
-                foreach (var chunk in _chunkLoader.GetLoadedChunks())
-                    _chunkLoader.UnloadChunk(chunk.x, chunk.y, true);
+                // Clear chunks and data
+                foreach (var (chunkX, chunkY) in _chunkLoader.GetLoadedChunks())
+                    _chunkLoader.UnloadChunk(chunkX, chunkY, true);
+
+                // Re-center and load chunks within the main thread
                 _viewPortInitialized = false;
                 UseThreading = false;
                 _chunkLoader.LoadChunksAround(_centerCoordinate.x, _centerCoordinate.y, true);
@@ -185,6 +188,22 @@ namespace Venomaus.FlowVitae.Basics
         public TChunkData? GetChunkData(int x, int y)
         {
             return _chunkLoader?.GetChunkData(x, y);
+        }
+
+        /// <summary>
+        /// Allows to store the chunk data in the internal cache, this will cause the chunk data not to be reloaded on chunk load.
+        /// </summary>
+        public void StoreChunkData(TChunkData chunkData)
+        {
+            _chunkLoader?.StoreChunkData(chunkData);
+        }
+
+        /// <summary>
+        /// Removes the chunk data from the internal cache, this will cause the chunk data to be reloaded on chunk load.
+        /// </summary>
+        public void RemoveChunkData(TChunkData chunkData)
+        {
+            _chunkLoader?.RemoveChunkData(chunkData);
         }
 
         /// <summary>
