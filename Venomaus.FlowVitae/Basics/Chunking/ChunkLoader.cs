@@ -100,10 +100,12 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                     }
                 }
                 return false;
-            });
+            }).ToArray();
 
             // Non-visible chunks
-            var offScreenChunks = mandatoryChunks.Except(onScreenChunks, new TupleComparer<int>());
+            var offScreenChunks = mandatoryChunks
+                .Except(onScreenChunks, new TupleComparer<int>())
+                .ToArray();
 
             // Chunks to be unloaded
             var nonMandatoryChunks = _chunks
@@ -123,8 +125,9 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             LoadChunksThreaded(offScreenChunks);
         }
 
-        private void LoadChunksThreaded(IEnumerable<(int x, int y)> chunks)
+        private void LoadChunksThreaded((int x, int y)[] chunks)
         {
+            if (!chunks.Any()) return;
             _ = Task.Factory.StartNew(() =>
             {
                 int count = 0;
