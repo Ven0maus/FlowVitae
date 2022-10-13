@@ -167,7 +167,10 @@ namespace Venomaus.FlowVitae.Basics
             {
                 foreach (var chunk in _chunkLoader.GetLoadedChunks())
                     _chunkLoader.UnloadChunk(chunk.x, chunk.y, true);
+                _viewPortInitialized = false;
                 _chunkLoader.LoadChunksAround(_centerCoordinate.x, _centerCoordinate.y, true);
+                Center(_centerCoordinate.x, _centerCoordinate.y);
+                _viewPortInitialized = true;
             }
         }
 
