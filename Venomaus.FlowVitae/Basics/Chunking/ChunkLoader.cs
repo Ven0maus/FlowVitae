@@ -536,7 +536,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
                 chunk.chunkData.ChunkCoordinate = coordinate;
             }
             if (!_chunks.TryAdd(coordinate, chunk))
-                throw new Exception("Dictionary already contains chunk key.");
+                chunk = _chunks[coordinate];
             return chunk;
         }
 
