@@ -109,6 +109,12 @@ var customGrid = new Grid<int, Cell<int>, TestChunkData>(ViewPortWidth, ViewPort
 var chunkData = customGrid.GetChunkData(5, 5);
 Console.WriteLine("Trees in chunk: " + chunkData.Trees != null ? chunkData.Trees.Count : 0);
 ```
+(as of v1.0.7)
+You can store the chunkdata within the internal cache buffer, which GetChunkData will then return instead
+```csharp
+customGrid.StoreChunkData(chunkData);
+customGrid.RemoveChunkData(chunkData, reloadChunk); // chunkdata only refreshes after chunk is reloaded
+```
 
 # Rendering to a render engine
 FlowVitae provides an event that is raised when a cell on the viewport is updated
