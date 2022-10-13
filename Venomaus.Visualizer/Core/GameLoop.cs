@@ -55,7 +55,7 @@ namespace Venomaus.Visualizer.Core
                     _grid.SetCell(x, y, chunk[y * _grid.Width + x]);
 
             InitializeMapWindow();
-            AfterGridInitialization();
+            AfterGridInitialization(true);
         }
 
         public void InitProceduralGrid()
@@ -70,12 +70,12 @@ namespace Venomaus.Visualizer.Core
             _grid.SetCustomConverter(WorldGenerator.CellConverter);
 
             InitializeMapWindow();
-            AfterGridInitialization();
+            AfterGridInitialization(false);
         }
 
-        private void AfterGridInitialization()
+        private void AfterGridInitialization(bool isStaticGrid)
         {
-            Player = new Player(new(Grid.Width / 2, Grid.Height / 2), new ColoredGlyph(Color.White, Color.Transparent, '@'), 1);
+            Player = new Player(new(Grid.Width / 2, Grid.Height / 2), new ColoredGlyph(Color.White, Color.Transparent, '@'), 1, isStaticGrid);
         }
 
         private void InitializeMapWindow()

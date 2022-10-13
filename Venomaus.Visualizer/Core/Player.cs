@@ -8,12 +8,21 @@ namespace Venomaus.Visualizer.Core
     internal class Player : Entity
     {
         public Point WorldPosition { get; private set; }
+        private readonly bool _isStaticGrid;
 
-        public Player(Point position, ColoredGlyph appearance, int zIndex) : base(appearance, zIndex)
+        public Player(Point position, ColoredGlyph appearance, int zIndex, bool isStaticGrid) : base(appearance, zIndex)
         {
-            var (x, y) = (Constants.GridSettings.ChunkWidth / 2, Constants.GridSettings.ChunkHeight / 2);
+            _isStaticGrid = isStaticGrid;
+
+            var (x, y) = isStaticGrid ? (GameLoop.Instance.Grid.Width / 2, GameLoop.Instance.Grid.Height / 2) :
+                (Constants.GridSettings.ChunkWidth / 2, Constants.GridSettings.ChunkHeight / 2);
             WorldPosition = new Point(x, y);
-            GameLoop.Instance.Grid.Center(WorldPosition.X, WorldPosition.Y);
+
+            // If we are on a static grid we don't need to center, but move the actual player coord on screen
+            if (_isStaticGrid)
+                Position = WorldPosition;
+            else
+                GameLoop.Instance.Grid.Center(WorldPosition.X, WorldPosition.Y);
 
             // Sadconsole related things
             Position = position;
@@ -34,7 +43,12 @@ namespace Venomaus.Visualizer.Core
             if (cell == null || (checkCanMove && !cell.Walkable)) return;
 
             WorldPosition = new Point(x, y);
-            GameLoop.Instance.Grid.Center(WorldPosition.X, WorldPosition.Y);
+
+            // If we are on a static grid we don't need to center, but move the actual player coord on screen
+            if (_isStaticGrid)
+                Position = WorldPosition;
+            else
+                GameLoop.Instance.Grid.Center(WorldPosition.X, WorldPosition.Y);
         }
 
         public override bool ProcessKeyboard(Keyboard keyboard)
