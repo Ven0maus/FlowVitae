@@ -548,10 +548,5 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             var chunkY = height * (y / height);
             return (chunkX, chunkY);
         }
-
-        public IEnumerable<TChunkData> GetStoredChunkData()
-        {
-            return _chunkDataCache.Select(a => a.Value);
-        }
     }
 }
