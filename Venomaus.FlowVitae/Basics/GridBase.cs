@@ -177,7 +177,7 @@ namespace Venomaus.FlowVitae.Basics
         }
 
         /// <summary>
-        /// Retrieves the chunk data for this chunk. returns null if chunking is disabled.
+        /// Retrieves the chunk data for this chunk. Returns null if no data was specified during generation.
         /// </summary>
         /// <param name="x">Coordinate X</param>
         /// <param name="y">Coordinate Y</param>
