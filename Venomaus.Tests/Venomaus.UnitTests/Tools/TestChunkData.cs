@@ -6,5 +6,6 @@ namespace Venomaus.UnitTests.Tools
     {
         public int Seed { get; set; }
         public List<(int x, int y)>? Trees { get; set; }
+        (int x, int y) IChunkData.ChunkCoordinate { get; set; }
     }
 }

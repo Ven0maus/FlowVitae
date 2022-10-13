@@ -10,6 +10,9 @@
         /// </summary>
         public int Seed { get; set; }
 
+        /// <summary>
+        /// The base coordinate where the chunk starts
+        /// </summary>
         internal (int x, int y) ChunkCoordinate {get; set;}
 }
 }

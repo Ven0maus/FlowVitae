@@ -529,9 +529,12 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             // Get a unique hash seed based on the chunk (x,y) and the main seed
             var chunkSeed = Fnv1a.Hash32(coordinate.x, coordinate.y, _seed);
             var chunk = _generator.Generate(chunkSeed, _width, _height);
-            // Set chunk seed
+            // Set passed down chunk info
             if (chunk.chunkData != null)
+            {
                 chunk.chunkData.Seed = chunkSeed;
+                chunk.chunkData.ChunkCoordinate = coordinate;
+            }
             if (!_chunks.TryAdd(coordinate, chunk))
                 throw new Exception("Dictionary already contains chunk key.");
             return chunk;
