@@ -200,9 +200,14 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             _chunkDataCache.Add(chunkData.ChunkCoordinate, chunkData);
         }
 
-        public void RemoveChunkData(TChunkData chunkData)
+        public void RemoveChunkData(TChunkData chunkData, bool reloadChunk)
         {
             _chunkDataCache.Remove(chunkData.ChunkCoordinate);
+            if (reloadChunk)
+            {
+                UnloadChunk(chunkData.ChunkCoordinate.x, chunkData.ChunkCoordinate.y, true);
+                LoadChunk(chunkData.ChunkCoordinate.x, chunkData.ChunkCoordinate.y, out _);
+            }    
         }
 
         public TCell GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true)
@@ -529,6 +534,11 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             // Get a unique hash seed based on the chunk (x,y) and the main seed
             var chunkSeed = Fnv1a.Hash32(coordinate.x, coordinate.y, _seed);
             var chunk = _generator.Generate(chunkSeed, _width, _height);
+
+            // Update chunk data with the cached version
+            if (_chunkDataCache.TryGetValue(coordinate, out var chunkData))
+                chunk.chunkData = chunkData;
+
             // Set passed down chunk info
             if (chunk.chunkData != null)
             {

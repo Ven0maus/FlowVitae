@@ -201,9 +201,10 @@ namespace Venomaus.FlowVitae.Basics
         /// <summary>
         /// Removes the chunk data from the internal cache, this will cause the chunk data to be reloaded on chunk load.
         /// </summary>
-        public void RemoveChunkData(TChunkData chunkData)
+        /// <remarks>The chunk data will only be refreshed on reload of the chunk.</remarks>
+        public void RemoveChunkData(TChunkData chunkData, bool reloadChunk = false)
         {
-            _chunkLoader?.RemoveChunkData(chunkData);
+            _chunkLoader?.RemoveChunkData(chunkData, reloadChunk);
         }
 
         /// <summary>

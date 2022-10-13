@@ -967,7 +967,7 @@ namespace Venomaus.UnitTests.Tests
                 // Define custom chunk data
                 var chunkData = new TestChunkData
                 {
-                    Trees = new List<(int x, int y)>()
+                    Trees = new HashSet<(int x, int y)>(new TupleComparer<int>())
                 };
                 for (int x = 0; x < width; x++)
                 {
@@ -996,12 +996,40 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(customChunkData, Is.Not.Null);
             Assert.That(customChunkData.Trees, Is.Not.Null);
             Assert.That(customChunkData.Trees, Has.Count.EqualTo(1));
-            Assert.That(customChunkData.Trees[0], Is.EqualTo((0, 0)));
+            Assert.That(customChunkData.Trees.First(), Is.EqualTo((0, 0)));
 
             // Check if seed matches
             var chunkCoordinate = customGrid._chunkLoader.GetChunkCoordinate(0, 0);
             var seed = Fnv1a.Hash32(chunkCoordinate.x, chunkCoordinate.y, Seed);
             Assert.That(customChunkData.Seed, Is.EqualTo(seed));
+
+            // Attempt to store chunk data with some different data
+            customChunkData.Trees.Add((5, 5));
+            customGrid.StoreChunkData(customChunkData);
+            // Reload chunk data
+            customChunkData = customGrid.GetChunkData(0, 0);
+            Assert.That(customChunkData, Is.Not.Null);
+            Assert.That(customChunkData.Trees, Contains.Item((5, 5)));
+
+            customGrid.RemoveChunkData(customChunkData);
+
+            // Reload chunk to re-populate the chunk data
+            customGrid._chunkLoader.UnloadChunk(chunkCoordinate.x, chunkCoordinate.y, true);
+            customGrid._chunkLoader.LoadChunk(chunkCoordinate.x, chunkCoordinate.y, out _);
+
+            // Reload chunk data
+            customChunkData = customGrid.GetChunkData(0, 0);
+            Assert.That(customChunkData, Is.Not.Null);
+
+            // Default checks again if it matches still the generated chunk data
+            Assert.That(customChunkData.Trees, Is.Not.Null);
+            Assert.That(customChunkData.Trees, Has.Count.EqualTo(1));
+            Assert.Multiple(() =>
+            {
+                Assert.That(customChunkData.Trees.First(), Is.EqualTo((0, 0)));
+                // Check if seed matches
+                Assert.That(customChunkData.Seed, Is.EqualTo(seed));
+            });
         }
     }
 }

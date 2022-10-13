@@ -449,8 +449,10 @@ namespace Venomaus.UnitTests.Tests
         }
 
         [Test]
-        public void GetChunkData_NonChunkedGrid_ReturnsNull()
+        public void ChunkDataRelatedMethods_DoNothing()
         {
+            Assert.That(() => Grid.StoreChunkData(new TestChunkData()), Throws.Nothing);
+            Assert.That(() => Grid.RemoveChunkData(new TestChunkData()), Throws.Nothing);
             Assert.That(Grid.GetChunkData(0, 0), Is.Null);
         }
     }
