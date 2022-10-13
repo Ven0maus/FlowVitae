@@ -73,6 +73,17 @@ namespace Venomaus.FlowVitae.Basics
         /// <remarks>See <see cref="RaiseOnlyOnCellTypeChange"/> to control how this event is raised.</remarks>
         public event EventHandler<CellUpdateArgs<TCellType, TCell>>? OnCellUpdate;
 
+        /// <summary>
+        /// Raised every time one of the main chunks gets loaded.
+        /// (There are always 9 chunks loaded: The center chunk and its 8 neighbor chunks.)
+        /// </summary>
+        public event EventHandler<ChunkUpdateArgs>? OnChunkLoad;
+        /// <summary>
+        /// Raised every time one of the main chunks gets unloaded.
+        /// (There are always 9 chunks loaded: The center chunk and its 8 neighbor chunks.)
+        /// </summary>
+        public event EventHandler<ChunkUpdateArgs>? OnChunkUnload;
+
         private bool _raiseOnlyOnCellTypeChange = true;
         /// <summary>
         /// When false, it will always raise when the cell is set within the viewport, default true.
@@ -230,7 +241,7 @@ namespace Venomaus.FlowVitae.Basics
             _centerCoordinate = (x, y);
 
             _chunkLoader.CenterViewPort(x, y, Width, Height, prevCenterCoordinate, _centerCoordinate,
-                IsWorldCoordinateOnScreen, ScreenCells, OnCellUpdate, _viewPortInitialized);
+                IsWorldCoordinateOnScreen, ScreenCells, OnCellUpdate, _viewPortInitialized, OnChunkLoad, OnChunkUnload);
         }
 
         /// <summary>

@@ -67,15 +67,16 @@ namespace Venomaus.FlowVitae.Basics.Chunking
         }
 
         private readonly HashSet<(int x, int y)> _lockedChunks = new HashSet<(int x, int y)>(new TupleComparer<int>());
-        public void SetCurrentChunk(int x, int y, Checker checker)
+        public void SetCurrentChunk(int x, int y, Checker checker, 
+            EventHandler<ChunkUpdateArgs>? onChunkLoad = null, EventHandler<ChunkUpdateArgs>? onChunkUnload = null)
         {
             CurrentChunk = GetChunkCoordinate(x, y);
 
             // Fall-back to default way of chunkloading/unloading
             if (!UseThreading)
             {
-                LoadChunksAround(x, y, true);
-                UnloadNonMandatoryChunks();
+                LoadChunksAround(x, y, true, onChunkLoad);
+                UnloadNonMandatoryChunks(onChunkUnload);
                 return;
             }
 
@@ -118,28 +119,33 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
             // Load on screen chunks on this thread
             foreach (var chunk in onScreenChunks)
-                LoadChunk(chunk.x, chunk.y, out _);
+            {
+                if (LoadChunk(chunk.x, chunk.y, out _))
+                    onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
+            }
 
             foreach (var chunk in nonMandatoryChunks)
-                UnloadChunk(chunk.x, chunk.y);
+            {
+                if (UnloadChunk(chunk.x, chunk.y))
+                    onChunkUnload?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
+            }
 
             // Load the rest off thread
             // ToArray required so foreach doesn't influence _chunks
-            LoadChunksThreaded(offScreenChunks);
+            LoadChunksThreaded(offScreenChunks, onChunkLoad);
         }
 
-        private void LoadChunksThreaded((int x, int y)[] chunks)
+        private void LoadChunksThreaded((int x, int y)[] chunks, EventHandler<ChunkUpdateArgs>? onChunkLoad)
         {
             if (!chunks.Any()) return;
             _ = Task.Factory.StartNew(() =>
             {
-                int count = 0;
                 foreach (var chunk in chunks)
                 {
                     if (_lockedChunks.Contains(chunk)) continue;
                     _lockedChunks.Add(chunk);
                     if (LoadChunk(chunk.x, chunk.y, out _))
-                        count++;
+                        onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
                     _lockedChunks.Remove(chunk);
                 }
             }).ConfigureAwait(false);
@@ -150,26 +156,29 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             return _chunks.Keys.ToArray();
         }
 
-        public void LoadChunksAround(int x, int y, bool includeSourceChunk)
+        public void LoadChunksAround(int x, int y, bool includeSourceChunk, EventHandler<ChunkUpdateArgs>? onChunkLoad = null)
         {
             var chunkCoordinate = GetChunkCoordinate(x, y);
 
             if (includeSourceChunk)
-                LoadChunk(chunkCoordinate.x, chunkCoordinate.y, out _);
+                if (LoadChunk(chunkCoordinate.x, chunkCoordinate.y, out _))
+                    onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunkCoordinate, _width, _height));
 
             var neighbors = GetNeighborChunks(chunkCoordinate.x, chunkCoordinate.y);
             foreach (var neighbor in neighbors)
-                LoadChunk(neighbor.x, neighbor.y, out _);
+                if (LoadChunk(neighbor.x, neighbor.y, out _))
+                    onChunkLoad?.Invoke(null, new ChunkUpdateArgs(neighbor, _width, _height));
         }
 
-        public void UnloadNonMandatoryChunks()
+        public void UnloadNonMandatoryChunks(EventHandler<ChunkUpdateArgs>? onChunkUnload = null)
         {
             var mandatoryChunks = GetMandatoryChunks();
             var allChunks = _chunks.Select(a => a.Key).ToArray();
             foreach (var chunk in allChunks)
             {
                 if (!mandatoryChunks.Contains(chunk))
-                    UnloadChunk(chunk.x, chunk.y);
+                    if (UnloadChunk(chunk.x, chunk.y))
+                        onChunkUnload?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
             }
         }
 
@@ -443,7 +452,8 @@ namespace Venomaus.FlowVitae.Basics.Chunking
 
         public void CenterViewPort(int x, int y, int viewPortWidth, int viewPortHeight, (int x, int y) prevCenterCoordinate,
             (int x, int y) centerCoordinate, Checker isWorldCoordinateOnScreen, TCellType[] screenCells,
-            EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate, bool viewPortInitialized)
+            EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate, bool viewPortInitialized,
+            EventHandler<ChunkUpdateArgs>? onChunkLoad, EventHandler<ChunkUpdateArgs>? onChunkUnload)
         {
             CenterCoordinate = centerCoordinate;
 
@@ -453,7 +463,7 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             // Update the current chunk only if the center isn't the current
             var centerChunk = GetChunkCoordinate(x, y);
             if (CurrentChunk.x != centerChunk.x || CurrentChunk.y != centerChunk.y)
-                SetCurrentChunk(centerChunk.x, centerChunk.y, isWorldCoordinateOnScreen);
+                SetCurrentChunk(centerChunk.x, centerChunk.y, isWorldCoordinateOnScreen, onChunkLoad, onChunkUnload);
 
             var diffX = -(centerCoordinate.x - prevCenterCoordinate.x);
             var diffY = -(centerCoordinate.y - prevCenterCoordinate.y);
