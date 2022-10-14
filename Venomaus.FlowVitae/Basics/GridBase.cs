@@ -309,31 +309,19 @@ namespace Venomaus.FlowVitae.Basics
         }
 
         /// <summary>
-        /// Get a cloned version of the viewport cells where each cell coordinate is adjusted to the viewport.
+        /// Gets an enumerable of all the world coordinates that reside within the viewport
         /// </summary>
         /// <remarks>Cell (x, y) are adjusted to match the viewport (x, y).</remarks>
-        /// <returns><typeparamref name="TCell"/>[]</returns>
-        public IEnumerable<TCell> GetViewPortCells()
+        /// <returns></returns>
+        public IEnumerable<(int x, int y)> GetViewPortWorldCoordinates()
         {
-            var positions = new (int, int)[Width * Height];
             for (int x = 0; x < Width; x++)
             {
                 for (int y = 0; y < Height; y++)
                 {
-                    positions[y * Width + x] = ScreenToWorldCoordinate(x, y);
+                    yield return ScreenToWorldCoordinate(x, y);
                 }
             }
-
-            return GetCells(positions)
-                .Select(cell =>
-                {
-                    // We clone here, because we don't want to modify stored cell positions
-                    var cellClone = Convert(cell.X, cell.Y, cell.CellType);
-                    var (x, y) = WorldToScreenCoordinate(cellClone.X, cellClone.Y);
-                    cellClone.X = x;
-                    cellClone.Y = y;
-                    return cellClone;
-                });
         }
 
         /// <summary>
