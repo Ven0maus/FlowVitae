@@ -245,6 +245,12 @@ OnChunkUnload
 ```
 Following events will be raised when one of the chunks around the center chunk (center chunk included) gets loaded or unloaded.
 
+(available in V1.0.9)
+```csharp
+Grid.GetChunkSeed(x, y);
+```
+Returns the unique seed for the chunk where the specified cell coordinate is in.
+
 # Integration with SadConsole
 
 Checkout the Visualizer project, it is an example project that integrates the FlowVitae grid with SadConsole V9 render engine.
