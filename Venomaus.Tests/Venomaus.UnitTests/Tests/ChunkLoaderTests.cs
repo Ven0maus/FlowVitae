@@ -515,8 +515,10 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void Center_ViewPort_Correct()
         {
-            var viewPort = Grid.GetViewPortCells().ToArray();
-            Assert.That(viewPort.All(cell => cell.CellType != -10), "Initial viewport is not correct");
+            var viewPort = Grid.GetViewPortWorldCoordinates()
+                .ToArray();
+            var viewPortCells = Grid.GetCells(viewPort);
+            Assert.That(viewPortCells.All(cell => cell.CellType != -10), "Initial viewport is not correct");
 
             var loadedChunks = ChunkLoader.GetLoadedChunks();
             foreach (var (x, y) in loadedChunks)
@@ -583,7 +585,9 @@ namespace Venomaus.UnitTests.Tests
             }
 
             // Check if view port matches now
-            Assert.That(Grid.GetViewPortCells().All(cell => cell.CellType == -10), "Viewport cells don't match center changes");
+            viewPort = Grid.GetViewPortWorldCoordinates().ToArray();
+            viewPortCells = Grid.GetCells(viewPort);
+            Assert.That(viewPortCells.All(cell => cell.CellType == -10), "Viewport cells don't match center changes");
         }
 
         [Test]
@@ -865,7 +869,8 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(() => Grid._chunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(10).MilliSeconds);
 
             // Verify that all cells have this default value set properly
-            var viewPortCells = Grid.GetViewPortCells().ToArray();
+            var viewPort = Grid.GetViewPortWorldCoordinates();
+            var viewPortCells = Grid.GetCells(viewPort).ToArray();
             Assert.That(viewPortCells.Count(a => a.CellType == -5), Is.EqualTo(viewPortCells.Length));
 
             // Verify that GetCell has this default value set properly
@@ -950,26 +955,6 @@ namespace Venomaus.UnitTests.Tests
             cells = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToList();
 
             Assert.That(cells.SequenceEqual(prevState, new CellFullComparer<int>()), "Cells are not reset.");
-        }
-
-        [Test]
-        public void GetViewPortCells_DoesntOverwrite_Position_WhenCellStored()
-        {
-            var cell = new Cell<int>(500, 500, false, -5);
-            Grid.SetCell(cell, true);
-
-            Grid.Center(500, 500);
-            _ = Grid.GetViewPortCells().ToArray();
-
-            cell = Grid.GetCell(cell.X, cell.Y);
-            Assert.That(cell, Is.Not.Null);
-            Assert.Multiple(() =>
-            {
-                Assert.That(cell.Walkable, Is.False);
-                Assert.That(cell.CellType, Is.EqualTo(-5));
-                Assert.That(cell.X, Is.EqualTo(500));
-                Assert.That(cell.Y, Is.EqualTo(500));
-            });
         }
 
         [Test]

@@ -232,17 +232,8 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void GetViewPortCells_Get_Correct()
         {
-            var cells = Grid.GetViewPortCells().ToArray();
-            Assert.That(cells, Has.Length.EqualTo(Grid.Width * Grid.Height));
-
-            for (int x=0; x < Grid.Width; x++)
-            {
-                for (int y = 0; y < Grid.Height; y++)
-                {
-                    var cell = Grid.GetCell(x, y);
-                    Assert.That(cells[y * Grid.Width + x].Equals(cell), Is.True);
-                }
-            }
+            var viewPort = Grid.GetViewPortWorldCoordinates().ToArray();
+            Assert.That(viewPort, Has.Length.EqualTo(Grid.Width * Grid.Height));
         }
 
         [Test]

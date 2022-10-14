@@ -315,11 +315,13 @@ namespace Venomaus.FlowVitae.Basics
         /// <returns></returns>
         public IEnumerable<(int x, int y)> GetViewPortWorldCoordinates()
         {
-            for (int x = 0; x < Width; x++)
+            var startX = _centerCoordinate.x - Width / 2;
+            var startY = _centerCoordinate.y - Height / 2;
+            for (int x = startX; x < Width; x++)
             {
-                for (int y = 0; y < Height; y++)
+                for (int y = startY; y < Height; y++)
                 {
-                    yield return ScreenToWorldCoordinate(x, y);
+                    yield return (x, y);
                 }
             }
         }
