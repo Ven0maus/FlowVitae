@@ -1207,5 +1207,14 @@ namespace Venomaus.UnitTests.Tests
             ChunkLoader.LoadChunksAround(0, 0, true, onChunkLoad);
             Assert.That(() => loadCount, Is.EqualTo(9));
         }
+
+        [Test]
+        public void GetChunkSeed_Returns_CorrectValue()
+        {
+            var chunkSeed = Grid.GetChunkSeed(0, 0);
+            var chunkCoordinate = ChunkLoader.GetChunkCoordinate(0, 0);
+            var seed = Fnv1a.Hash32(chunkCoordinate.x, chunkCoordinate.y, Seed);
+            Assert.That(chunkSeed, Is.EqualTo(seed));
+        }
     }
 }

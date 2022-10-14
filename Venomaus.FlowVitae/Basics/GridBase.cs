@@ -228,6 +228,18 @@ namespace Venomaus.FlowVitae.Basics
         }
 
         /// <summary>
+        /// Retrieves the unique chunk seed, for the chunk where the cell (x,y) is situated in.
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        /// <returns>Unique chunk seed</returns>
+        public int GetChunkSeed(int x, int y)
+        {
+            if (_chunkLoader == null) return 0;
+            return _chunkLoader.GetChunkSeed(x, y);
+        }
+
+        /// <summary>
         /// Centers the grid on the specified coordinate
         /// </summary>
         /// <remarks>Can only be used for grids that use chunking.</remarks>

@@ -564,5 +564,11 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             var chunkY = height * (y / height);
             return (chunkX, chunkY);
         }
+
+        public int GetChunkSeed(int x, int y)
+        {
+            var chunkCoordinate = GetChunkCoordinate(x, y);
+            return Fnv1a.Hash32(chunkCoordinate.x, chunkCoordinate.y, _seed);
+        }
     }
 }

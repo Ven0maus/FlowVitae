@@ -518,5 +518,12 @@ namespace Venomaus.UnitTests.Tests
             };
             Assert.That(neighbors8Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
         }
+
+        [Test]
+        public void GetChunkSeed_Returns_CorrectValue()
+        {
+            var chunkSeed = Grid.GetChunkSeed(0, 0);
+            Assert.That(chunkSeed, Is.EqualTo(0));
+        }
     }
 }
