@@ -1,7 +1,9 @@
+using System.Linq;
 using Venomaus.FlowVitae.Basics;
 using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
+using Venomaus.FlowVitae.Helpers;
 using Venomaus.UnitTests.Tools;
 
 namespace Venomaus.UnitTests.Tests
@@ -461,6 +463,60 @@ namespace Venomaus.UnitTests.Tests
         {
             Grid.UseThreading = true;
             Assert.That(Grid.UseThreading, Is.False);
+        }
+
+        [Test]
+        public void GetNeighbors_Retrieves_CorrectCells()
+        {
+            var neighbors4Way = Grid.GetNeighbors(5, 5, AdjacencyRule.FourWay);
+            Assert.That(neighbors4Way.Count(), Is.EqualTo(4));
+
+            var comparer = new TupleComparer<int>();
+            // Verify neighbors retrieved are correct
+            var correctNeighbors = new[]
+            {
+                (4,5), (6,5),
+                (5, 4), (5, 6)
+            };
+            Assert.That(neighbors4Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+
+            var neighbors8Way = Grid.GetNeighbors(5, 5, AdjacencyRule.EightWay);
+            Assert.That(neighbors8Way.Count(), Is.EqualTo(8));
+
+            // Verify neighbors retrieved are correct
+            correctNeighbors = new[]
+            {
+                (4,4), (4,5),
+                (4, 6), (5, 4),
+                (5,6), (6,4),
+                (6, 5), (6, 6)
+            };
+            Assert.That(neighbors8Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+        }
+
+        [Test]
+        public void GetNeighbor_OutOfBounds_Retrieves_CorrectCells()
+        {
+            var neighbors4Way = Grid.GetNeighbors(0, 0, AdjacencyRule.FourWay);
+            Assert.That(neighbors4Way.Count(), Is.EqualTo(2));
+
+            var comparer = new TupleComparer<int>();
+            // Verify neighbors retrieved are correct
+            var correctNeighbors = new[]
+            {
+                (1,0), (0,1),
+            };
+            Assert.That(neighbors4Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+
+            var neighbors8Way = Grid.GetNeighbors(0, 0, AdjacencyRule.EightWay);
+            Assert.That(neighbors8Way.Count(), Is.EqualTo(3));
+
+            // Verify neighbors retrieved are correct
+            correctNeighbors = new[]
+            {
+                (0,1), (1,0), (1,1)
+            };
+            Assert.That(neighbors8Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
         }
     }
 }

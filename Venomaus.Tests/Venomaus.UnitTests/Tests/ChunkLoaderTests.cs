@@ -1,4 +1,5 @@
-﻿using Venomaus.FlowVitae.Basics;
+﻿using System.Security.Cryptography;
+using Venomaus.FlowVitae.Basics;
 using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Basics.Procedural;
 using Venomaus.FlowVitae.Cells;
@@ -1055,6 +1056,156 @@ namespace Venomaus.UnitTests.Tests
                 // Check if seed matches
                 Assert.That(customChunkData.Seed, Is.EqualTo(seed));
             });
+        }
+
+        [Test]
+        public void GetNeighbors_Retrieves_CorrectCells()
+        {
+            var neighbors4Way = Grid.GetNeighbors(5, 5, AdjacencyRule.FourWay);
+            Assert.That(neighbors4Way.Count(), Is.EqualTo(4));
+
+            var comparer = new TupleComparer<int>();
+            // Verify neighbors retrieved are correct
+            var correctNeighbors = new[]
+            {
+                (4,5), (6,5),
+                (5, 4), (5, 6)
+            };
+            Assert.That(neighbors4Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+
+            var neighbors8Way = Grid.GetNeighbors(5, 5, AdjacencyRule.EightWay);
+            Assert.That(neighbors8Way.Count(), Is.EqualTo(8));
+
+            // Verify neighbors retrieved are correct
+            correctNeighbors = new[]
+            {
+                (4,4), (4,5),
+                (4, 6), (5, 4),
+                (5,6), (6,4),
+                (6, 5), (6, 6)
+            };
+            Assert.That(neighbors8Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+        }
+
+        [Test]
+        public void ChunkEvents_NoThreading_Raised_Properly()
+        {
+            var chunksLoaded = new List<(int x, int y)>();
+            var chunksUnloaded = new List<(int x, int y)>();
+
+            Grid.OnChunkLoad += (sender, args) => 
+            {
+                chunksLoaded.Add((args.ChunkX, args.ChunkY));
+            };
+            Grid.OnChunkUnload += (sender, args) => 
+            {
+                chunksUnloaded.Add((args.ChunkX, args.ChunkY));
+            };
+            Grid.UseThreading = false;
+            Grid.Center(ViewPortWidth / 2 + ChunkWidth, ViewPortHeight / 2);
+
+            var (x, y) = ChunkLoader.GetChunkCoordinate(ViewPortWidth / 2, ViewPortHeight / 2);
+            int baseWidth = x;
+            int baseHeight = y;
+
+            var comparer = new TupleComparer<int>();
+            var correctLoaded = new[]
+            {
+                (baseWidth + ChunkWidth * 2, baseHeight),
+                (baseWidth + ChunkWidth * 2, baseHeight + ChunkHeight),
+                (baseWidth + ChunkWidth * 2, baseHeight - ChunkHeight)
+            }.OrderBy(a => a.Item1).ThenBy(a => a.Item2);
+
+            var correctUnloaded = new[]
+            {
+                (baseWidth - ChunkWidth, baseHeight - ChunkHeight),
+                (baseWidth - ChunkWidth, baseHeight + ChunkHeight),
+                (baseWidth - ChunkWidth, baseHeight)
+            }.OrderBy(a => a.Item1).ThenBy(a => a.Item2);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(chunksLoaded, Has.Count.EqualTo(3), "Times load incorrect");
+                Assert.That(chunksUnloaded, Has.Count.EqualTo(3), "Times unload incorrect");
+                Assert.That(chunksLoaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctLoaded, comparer), "Loaded chunks was incorrect");
+                Assert.That(chunksUnloaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctUnloaded, comparer), "Unloaded chunks was incorrect");
+            });
+        }
+
+        [Test]
+        public void ChunkEvents_Threading_Raised_Properly()
+        {
+            var chunksLoaded = new List<(int x, int y)>();
+            var chunksUnloaded = new List<(int x, int y)>();
+            var comparer = new TupleComparer<int>();
+
+            Grid.OnChunkLoad += (sender, args) =>
+            {
+                chunksLoaded.Add((args.ChunkX, args.ChunkY));
+
+                var positions = args.GetCellPositions().ToArray();
+                Assert.That(positions, Has.Length.EqualTo(ChunkWidth * ChunkHeight));
+                foreach (var pos in positions)
+                    Assert.That(comparer.Equals(ChunkLoader.GetChunkCoordinate(pos.x, pos.y), (args.ChunkX, args.ChunkY)));
+            };
+            Grid.OnChunkUnload += (sender, args) =>
+            {
+                chunksUnloaded.Add((args.ChunkX, args.ChunkY));
+
+                var positions = args.GetCellPositions().ToArray();
+                Assert.That(positions, Has.Length.EqualTo(ChunkWidth * ChunkHeight));
+                foreach (var pos in positions)
+                    Assert.That(comparer.Equals(ChunkLoader.GetChunkCoordinate(pos.x, pos.y), (args.ChunkX, args.ChunkY)));
+            };
+            Grid.UseThreading = true;
+            Grid.Center(ViewPortWidth / 2 + ChunkWidth, ViewPortHeight / 2);
+
+            var (x, y) = ChunkLoader.GetChunkCoordinate(ViewPortWidth / 2, ViewPortHeight / 2);
+            int baseWidth = x;
+            int baseHeight = y;
+
+            var correctLoaded = new[]
+            {
+                (baseWidth + ChunkWidth * 2, baseHeight),
+                (baseWidth + ChunkWidth * 2, baseHeight + ChunkHeight),
+                (baseWidth + ChunkWidth * 2, baseHeight - ChunkHeight)
+            }.OrderBy(a => a.Item1).ThenBy(a => a.Item2);
+
+            var correctUnloaded = new[]
+            {
+                (baseWidth - ChunkWidth, baseHeight - ChunkHeight),
+                (baseWidth - ChunkWidth, baseHeight + ChunkHeight),
+                (baseWidth - ChunkWidth, baseHeight)
+            }.OrderBy(a => a.Item1).ThenBy(a => a.Item2);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => chunksLoaded, Has.Count.EqualTo(3).After(1).Seconds.PollEvery(10).MilliSeconds, "Times load incorrect");
+                Assert.That(() => chunksUnloaded, Has.Count.EqualTo(3).After(1).Seconds.PollEvery(10).MilliSeconds, "Times unload incorrect");
+                Assert.That(chunksLoaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctLoaded, comparer), "Loaded chunks was incorrect");
+                Assert.That(chunksUnloaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctUnloaded, comparer), "Unloaded chunks was incorrect");
+            });
+        }
+
+        [Test]
+        public void LoadChunksAround_IncludeSource_RaisesEvents()
+        {
+            Grid.UseThreading = false;
+
+            var chunks = ChunkLoader.GetLoadedChunks();
+            foreach (var chunk in chunks)
+                ChunkLoader.UnloadChunk(chunk.x, chunk.y, true);
+            var loaded = ChunkLoader.GetLoadedChunks();
+            Assert.That(loaded, Has.Length.EqualTo(0));
+
+            int loadCount = 0;
+            EventHandler<ChunkUpdateArgs> onChunkLoad = (sender, args) =>
+            {
+                loadCount++;
+            };
+
+            ChunkLoader.LoadChunksAround(0, 0, true, onChunkLoad);
+            Assert.That(() => loadCount, Is.EqualTo(9));
         }
     }
 }

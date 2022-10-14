@@ -346,32 +346,32 @@ namespace Venomaus.FlowVitae.Basics.Chunking
             switch (direction)
             {
                 case Direction.North:
-                    chunkY = CurrentChunk.y + _height;
+                    chunkY = chunkCoordinate.y + _height;
                     break;
                 case Direction.East:
-                    chunkX = CurrentChunk.x + _width;
+                    chunkX = chunkCoordinate.x + _width;
                     break;
                 case Direction.South:
-                    chunkY = CurrentChunk.y - _height;
+                    chunkY = chunkCoordinate.y - _height;
                     break;
                 case Direction.West:
-                    chunkX = CurrentChunk.x - _width;
+                    chunkX = chunkCoordinate.x - _width;
                     break;
                 case Direction.NorthEast:
-                    chunkY = CurrentChunk.y + _height;
-                    chunkX = CurrentChunk.x + _width;
+                    chunkY = chunkCoordinate.y + _height;
+                    chunkX = chunkCoordinate.x + _width;
                     break;
                 case Direction.NorthWest:
-                    chunkY = CurrentChunk.y + _height;
-                    chunkX = CurrentChunk.x - _width;
+                    chunkY = chunkCoordinate.y + _height;
+                    chunkX = chunkCoordinate.x - _width;
                     break;
                 case Direction.SouthEast:
-                    chunkY = CurrentChunk.y - _height;
-                    chunkX = CurrentChunk.x + _width;
+                    chunkY = chunkCoordinate.y - _height;
+                    chunkX = chunkCoordinate.x + _width;
                     break;
                 case Direction.SouthWest:
-                    chunkY = CurrentChunk.y - _height;
-                    chunkX = CurrentChunk.x - _width;
+                    chunkY = chunkCoordinate.y - _height;
+                    chunkX = chunkCoordinate.x - _width;
                     break;
             }
             return GetChunkCoordinate(chunkX, chunkY);

@@ -399,6 +399,47 @@ namespace Venomaus.FlowVitae.Basics
         }
 
         /// <summary>
+        /// Returns the neighbor cells based on the specified adjacency rule
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        /// <param name="adjacencyRule">Specifies the adjacent directions to retrieve</param>
+        /// <returns></returns>
+        public virtual IEnumerable<TCell> GetNeighbors(int x, int y, AdjacencyRule adjacencyRule)
+        {
+            var positions = new List<(int x, int y)>();
+            switch (adjacencyRule)
+            {
+                case AdjacencyRule.FourWay:
+                    for (int xX = x - 1; xX <= x + 1; xX++)
+                    {
+                        if (xX == x) continue;
+                        if (_chunkLoader == null && !InBounds(xX, y)) continue;
+                        positions.Add((xX, y));
+                    }
+                    for (int yY = y - 1; yY <= y + 1; yY++)
+                    {
+                        if (yY == y) continue;
+                        if (_chunkLoader == null && !InBounds(x, yY)) continue;
+                        positions.Add((x, yY));
+                    }
+                    break;
+                case AdjacencyRule.EightWay:
+                    for (int xX = x - 1; xX <= x + 1; xX++)
+                    {
+                        for (int yY = y - 1; yY <= y + 1; yY++)
+                        {
+                            if (xX == x && yY == y) continue;
+                            if (_chunkLoader == null && !InBounds(xX, yY)) continue;
+                            positions.Add((xX, yY));
+                        }
+                    }
+                    break;
+            }
+            return GetCells(positions);
+        }
+
+        /// <summary>
         /// Retrieve the <typeparamref name="TCell"/> at position (<paramref name="x"/>, <paramref name="y"/>)
         /// </summary>
         /// <param name="x">Coordinate X</param>
