@@ -195,6 +195,10 @@ grid.SetCell(cell, storeState);
 var cells = grid.GetCells(new [] {(0,0), (1,1)}); // returns collection of TCell
 grid.SetCells(cells, storeState);
 ```
+(available in V1.0.8)
+```csharp
+grid.GetNeighbors(x, y, AdjacencyRule);
+```
 
 **Center viewport on a coordinate for procedural grids**
 	
