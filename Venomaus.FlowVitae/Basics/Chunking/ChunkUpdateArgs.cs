@@ -9,11 +9,11 @@ namespace Venomaus.FlowVitae.Basics.Chunking
     public class ChunkUpdateArgs : EventArgs
     {
         /// <summary>
-        /// The start X coordinate of the chunk
+        /// Represents the most bottom-left X coordinate of the chunk
         /// </summary>
         public int ChunkX { get; }
         /// <summary>
-        /// The start Y coordinate of the chunk
+        /// Represents the most bottom-left Y coordinate of the chunk
         /// </summary>
         public int ChunkY { get; }
 

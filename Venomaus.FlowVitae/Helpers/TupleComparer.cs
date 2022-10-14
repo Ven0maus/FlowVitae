@@ -4,15 +4,21 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Venomaus.FlowVitae.Helpers
 {
-    internal class TupleComparer<TCellType> : IEqualityComparer<ValueTuple<TCellType, TCellType>>
-        where TCellType : struct, IComparable<TCellType>
+    /// <summary>
+    /// Helpful comparer for <see cref="ValueTuple{T, T}"/>
+    /// </summary>
+    /// <typeparam name="T">struct, IComparable</typeparam>
+    public class TupleComparer<T> : IEqualityComparer<ValueTuple<T, T>>
+        where T : struct, IComparable<T>
     {
-        public bool Equals((TCellType, TCellType) x, (TCellType, TCellType) y)
+        /// <inheritdoc/>
+        public bool Equals((T, T) x, (T, T) y)
         {
             return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2);
         }
 
-        public int GetHashCode([DisallowNull] ValueTuple<TCellType, TCellType> obj)
+        /// <inheritdoc/>
+        public int GetHashCode([DisallowNull] ValueTuple<T, T> obj)
         {
             return Fnv1a.Hash32(obj.Item1, obj.Item2);
         }
