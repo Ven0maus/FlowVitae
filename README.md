@@ -232,6 +232,15 @@ var isInViewPort = grid.IsWorldCoordinateOnViewPort(x,y);
 grid.ClearCache(); // Removes all stored cell data
 ```
 
+**Be notified of main chunk loading/unloading**
+
+(available in V1.0.8)
+```csharp
+OnChunkLoad
+OnChunkUnload
+```
+Following events will be raised when one of the chunks around the center chunk (center chunk included) gets loaded or unloaded.
+
 # Integration with SadConsole
 
 Checkout the Visualizer project, it is an example project that integrates the FlowVitae grid with SadConsole V9 render engine.
