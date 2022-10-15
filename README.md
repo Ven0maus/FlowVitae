@@ -212,9 +212,10 @@ if (player.MovedTowards(x, y))
 ```
 
 **Retrieve all cells within the viewport**
+(Available in V1.1.0)
 ```csharp
-// Returns a cloned array of the viewport, all cell positions are in screen coordinates instead of world coordinates
-grid.GetViewPortCells();
+// Returns all world positions that are within the current viewport
+grid.GetViewPortWorldCoordinates();
 ```
 
 **Checking bounds for static grids**
