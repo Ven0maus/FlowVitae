@@ -183,7 +183,7 @@ namespace Venomaus.FlowVitae.Basics
                 // Re-center and load chunks within the main thread
                 _viewPortInitialized = false;
                 UseThreading = false;
-                _chunkLoader.LoadChunksAround(_centerCoordinate.x, _centerCoordinate.y, true);
+                _chunkLoader.LoadChunksAround(_centerCoordinate.x, _centerCoordinate.y, true, OnChunkLoad);
                 Center(_centerCoordinate.x, _centerCoordinate.y);
                 _viewPortInitialized = true;
                 UseThreading = true;
