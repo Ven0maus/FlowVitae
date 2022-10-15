@@ -878,6 +878,10 @@ namespace Venomaus.UnitTests.Tests
             cell = cells.SingleOrDefault();
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(-5));
+
+            Grid.SetCell(0, 0, 5);
+            viewPort = Grid.GetViewPortWorldCoordinates(a => a == 5);
+            Assert.That(viewPort.ToArray(), Has.Length.EqualTo(1));
         }
 
         [Test]
@@ -1195,6 +1199,20 @@ namespace Venomaus.UnitTests.Tests
             var chunkCoordinate = ChunkLoader.GetChunkCoordinate(0, 0);
             var seed = Fnv1a.Hash32(chunkCoordinate.x, chunkCoordinate.y, Seed);
             Assert.That(chunkSeed, Is.EqualTo(seed));
+        }
+
+        [Test]
+        public void IsChunkLoaded_Returns_CorrectValue()
+        {
+            var chunkLoaded = Grid.IsChunkLoaded(ViewPortWidth / 2, ViewPortHeight / 2);
+            Assert.That(chunkLoaded, Is.True);
+        }
+
+        [Test]
+        public void InBounds_Returns_CorrectValue()
+        {
+            var chunkLoaded = Grid.InBounds(ViewPortWidth + ChunkWidth * 10, ViewPortHeight + ChunkHeight * 10);
+            Assert.That(chunkLoaded, Is.True);
         }
     }
 }

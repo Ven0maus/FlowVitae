@@ -506,6 +506,17 @@ namespace Venomaus.FlowVitae.Basics
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> / <see langword="false"/> based on if the chunk is loaded where the coordinate resides in.
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        /// <returns><see langword="true"/> / <see langword="false"/></returns>
+        public bool IsChunkLoaded(int x, int y)
+        {
+            return _chunkLoader != null && _chunkLoader.IsChunkLoaded(x, y);
+        }
+
+        /// <summary>
         /// Validation to see if the coordinate (<paramref name="x"/>, <paramref name="y"/>) is within the <see cref="ScreenCells"/> bounds
         /// </summary>
         /// <remarks>Always true when chunking is used.</remarks>

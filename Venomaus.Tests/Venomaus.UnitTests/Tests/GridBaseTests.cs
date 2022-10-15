@@ -516,5 +516,12 @@ namespace Venomaus.UnitTests.Tests
             var chunkSeed = Grid.GetChunkSeed(0, 0);
             Assert.That(chunkSeed, Is.EqualTo(0));
         }
+
+        [Test]
+        public void IsChunkLoaded_Returns_CorrectValue()
+        {
+            var chunkLoaded = Grid.IsChunkLoaded(ViewPortWidth / 2, ViewPortHeight / 2);
+            Assert.That(chunkLoaded, Is.False);
+        }
     }
 }
