@@ -80,7 +80,7 @@ namespace Venomaus.Visualizer.Core
 
         private void InitializeMapWindow()
         {
-            Game.Instance.Screen = new MapWindow(Grid.GetViewPortCells().ToArray());
+            Game.Instance.Screen = new MapWindow(Grid.GetCells(Grid.GetViewPortWorldCoordinates()).ToArray());
             Game.Instance.Screen.SadComponents.Add(EntityRenderer);
         }
     }

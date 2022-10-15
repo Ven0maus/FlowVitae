@@ -55,9 +55,9 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.StaticGridCases
         }
 
         [Benchmark]
-        public void GetViewPortCells()
+        public void GetViewPortWorldCoordinates()
         {
-            Grid.GetViewPortCells().Consume(Consumer);
+            Grid.GetViewPortWorldCoordinates().Consume(Consumer);
         }
     }
 }
