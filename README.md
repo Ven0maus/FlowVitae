@@ -69,9 +69,7 @@ int[] chunk represent the chunk, int[] will be your TCellType[]
 
 Chunks are generated automatically and they will use this method as reference to build the chunk.
 
-# Setting custom chunk data						     
-(available in v1.0.5)
-
+# Setting custom chunk data	
 It is possible to set custom data, per chunk which can be directly retrieved from the grid.
 This custom data, can be any class that implements IChunkData interface. An example implementation:
 ```csharp
@@ -109,7 +107,6 @@ var customGrid = new Grid<int, Cell<int>, TestChunkData>(ViewPortWidth, ViewPort
 var chunkData = customGrid.GetChunkData(5, 5);
 Console.WriteLine("Trees in chunk: " + chunkData.Trees != null ? chunkData.Trees.Count : 0);
 ```
-(as of v1.0.7)
 You can store the chunkdata within the internal cache buffer, which GetChunkData will then return instead
 ```csharp
 customGrid.StoreChunkData(chunkData);
@@ -195,7 +192,6 @@ grid.SetCell(cell, storeState);
 var cells = grid.GetCells(new [] {(0,0), (1,1)}); // returns collection of TCell
 grid.SetCells(cells, storeState);
 ```
-(available in V1.0.8)
 ```csharp
 grid.GetNeighbors(x, y, AdjacencyRule);
 ```
@@ -212,7 +208,6 @@ if (player.MovedTowards(x, y))
 ```
 
 **Retrieve all cells within the viewport**
-(Available in V1.1.0)
 ```csharp
 // Returns all world positions that are within the current viewport
 grid.GetViewPortWorldCoordinates();
@@ -233,27 +228,23 @@ var isInViewPort = grid.IsWorldCoordinateOnViewPort(x,y);
 
 **Reset grid state**
 
-(available in V1.0.2)
 ```csharp
 grid.ClearCache(); // Removes all stored cell data
 ```
 
 **Be notified of main chunk loading/unloading**
 
-(available in V1.0.8)
 ```csharp
 OnChunkLoad
 OnChunkUnload
 ```
 Following events will be raised when one of the chunks around the center chunk (center chunk included) gets loaded or unloaded.
 
-(available in V1.0.9)
 ```csharp
 Grid.GetChunkSeed(x, y);
 ```
 Returns the unique seed for the chunk where the specified cell coordinate is in.
 
-(available in V1.1.0)
 ```csharp
 Grid.IsChunkLoaded(x, y);
 ```
