@@ -514,6 +514,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <returns><see langword="true"/> or <see langword="false"/></returns>
         public bool InBounds(int x, int y)
         {
+            if (_chunkLoader != null) return true;
             return x >= 0 && y >= 0 && x < Width && y < Height;
         }
 
