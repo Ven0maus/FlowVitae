@@ -281,7 +281,7 @@ namespace Venomaus.FlowVitae.Basics
         /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
         public (int x, int y) ScreenToWorldCoordinate(int x, int y)
         {
-            if (!InBounds(x, y))
+            if (x < 0 || y < 0 || x >= Width || y >= Height)
                 throw new Exception("Invalid screen coordinate, must be within screen bounds (Width, Height).");
 
             int minX = _centerCoordinate.x - Width / 2;
