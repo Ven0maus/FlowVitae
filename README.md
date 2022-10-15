@@ -253,6 +253,12 @@ Grid.GetChunkSeed(x, y);
 ```
 Returns the unique seed for the chunk where the specified cell coordinate is in.
 
+(available in V1.1.0)
+```csharp
+Grid.IsChunkLoaded(x, y);
+```
+Returns true or false based on the chunk the coordinate resides in is loaded or not
+
 # Integration with SadConsole
 
 Checkout the Visualizer project, it is an example project that integrates the FlowVitae grid with SadConsole V9 render engine.
