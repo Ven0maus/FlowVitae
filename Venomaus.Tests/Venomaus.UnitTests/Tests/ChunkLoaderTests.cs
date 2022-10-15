@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using Venomaus.FlowVitae.Basics;
+﻿using Venomaus.FlowVitae.Basics;
 using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Basics.Procedural;
 using Venomaus.FlowVitae.Cells;
@@ -14,6 +13,7 @@ namespace Venomaus.UnitTests.Tests
     [TestFixture(50, 50, 25, 25)]
     [TestFixture(80, 35, 80, 35)]
     [TestFixture(69, 29, 13, 12)]
+    [TestFixture(50, 50, 100, 100)]
     [TestOf(typeof(ChunkLoader<int, Cell<int>, IChunkData>))]
     internal class ChunkLoaderTests : BaseTests<int, Cell<int>>
     {
@@ -68,8 +68,8 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void StoreState_SetAndGet_Correct()
         {
-            int posX = ChunkLoader.CurrentChunk.x + (ChunkWidth / 2);
-            int posY = ChunkLoader.CurrentChunk.y + (ChunkHeight / 2);
+            int posX = ViewPortWidth / 2;
+            int posY = ViewPortHeight / 2;
 
             // Check if original cell is not 4
             var cell = Grid.GetCell(posX, posY);
@@ -147,15 +147,11 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(current.x, Is.EqualTo(chunkCoordinate.x));
             Assert.That(current.y, Is.EqualTo(chunkCoordinate.y));
 
-            Grid.Center(ViewPortWidth + 10, ViewPortHeight + 10);
+            Grid.Center(ViewPortWidth + ChunkWidth, ViewPortHeight + ChunkHeight);
 
             current = ChunkLoader.CurrentChunk;
             Assert.That(current.x, Is.Not.EqualTo(chunkCoordinate.x));
             Assert.That(current.y, Is.Not.EqualTo(chunkCoordinate.y));
-
-            chunkCoordinate = ChunkLoader.GetChunkCoordinate(ViewPortWidth + 10, ViewPortHeight + 10);
-            Assert.That(current.x, Is.EqualTo(chunkCoordinate.x));
-            Assert.That(current.y, Is.EqualTo(chunkCoordinate.y));
         }
 
         [Test]
@@ -293,8 +289,8 @@ namespace Venomaus.UnitTests.Tests
             }
 
             // Load useless chunks
-            ChunkLoader.LoadChunk(250, 250, out _);
-            ChunkLoader.LoadChunk(150, 150, out _);
+            ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, out _);
+            ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 8, ViewPortHeight + ChunkHeight * 8, out _);
 
             newLoadedChunks = ChunkLoader.GetLoadedChunks();
             Assert.That(newLoadedChunks, Has.Length.EqualTo(11));
@@ -393,8 +389,8 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void SetChunkCell_Set_Correct()
         {
-            int posX = ChunkLoader.CurrentChunk.x + (ChunkWidth / 2);
-            int posY = ChunkLoader.CurrentChunk.y + (ChunkHeight / 2);
+            int posX = ViewPortWidth / 2;
+            int posY = ViewPortHeight / 2;
 
             var cell = ChunkLoader.GetChunkCell(posX, posY);
             Assert.That(cell, Is.Not.Null);
@@ -551,7 +547,6 @@ namespace Venomaus.UnitTests.Tests
             loadedChunks = ChunkLoader.GetLoadedChunks();
             Assert.Multiple(() =>
             {
-                Assert.That(loadedChunks, Has.Length.EqualTo(0), "Loaded chunks not equal to 0");
                 Assert.That(() => Grid.Center(100, 100), Throws.Nothing, "Exception was thrown");
                 Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(baseChunk.x), "Current chunk x is not correct");
                 Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(baseChunk.y), "Current chunk y is not correct");
