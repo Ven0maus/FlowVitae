@@ -19,13 +19,22 @@ namespace Venomaus.FlowVitae.Basics
         where TChunkData : class, IChunkData
     {
         /// <summary>
-        /// Width of <see cref="ScreenCells"/>
+        /// Width of the viewport
         /// </summary>
         public int Width { get; }
         /// <summary>
-        /// Height of <see cref="ScreenCells"/>
+        /// Height of the viewport
         /// </summary>
         public int Height { get; }
+
+        /// <summary>
+        /// Width of the chunk
+        /// </summary>
+        public int ChunkWidth { get; }
+        /// <summary>
+        /// Height of the chunk
+        /// </summary>
+        public int ChunkHeight { get; }
 
         /// <summary>
         /// Internal cell container for the defined cell type
@@ -118,6 +127,8 @@ namespace Venomaus.FlowVitae.Basics
 
             Width = width;
             Height = height;
+            ChunkWidth = width;
+            ChunkHeight = height;
             ScreenCells = new TCellType[Width * Height];
             _centerCoordinate = (Width / 2, Height / 2);
         }
@@ -140,6 +151,8 @@ namespace Venomaus.FlowVitae.Basics
 
             // Disable for initial load
             UseThreading = false;
+            ChunkWidth = chunkWidth;
+            ChunkHeight = chunkHeight;
 
             // Initialize chunkloader if grid uses chunks
             _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert);
@@ -178,7 +191,8 @@ namespace Venomaus.FlowVitae.Basics
             {
                 // Clear chunks and data
                 foreach (var (chunkX, chunkY) in _chunkLoader.GetLoadedChunks())
-                    _chunkLoader.UnloadChunk(chunkX, chunkY, true);
+                    if (_chunkLoader.UnloadChunk(chunkX, chunkY, true))
+                        OnChunkUnload?.Invoke(null, new ChunkUpdateArgs((chunkX, chunkY), ChunkWidth, ChunkHeight));
 
                 // Re-center and load chunks within the main thread
                 _viewPortInitialized = false;

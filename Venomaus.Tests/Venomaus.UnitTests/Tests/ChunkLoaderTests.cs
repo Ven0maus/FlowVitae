@@ -1214,5 +1214,16 @@ namespace Venomaus.UnitTests.Tests
             var chunkLoaded = Grid.InBounds(ViewPortWidth + ChunkWidth * 10, ViewPortHeight + ChunkHeight * 10);
             Assert.That(chunkLoaded, Is.True);
         }
+
+        [Test]
+        public void ClearCache_RaisesChunkEvents_Correctly()
+        {
+            int loaded = 0, unloaded = 0;
+            Grid.OnChunkLoad += (sender, args) => { loaded++; };
+            Grid.OnChunkUnload += (sender, args) => { unloaded++; };
+            Grid.ClearCache();
+            Assert.That(loaded, Is.EqualTo(9));
+            Assert.That(unloaded, Is.EqualTo(9));
+        }
     }
 }
