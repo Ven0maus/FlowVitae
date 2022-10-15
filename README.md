@@ -216,6 +216,7 @@ if (player.MovedTowards(x, y))
 ```csharp
 // Returns all world positions that are within the current viewport
 grid.GetViewPortWorldCoordinates();
+grid.GetViewPortWorldCoordinates(cellType => cellType == 1 || cellType == 2); // with custom criteria
 ```
 
 **Checking bounds for static grids**

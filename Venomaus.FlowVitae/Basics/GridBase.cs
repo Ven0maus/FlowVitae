@@ -311,17 +311,17 @@ namespace Venomaus.FlowVitae.Basics
         /// <summary>
         /// Gets an enumerable of all the world coordinates that reside within the viewport
         /// </summary>
+        /// <param name="criteria">Can provide custom criteria on which celltypes you want from the viewport</param>
         /// <remarks>Cell (x, y) are adjusted to match the viewport (x, y).</remarks>
         /// <returns></returns>
-        public IEnumerable<(int x, int y)> GetViewPortWorldCoordinates()
+        public IEnumerable<(int x, int y)> GetViewPortWorldCoordinates(Func<TCellType, bool>? criteria = null)
         {
-            var startX = _centerCoordinate.x - Width / 2;
-            var startY = _centerCoordinate.y - Height / 2;
-            for (int x = startX; x < Width; x++)
+            for (int x = 0; x < Width; x++)
             {
-                for (int y = startY; y < Height; y++)
+                for (int y = 0; y < Height; y++)
                 {
-                    yield return (x, y);
+                    if (criteria != null && !criteria.Invoke(ScreenCells[y * Width + x])) continue;
+                    yield return ScreenToWorldCoordinate(x, y);
                 }
             }
         }
