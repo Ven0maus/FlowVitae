@@ -254,6 +254,19 @@ namespace Venomaus.FlowVitae.Basics
         }
 
         /// <summary>
+        /// Returns the bottom-left most coordinate of the chunk the specified coordinate resides in.
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        /// <remarks>The return value will be the specified (x,y) for non chunkloaded grids.</remarks>
+        /// <returns></returns>
+        public (int x, int y) GetChunkCoordinate(int x, int y)
+        {
+            if (_chunkLoader == null) return (x, y);
+            return _chunkLoader.GetChunkCoordinate(x, y);
+        }
+
+        /// <summary>
         /// Centers the grid on the specified coordinate
         /// </summary>
         /// <remarks>Can only be used for grids that use chunking.</remarks>

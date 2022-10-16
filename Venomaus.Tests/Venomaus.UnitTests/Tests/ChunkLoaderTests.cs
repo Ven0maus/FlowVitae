@@ -1225,5 +1225,13 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(loaded, Is.EqualTo(9));
             Assert.That(unloaded, Is.EqualTo(9));
         }
+
+        [Test]
+        public void GetChunkCoordinate_ReturnsResult_Correct()
+        {
+            var comparer = new TupleComparer<int>();
+            var coord = Grid.GetChunkCoordinate(ChunkWidth / 2, ChunkHeight / 2);
+            Assert.That(comparer.Equals(coord, (0,0)));
+        }
     }
 }

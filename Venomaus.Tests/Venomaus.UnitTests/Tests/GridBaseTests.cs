@@ -523,5 +523,13 @@ namespace Venomaus.UnitTests.Tests
             var chunkLoaded = Grid.IsChunkLoaded(ViewPortWidth / 2, ViewPortHeight / 2);
             Assert.That(chunkLoaded, Is.False);
         }
+
+        [Test]
+        public void GetChunkCoordinate_ReturnsResult_Correct()
+        {
+            var comparer = new TupleComparer<int>();
+            var coord = Grid.GetChunkCoordinate(ChunkWidth / 2, ChunkHeight / 2);
+            Assert.That(comparer.Equals(coord, (ChunkWidth / 2, ChunkHeight / 2)));
+        }
     }
 }
