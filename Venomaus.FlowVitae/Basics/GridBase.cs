@@ -566,6 +566,17 @@ namespace Venomaus.FlowVitae.Basics
             return InBounds(cell.X, cell.Y);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the world coordinate is within the viewport.
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        /// <returns><see langword="true"/> or <see langword="false"/></returns>
+        public bool IsWorldCoordinateOnViewPort(int x, int y)
+        {
+            return IsWorldCoordinateOnScreen(x, y, out _, out _);
+        }
+
         private void SetStateStorage(TCell cell, bool storeState)
         {
             var coordinate = (cell.X, cell.Y);
@@ -583,17 +594,6 @@ namespace Venomaus.FlowVitae.Basics
             }
             else if (_chunkLoader != null)
                 _chunkLoader.SetChunkCell(cell, storeState, OnCellUpdate, IsWorldCoordinateOnScreen, ScreenCells);
-        }
-
-        /// <summary>
-        /// Returns <see langword="true"/> if the world coordinate is within the viewport.
-        /// </summary>
-        /// <param name="x">Coordinate X</param>
-        /// <param name="y">Coordinate Y</param>
-        /// <returns><see langword="true"/> or <see langword="false"/></returns>
-        public bool IsWorldCoordinateOnViewPort(int x, int y)
-        {
-            return IsWorldCoordinateOnScreen(x, y, out _, out _);
         }
 
         internal bool IsWorldCoordinateOnScreen(int x, int y, out (int x, int y)? screenCoordinate, out int screenWidth)
