@@ -11,7 +11,7 @@ namespace Venomaus.BenchmarkTests
     {
         private const int GridSize = 25;
         private static readonly Job JobType = Job.ShortRun;
-        private const bool UseDefaultConfig = true;
+        private const bool UseDefaultConfig = false;
 
         private static void Main(string[] args)
         {
