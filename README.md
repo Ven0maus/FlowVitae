@@ -50,7 +50,7 @@ var grid = new Grid<int, Cell<int>>(width, height, chunkWidth, chunkHeight, proc
 
 GenerateChunkMethod can look something like this:
 ```csharp
-public void GenerateChunkMethod(Random random, int[] chunk, int width, int height)
+public void GenerateChunkMethod(Random random, int[] chunk, int width, int height, (int x, int y) chunkCoordinate)
 {
 	// Every position contains default value of int (0) which could represent grass
 	for (int x = 0; x < width; x++)
@@ -66,6 +66,7 @@ public void GenerateChunkMethod(Random random, int[] chunk, int width, int heigh
 ```
 The random already has a unique seed based on the provided Seed in the ProceduralGenerator and the chunk coordinate.
 int[] chunk represent the chunk, int[] will be your TCellType[]
+and the chunkCoordinate is provided too, in case you want to sample noise based on coordinates.
 
 Chunks are generated automatically and they will use this method as reference to build the chunk.
 
@@ -79,7 +80,7 @@ internal class TestChunkData : IChunkData
 	public List<(int x, int y)>? Trees { get; set; }
 }
 // Custom chunk generation implementation
-Func<Random, int[], int, int, TestChunkData> chunkGenerationMethod = (random, chunk, width, height) =>
+Func<Random, int[], int, int, TestChunkData> chunkGenerationMethod = (random, chunk, width, height, chunkCoordinate) =>
 {
 	// Define custom chunk data
 	var chunkData = new TestChunkData
