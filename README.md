@@ -187,20 +187,18 @@ where TCellType : struct
 ```csharp
 var cell = grid.GetCell(x, y); // returns TCell
 var cellType = grid.GetCelLType(x,y); // returns TCellType
+var neighbors = grid.GetNeighbors(x, y, AdjacencyRule);
 grid.SetCell(x, y, cellType, storeState);
 grid.SetCell(cell, storeState);
 var cells = grid.GetCells(new [] {(0,0), (1,1)}); // returns collection of TCell
 grid.SetCells(cells, storeState);
-```
-```csharp
-grid.GetNeighbors(x, y, AdjacencyRule);
 ```
 
 **Center viewport on a coordinate for procedural grids**
 	
 This is especially useful when you want your player to always be centered in the middle of the screen.
 But during movement, the viewport adjusts to show the right cells based on the position of the player
-For this you can use the Center(x, y) method Grid provides.
+For this you can use the Center(x, y) method Grid provides. This method is also what controls the chunk loading.
 ```csharp
 // Pseudo code (make sure player doesn't actually move, or you'll end up with desync)
 if (player.MovedTowards(x, y))
@@ -242,13 +240,10 @@ Following events will be raised when one of the chunks around the center chunk (
 
 ```csharp
 Grid.GetChunkSeed(x, y);
-```
-Returns the unique seed for the chunk where the specified cell coordinate is in.
-
-```csharp
 Grid.IsChunkLoaded(x, y);
+Grid.GetChunkCoordinate(x, y);
 ```
-Returns true or false based on the chunk the coordinate resides in is loaded or not
+Some chunk related methods.
 
 # Integration with SadConsole
 
