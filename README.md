@@ -243,6 +243,8 @@ Some chunk related methods: (x, y) is automatically converted to a chunk coordin
 Grid.GetChunkSeed(x, y);
 Grid.IsChunkLoaded(x, y);
 Grid.GetChunkCoordinate(x, y);
+Grid.GetChunkCellCoordinates(x, y);
+Grid.GetLoadedChunkCoordinates();
 ```
 
 # Integration with SadConsole
