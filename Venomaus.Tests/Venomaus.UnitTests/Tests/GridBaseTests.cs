@@ -529,5 +529,21 @@ namespace Venomaus.UnitTests.Tests
             var coord = Grid.GetChunkCoordinate(ChunkWidth / 2, ChunkHeight / 2);
             Assert.That(comparer.Equals(coord, (ChunkWidth / 2, ChunkHeight / 2)));
         }
+
+        [Test]
+        public void GetLoadedChunkCoordinates_ReturnsResult_Correct()
+        {
+            var loadedChunks = Grid.GetLoadedChunkCoordinates();
+            Assert.That(loadedChunks.Count(), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GetChunkCellCoordinates_ReturnsResult_Correct()
+        {
+            var loadedChunks = Grid.GetChunkCellCoordinates(0, 0).ToArray();
+            Assert.That(loadedChunks, Has.Length.EqualTo(1));
+            var comparer = new TupleComparer<int>();
+            Assert.That(comparer.Equals(loadedChunks[0], (0, 0)));
+        }
     }
 }

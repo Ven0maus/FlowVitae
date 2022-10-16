@@ -1232,5 +1232,26 @@ namespace Venomaus.UnitTests.Tests
             var coord = Grid.GetChunkCoordinate(ChunkWidth / 2, ChunkHeight / 2);
             Assert.That(comparer.Equals(coord, (0,0)));
         }
+
+        [Test]
+        public void GetLoadedChunkCoordinates_ReturnsResult_Correct()
+        {
+            var loadedChunks = Grid.GetLoadedChunkCoordinates();
+            Assert.That(loadedChunks.Count(), Is.EqualTo(9));
+        }
+
+        [Test]
+        public void GetChunkCellCoordinates_ReturnsResult_Correct()
+        {
+            var loadedChunks = Grid.GetChunkCellCoordinates(0,0).ToHashSet();
+            Assert.That(loadedChunks, Has.Count.EqualTo(ChunkWidth * ChunkHeight));
+            for (var x = 0; x < ChunkWidth; x++)
+            {
+                for (var y = 0; y < ChunkHeight; y++)
+                {
+                    Assert.That(loadedChunks.Contains((x, y)));
+                }
+            }
+        }
     }
 }

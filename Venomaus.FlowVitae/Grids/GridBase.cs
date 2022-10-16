@@ -4,6 +4,7 @@ using Venomaus.FlowVitae.Chunking;
 using Venomaus.FlowVitae.Procedural;
 using Venomaus.FlowVitae.Helpers;
 using Venomaus.FlowVitae.Cells;
+using System.Linq;
 
 namespace Venomaus.FlowVitae.Grids
 {
@@ -176,6 +177,38 @@ namespace Venomaus.FlowVitae.Grids
         public GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell, TChunkData>? generator)
             : this(viewPortWidth, viewPortHeight, viewPortWidth, viewPortHeight, generator)
         { }
+
+        /// <summary>
+        /// Returns all the cell positions within the chunk of the specified coordinate.
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        /// <returns>Cell positions of the chunk</returns>
+        public IEnumerable<(int x, int y)> GetChunkCellCoordinates(int x, int y)
+        {
+            if (_chunkLoader == null)
+            {
+                yield return (x, y);
+                yield break;
+            }
+            var chunkCoordinate = GetChunkCoordinate(x, y);
+            for (var xX= chunkCoordinate.x; xX < chunkCoordinate.x + ChunkWidth; xX++)
+            {
+                for (var yY = chunkCoordinate.y; yY < chunkCoordinate.y + ChunkHeight; yY++)
+                {
+                    yield return (xX, yY);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerable of chunk coordinates that are currently loaded.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<(int x, int y)> GetLoadedChunkCoordinates()
+        {
+            return _chunkLoader?.GetLoadedChunks() ?? Enumerable.Empty<(int x, int y)>();
+        }
 
         /// <summary>
         /// Sets all cells of which the state was stored, to be eligible for garbage collection.
