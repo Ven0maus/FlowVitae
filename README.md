@@ -232,18 +232,18 @@ grid.ClearCache(); // Removes all stored cell data
 
 **Be notified of main chunk loading/unloading**
 
+Following events will be raised when one of the chunks around the center chunk (center chunk included) gets loaded or unloaded.
 ```csharp
 OnChunkLoad
 OnChunkUnload
 ```
-Following events will be raised when one of the chunks around the center chunk (center chunk included) gets loaded or unloaded.
 
+Some chunk related methods: (x, y) is automatically converted to a chunk coordinate, so it can take any world position.
 ```csharp
 Grid.GetChunkSeed(x, y);
 Grid.IsChunkLoaded(x, y);
 Grid.GetChunkCoordinate(x, y);
 ```
-Some chunk related methods.
 
 # Integration with SadConsole
 
