@@ -17,7 +17,7 @@
     <NeutralLanguage>en</NeutralLanguage>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-	<VersionPrefix>1.2.1</VersionPrefix>
+	<VersionPrefix>1.2.2</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
