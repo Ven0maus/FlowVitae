@@ -13,6 +13,6 @@
         /// <summary>
         /// The base coordinate where the chunk starts
         /// </summary>
-        internal (int x, int y) ChunkCoordinate {get; set;}
+        public (int x, int y) ChunkCoordinate { get; set; }
 }
 }
