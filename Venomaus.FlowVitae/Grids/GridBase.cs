@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Venomaus.FlowVitae.Basics.Chunking;
-using Venomaus.FlowVitae.Basics.Procedural;
+using Venomaus.FlowVitae.Chunking;
+using Venomaus.FlowVitae.Procedural;
 using Venomaus.FlowVitae.Helpers;
+using Venomaus.FlowVitae.Cells;
 
-namespace Venomaus.FlowVitae.Basics
+namespace Venomaus.FlowVitae.Grids
 {
     /// <summary>
     /// Base class which provides basic grid functionality

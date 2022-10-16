@@ -1,4 +1,6 @@
-﻿namespace Venomaus.FlowVitae.Basics
+﻿using Venomaus.FlowVitae.Grids;
+
+namespace Venomaus.FlowVitae.Cells
 {
     /// <summary>
     /// Base class which provides basic cell functionality

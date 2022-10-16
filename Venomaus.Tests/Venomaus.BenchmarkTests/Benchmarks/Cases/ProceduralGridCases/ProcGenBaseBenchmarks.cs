@@ -1,6 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
-using Venomaus.FlowVitae.Basics.Chunking;
 using Venomaus.FlowVitae.Cells;
 
 namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases

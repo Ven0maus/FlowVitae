@@ -1,4 +1,4 @@
-﻿using Venomaus.FlowVitae.Basics.Chunking;
+﻿using Venomaus.FlowVitae.Chunking;
 
 namespace Venomaus.UnitTests.Tools
 {

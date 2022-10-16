@@ -1,6 +1,6 @@
-﻿using Venomaus.FlowVitae.Basics;
-using Venomaus.FlowVitae.Basics.Chunking;
-using Venomaus.FlowVitae.Basics.Procedural;
+﻿using Venomaus.FlowVitae.Cells;
+using Venomaus.FlowVitae.Chunking;
+using Venomaus.FlowVitae.Procedural;
 
 namespace Venomaus.FlowVitae.Grids
 {

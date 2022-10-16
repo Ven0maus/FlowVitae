@@ -1,4 +1,4 @@
-﻿namespace Venomaus.FlowVitae.Basics.Chunking
+﻿namespace Venomaus.FlowVitae.Chunking
 {
     /// <summary>
     /// The base interface for the chunk data container

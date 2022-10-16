@@ -1,4 +1,4 @@
-﻿namespace Venomaus.FlowVitae.Basics
+﻿namespace Venomaus.FlowVitae.Grids
 {
     /// <summary>
     /// Different types of adjacency rules

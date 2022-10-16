@@ -1,6 +1,7 @@
 ﻿using System;
+using Venomaus.FlowVitae.Grids;
 
-namespace Venomaus.FlowVitae.Basics
+namespace Venomaus.FlowVitae.Cells
 {
     /// <summary>
     /// Interface for a <typeparamref name="TCellType"/> wrapper used in <see cref="GridBase{TCellType, TCell}"/>

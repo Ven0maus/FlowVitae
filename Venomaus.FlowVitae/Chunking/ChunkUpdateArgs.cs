@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Venomaus.FlowVitae.Basics.Chunking
+namespace Venomaus.FlowVitae.Chunking
 {
     /// <summary>
     /// The arguments for when a chunk is loaded or unloaded

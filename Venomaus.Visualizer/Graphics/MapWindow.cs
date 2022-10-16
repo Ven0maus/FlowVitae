@@ -1,5 +1,5 @@
 ﻿using SadConsole;
-using Venomaus.FlowVitae.Basics;
+using Venomaus.FlowVitae.Grids;
 using Venomaus.Visualizer.Core;
 using Venomaus.Visualizer.World;
 using Console = SadConsole.Console;

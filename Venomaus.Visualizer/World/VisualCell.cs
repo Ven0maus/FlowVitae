@@ -1,6 +1,6 @@
 ﻿using SadConsole;
 using SadRogue.Primitives;
-using Venomaus.FlowVitae.Basics;
+using Venomaus.FlowVitae.Cells;
 
 namespace Venomaus.Visualizer.World
 {

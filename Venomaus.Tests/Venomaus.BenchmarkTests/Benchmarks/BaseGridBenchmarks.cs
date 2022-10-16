@@ -1,8 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
-using Venomaus.FlowVitae.Basics;
-using Venomaus.FlowVitae.Basics.Procedural;
 using Venomaus.FlowVitae.Cells;
+using Venomaus.FlowVitae.Procedural;
 using Venomaus.FlowVitae.Grids;
 
 namespace Venomaus.BenchmarkTests.Benchmarks

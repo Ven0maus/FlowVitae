@@ -1,6 +1,8 @@
-﻿using Venomaus.FlowVitae.Basics.Chunking;
+﻿using Venomaus.FlowVitae.Chunking;
+using Venomaus.FlowVitae.Cells;
+using Venomaus.FlowVitae.Grids;
 
-namespace Venomaus.FlowVitae.Basics.Procedural
+namespace Venomaus.FlowVitae.Procedural
 {
     /// <summary>
     /// Interface for procedural generation that can be supplied to <see cref="GridBase{TCellType, TCell}"/>

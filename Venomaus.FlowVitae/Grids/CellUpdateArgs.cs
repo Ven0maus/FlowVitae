@@ -1,6 +1,7 @@
 ﻿using System;
+using Venomaus.FlowVitae.Cells;
 
-namespace Venomaus.FlowVitae.Basics
+namespace Venomaus.FlowVitae.Grids
 {
     /// <summary>
     /// 

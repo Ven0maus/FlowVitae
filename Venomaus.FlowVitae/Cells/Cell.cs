@@ -1,6 +1,4 @@
-﻿using Venomaus.FlowVitae.Basics;
-
-namespace Venomaus.FlowVitae.Cells
+﻿namespace Venomaus.FlowVitae.Cells
 {
     /// <summary>
     /// A basic generic implementation of <see cref="ICell{TCellType}"/>
