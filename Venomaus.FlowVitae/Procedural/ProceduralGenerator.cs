@@ -16,27 +16,27 @@ namespace Venomaus.FlowVitae.Procedural
         /// <inheritdoc />
         public int Seed { get; private set; }
 
-        private readonly Action<Random, TCellType[], int, int> _method;
+        private readonly Action<Random, TCellType[], int, int, (int x, int y)> _method;
 
         /// <summary>
         /// Basic procedural algorithm, method param uses following signature: (<see cref="Random"/>, <typeparamref name="TCellType"/>[], width, height)
         /// </summary>
         /// <param name="seed">Unique seed</param>
         /// <param name="method">Signature: (<see cref="Random"/>, <typeparamref name="TCellType"/>[], width, height)</param>
-        public ProceduralGenerator(int seed, Action<Random, TCellType[], int, int> method)
+        public ProceduralGenerator(int seed, Action<Random, TCellType[], int, int, (int x, int y)> method)
         {
             Seed = seed;
             _method = method;
         }
 
         /// <inheritdoc />
-        public (TCellType[], IChunkData?) Generate(int seed, int width, int height)
+        public (TCellType[] chunkCells, IChunkData? chunkData) Generate(int seed, int width, int height, (int x, int y) chunkCoordinate)
         {
             var random = new Random(seed);
             var grid = new TCellType[width * height];
 
             // Custom generation method
-            _method.Invoke(random, grid, width, height);
+            _method.Invoke(random, grid, width, height, chunkCoordinate);
 
             return (grid, null);
         }
@@ -56,27 +56,27 @@ namespace Venomaus.FlowVitae.Procedural
         /// <inheritdoc />
         public int Seed { get; private set; }
 
-        private readonly Func<Random, TCellType[], int, int, TChunkData> _method;
+        private readonly Func<Random, TCellType[], int, int, (int x, int y), TChunkData> _method;
 
         /// <summary>
         /// Basic procedural algorithm, method param uses following signature: (<see cref="Random"/>, <typeparamref name="TCellType"/>[], width, height)
         /// </summary>
         /// <param name="seed">Unique seed</param>
         /// <param name="method">Signature: (<see cref="Random"/>, <typeparamref name="TCellType"/>[], width, height)</param>
-        public ProceduralGenerator(int seed, Func<Random, TCellType[], int, int, TChunkData> method)
+        public ProceduralGenerator(int seed, Func<Random, TCellType[], int, int, (int x, int y), TChunkData> method)
         {
             Seed = seed;
             _method = method;
         }
 
         /// <inheritdoc />
-        public (TCellType[], TChunkData?) Generate(int seed, int width, int height)
+        public (TCellType[] chunkCells, TChunkData? chunkData) Generate(int seed, int width, int height, (int x, int y) chunkCoordinate)
         {
             var random = new Random(seed);
             var grid = new TCellType[width * height];
 
             // Custom generation method
-            var chunkData = _method.Invoke(random, grid, width, height);
+            var chunkData = _method.Invoke(random, grid, width, height, chunkCoordinate);
 
             return (grid, chunkData);
         }

@@ -95,7 +95,7 @@ namespace Venomaus.BenchmarkTests.Benchmarks
             return ProcGenEnabled ? new ProceduralGenerator<TCellType, TCell>(Seed, GenerateChunk) : null;
         }
 
-        protected virtual void GenerateChunk(Random random, TCellType[] chunk, int width, int height)
+        protected virtual void GenerateChunk(Random random, TCellType[] chunk, int width, int height, (int x, int y) chunkCoordinate)
         { }
 
         protected virtual (int x, int y)[] PopulatePositionsArray(bool procedural, bool inView)

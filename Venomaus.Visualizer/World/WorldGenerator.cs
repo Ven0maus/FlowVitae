@@ -16,7 +16,7 @@ namespace Venomaus.Visualizer.World
         public const Tiles DefaultTile = Tiles.Grass;
         public const int TreeChance = 10;
 
-        public static void Generate(Random random, int[] chunk, int width, int height)
+        public static void Generate(Random random, int[] chunk, int width, int height, (int x, int y) chunkCoordinate)
         {
             // Every position contains default value of int (0) which should represent grass
             // Add some trees and border tiles

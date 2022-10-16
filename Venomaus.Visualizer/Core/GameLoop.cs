@@ -49,7 +49,7 @@ namespace Venomaus.Visualizer.Core
 
             // Same grid as procedural gen, but with no chunks
             int[] chunk = new int[_grid.Width * _grid.Height];
-            WorldGenerator.Generate(new Random(1000), chunk, _grid.Width, _grid.Height);
+            WorldGenerator.Generate(new Random(1000), chunk, _grid.Width, _grid.Height, (0,0));
             for (int x=0; x < _grid.Width; x++)
                 for (int y = 0; y < _grid.Height; y++)
                     _grid.SetCell(x, y, chunk[y * _grid.Width + x]);

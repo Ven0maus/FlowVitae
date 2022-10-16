@@ -21,7 +21,7 @@ namespace Venomaus.UnitTests.Tests
 
         private event EventHandler<int[]>? OnGenerateChunk;
 
-        private void GenerateChunk(Random random, int[] chunk, int width, int height)
+        private void GenerateChunk(Random random, int[] chunk, int width, int height, (int x, int y) chunkCoordinate)
         {
             for (int x = 0; x < width; x++)
             {
@@ -846,7 +846,7 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void GetCell_ReturnsCorrectChunkScreenCell_IfScreenCell_WasNotYetAdjusted()
         {
-            AdjustProceduralGridGen(Seed, (rand, chunk, width, height) =>
+            AdjustProceduralGridGen(Seed, (rand, chunk, width, height, chunkCoordinate) =>
             {
                 // Set default to -5 on all cells
                 for (int x=0; x < width; x++)
@@ -965,7 +965,7 @@ namespace Venomaus.UnitTests.Tests
         public void GetChunkData_Returns_ValidData()
         {
             // Custom chunk generation implementation
-            Func<Random, int[], int, int, TestChunkData> chunkGenerationMethod = (random, chunk, width, height) =>
+            Func<Random, int[], int, int, (int x, int y), TestChunkData> chunkGenerationMethod = (random, chunk, width, height, chunkCoordinate) =>
             {
                 // Define custom chunk data
                 var chunkData = new TestChunkData

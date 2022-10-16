@@ -542,7 +542,7 @@ namespace Venomaus.FlowVitae.Chunking
         {
             // Get a unique hash seed based on the chunk (x,y) and the main seed
             var chunkSeed = Fnv1a.Hash32(coordinate.x, coordinate.y, _seed);
-            var chunk = _generator.Generate(chunkSeed, _width, _height);
+            var chunk = _generator.Generate(chunkSeed, _width, _height, coordinate);
 
             // Update chunk data with the cached version
             if (_chunkDataCache.TryGetValue(coordinate, out var chunkData))

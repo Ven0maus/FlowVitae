@@ -24,7 +24,7 @@ namespace Venomaus.UnitTests.Tests
             Grid.SetCustomConverter(CustomConverter);
         }
 
-        protected void AdjustProceduralGridGen(int seed, Action<Random, TCellType[], int, int> method)
+        protected void AdjustProceduralGridGen(int seed, Action<Random, TCellType[], int, int, (int x, int y)> method)
         {
             var procGen = new ProceduralGenerator<TCellType, TCell>(seed, method);
             Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, procGen);
