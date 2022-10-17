@@ -331,6 +331,14 @@ namespace Venomaus.FlowVitae.Chunking
                     chunkCells[remappedCoordinate.y * _width + remappedCoordinate.x] = cell.CellType;
                 }
             }
+            else if (IsChunkLoaded(chunkCoordinate.x, chunkCoordinate.y))
+            {
+                var (chunkCells, _) = GetChunk(cell.X, cell.Y, out _);
+                if (chunkCells != null)
+                {
+                    chunkCells[remappedCoordinate.y * _width + remappedCoordinate.x] = cell.CellType;
+                }
+            }
         }
 
         public delegate bool Checker(int x, int y, out (int x, int y)? coordinate, out int screenWidth);

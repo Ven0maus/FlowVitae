@@ -405,6 +405,15 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(() => ChunkLoader.SetChunkCell(new Cell<int>(Grid.Width + 5, Grid.Height + 5, false, 1)), Throws.Nothing);
                 Assert.That(() => ChunkLoader.SetChunkCell(new Cell<int>(-Grid.Width - 5, -Grid.Height - 5, false, 1)), Throws.Nothing);
             });
+
+            // Set chunk cell in an off-screen chunk but that is loaded
+            if (Grid.IsChunkLoaded(Grid.Width + 1, Grid.Height))
+            {
+                Assert.That(Grid.IsChunkLoaded(Grid.Width + 1, Grid.Height));
+                Grid.SetCell(Grid.Width + 1, Grid.Height, -50, false);
+                cell = ChunkLoader.GetChunkCell(Grid.Width + 1, Grid.Height);
+                Assert.That(cell.CellType, Is.EqualTo(-50));
+            }
         }
 
         [Test]
