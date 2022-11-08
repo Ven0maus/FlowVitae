@@ -2,9 +2,9 @@
 using SadConsole.UI;
 using SadConsole.UI.Controls;
 using SadRogue.Primitives;
-using Venomaus.Visualizer.Core;
+using Venomaus.SadConsoleVisualizer.Core;
 
-namespace Venomaus.Visualizer.Graphics
+namespace Venomaus.SadConsoleVisualizer.Graphics
 {
     internal class MainScreen : ControlsConsole
     {

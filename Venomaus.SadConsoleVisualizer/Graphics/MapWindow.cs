@@ -1,10 +1,10 @@
 ﻿using SadConsole;
 using Venomaus.FlowVitae.Grids;
-using Venomaus.Visualizer.Core;
-using Venomaus.Visualizer.World;
+using Venomaus.SadConsoleVisualizer.Core;
+using Venomaus.SadConsoleVisualizer.World;
 using Console = SadConsole.Console;
 
-namespace Venomaus.Visualizer.Graphics
+namespace Venomaus.SadConsoleVisualizer.Graphics
 {
     internal class MapWindow : Console
     {

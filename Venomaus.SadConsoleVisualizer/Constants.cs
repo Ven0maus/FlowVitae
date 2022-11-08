@@ -1,10 +1,10 @@
-﻿namespace Venomaus.Visualizer
+﻿namespace Venomaus.SadConsoleVisualizer
 {
     internal class Constants
     {
         public class ScreenSettings
         {
-            public const string GameWindowTitle = "Visualizer";
+            public const string GameWindowTitle = "SadConsole Visualizer";
             public const int Width = 80;
             public const int Height = 35;
         }

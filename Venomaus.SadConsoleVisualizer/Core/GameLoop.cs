@@ -3,10 +3,10 @@ using SadConsole.Entities;
 using SadRogue.Primitives;
 using Venomaus.FlowVitae.Grids;
 using Venomaus.FlowVitae.Procedural;
-using Venomaus.Visualizer.Graphics;
-using Venomaus.Visualizer.World;
+using Venomaus.SadConsoleVisualizer.Graphics;
+using Venomaus.SadConsoleVisualizer.World;
 
-namespace Venomaus.Visualizer.Core
+namespace Venomaus.SadConsoleVisualizer.Core
 {
     internal class GameLoop
     {

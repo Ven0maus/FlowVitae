@@ -3,7 +3,7 @@ using SadConsole.Entities;
 using SadConsole.Input;
 using SadRogue.Primitives;
 
-namespace Venomaus.Visualizer.Core
+namespace Venomaus.SadConsoleVisualizer.Core
 {
     internal class Player : Entity
     {

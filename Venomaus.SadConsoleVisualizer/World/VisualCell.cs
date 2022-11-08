@@ -2,7 +2,7 @@
 using SadRogue.Primitives;
 using Venomaus.FlowVitae.Cells;
 
-namespace Venomaus.Visualizer.World
+namespace Venomaus.SadConsoleVisualizer.World
 {
     internal class VisualCell<TCellType> : ColoredGlyph, ICell<TCellType>
         where TCellType : struct

@@ -1,6 +1,6 @@
 ﻿using SadRogue.Primitives;
 
-namespace Venomaus.Visualizer.World
+namespace Venomaus.SadConsoleVisualizer.World
 {
     internal class WorldGenerator
     {

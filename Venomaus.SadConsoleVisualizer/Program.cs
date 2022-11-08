@@ -1,7 +1,7 @@
 ﻿using SadConsole;
-using Venomaus.Visualizer.Core;
+using Venomaus.SadConsoleVisualizer.Core;
 
-namespace Venomaus.Visualizer
+namespace Venomaus.SadConsoleVisualizer
 {
     internal class Program
     {
