@@ -467,7 +467,7 @@ namespace Venomaus.FlowVitae.Grids
         /// <param name="y">Coordinate Y</param>
         /// <param name="adjacencyRule">Specifies the adjacent directions to retrieve</param>
         /// <returns></returns>
-        public virtual IEnumerable<TCell> GetNeighbors(int x, int y, AdjacencyRule adjacencyRule)
+        public virtual IEnumerable<TCell?> GetNeighbors(int x, int y, AdjacencyRule adjacencyRule)
         {
             var positions = new List<(int x, int y)>();
             switch (adjacencyRule)
@@ -525,7 +525,7 @@ namespace Venomaus.FlowVitae.Grids
         /// </summary>
         /// <param name="positions"></param>
         /// <returns></returns>
-        public virtual IEnumerable<TCell> GetCells(IEnumerable<(int, int)> positions)
+        public virtual IEnumerable<TCell?> GetCells(IEnumerable<(int, int)> positions)
         {
             if (_chunkLoader == null)
             {
@@ -534,8 +534,7 @@ namespace Venomaus.FlowVitae.Grids
                 {
                     if (!InBounds(pos.Item1, pos.Item2)) continue;
                     var cell = GetCell(pos.Item1, pos.Item2);
-                    if (cell != null)
-                        yield return cell;
+                    yield return cell;
                 }
             }
             else
