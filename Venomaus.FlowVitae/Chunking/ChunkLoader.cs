@@ -355,7 +355,7 @@ namespace Venomaus.FlowVitae.Chunking
         public delegate bool Checker(int x, int y, out (int x, int y)? coordinate, out int screenWidth);
         public void SetChunkCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
-            foreach (var cell in cells)
+            foreach (var cell in cells.Where(a => a != null))
                 SetChunkCell(cell, storeCellStateFunc?.Invoke(cell) ?? false, onCellUpdate: onCellUpdate, isWorldCoordinateOnScreen: isWorldCoordinateOnScreen, screenCells: screenCells);
         }
 

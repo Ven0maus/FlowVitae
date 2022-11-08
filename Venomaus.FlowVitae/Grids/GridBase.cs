@@ -397,6 +397,8 @@ namespace Venomaus.FlowVitae.Grids
         /// When storeState is <see langword="true"/> <see cref="OnCellUpdate"/> will always be raised.</remarks>
         public virtual void SetCell(TCell cell, bool storeState = false)
         {
+            if (cell == null) return;
+
             int x = cell.X;
             int y = cell.Y;
 
@@ -447,7 +449,7 @@ namespace Venomaus.FlowVitae.Grids
             if (_chunkLoader == null)
             {
                 // Handle non chunkloaded grid
-                foreach (var cell in cells)
+                foreach (var cell in cells.Where(a => a != null))
                 {
                     if (!InBounds(cell)) continue;
                     SetCell(cell, storeCellStateFunc?.Invoke(cell) ?? false);
