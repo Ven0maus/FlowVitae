@@ -32,7 +32,7 @@ Venomaus.UnityVisualizer/[Aa]ssets/Plugins/Editor/JetBrains*
 ExportedObj/
 .consulo/
 *.unityproj
-*.sln
+Venomaus.UnityVisualizer/*.sln
 *.suo
 *.tmp
 *.user
