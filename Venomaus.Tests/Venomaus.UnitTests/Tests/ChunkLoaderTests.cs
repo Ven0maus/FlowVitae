@@ -1262,5 +1262,25 @@ namespace Venomaus.UnitTests.Tests
                 }
             }
         }
+
+        [Test]
+        public void HasStoredCell_ReturnsResult_Correct()
+        {
+            Assert.That(Grid.HasStoredCell(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5), Is.False);
+            Grid.SetCell(new Cell<int>(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5, -50), true);
+            Assert.That(Grid.HasStoredCell(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5), Is.True);
+            Grid.SetCell(new Cell<int>(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5, -50), false);
+            Assert.That(Grid.HasStoredCell(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5), Is.False);
+        }
+
+        [Test]
+        public void RemoveStoredCell_ReturnsResult_Correct()
+        {
+            Assert.That(Grid.HasStoredCell(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5), Is.False);
+            Grid.SetCell(new Cell<int>(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5, -50), true);
+            Assert.That(Grid.HasStoredCell(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5), Is.True);
+            Grid.RemoveStoredCell(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5);
+            Assert.That(Grid.HasStoredCell(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5), Is.False);
+        }
     }
 }

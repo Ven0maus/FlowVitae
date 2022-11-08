@@ -286,6 +286,17 @@ namespace Venomaus.FlowVitae.Chunking
             _tempLoadedChunks.Clear();
         }
 
+        public bool HasStoredCell(int x, int y)
+        {
+            var chunkCoordinate = GetChunkCoordinate(x, y);
+            var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
+            if (_modifiedCellsInChunks != null && _modifiedCellsInChunks.TryGetValue(chunkCoordinate, out var storedCells))
+            {
+                return storedCells.ContainsKey(remappedCoordinate);
+            }
+            return false;
+        }
+
         public void SetChunkCell(TCell cell, bool storeState = false, 
             EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, 
             Checker? isWorldCoordinateOnScreen = null, 

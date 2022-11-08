@@ -545,5 +545,28 @@ namespace Venomaus.UnitTests.Tests
             var comparer = new TupleComparer<int>();
             Assert.That(comparer.Equals(loadedChunks[0], (0, 0)));
         }
+
+        [Test]
+        public void HasStoredCell_ReturnsResult_Correct()
+        {
+            // Out of bounds test
+            Assert.That(Grid.HasStoredCell(-5, -2), Is.False);
+
+            Assert.That(Grid.HasStoredCell(0, 0), Is.False);
+            Grid.SetCell(new Cell<int>(0, 0, -50), true);
+            Assert.That(Grid.HasStoredCell(0, 0), Is.True);
+            Grid.SetCell(new Cell<int>(0, 0, -50), false);
+            Assert.That(Grid.HasStoredCell(0, 0), Is.False);
+        }
+
+        [Test]
+        public void RemoveStoredCell_ReturnsResult_Correct()
+        {
+            Assert.That(Grid.HasStoredCell(0, 0), Is.False);
+            Grid.SetCell(new Cell<int>(0, 0, -50), true);
+            Assert.That(Grid.HasStoredCell(0, 0), Is.True);
+            Grid.RemoveStoredCell(0, 0);
+            Assert.That(Grid.HasStoredCell(0, 0), Is.False);
+        }
     }
 }

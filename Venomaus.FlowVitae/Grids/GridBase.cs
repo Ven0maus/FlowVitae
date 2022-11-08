@@ -611,6 +611,39 @@ namespace Venomaus.FlowVitae.Grids
             return IsWorldCoordinateOnScreen(x, y, out _, out _);
         }
 
+        /// <summary>
+        /// Shortcut method to remove a stored cell, which can be done also by using SetCell with storestate parameter set to false.
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        public void RemoveStoredCell(int x, int y)
+        {
+            if (HasStoredCell(x, y))
+            {
+                var cell = GetCell(x, y);
+                if (cell != null)
+                {
+                    SetCell(cell.X, cell.Y, cell.CellType);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Use this method to see if a position in the grid has a stored cell
+        /// </summary>
+        /// <param name="x">Coordinate X</param>
+        /// <param name="y">Coordinate Y</param>
+        /// <returns><see langword="true"/> or <see langword="false"/></returns>
+        public bool HasStoredCell(int x, int y)
+        {
+            if (!InBounds(x, y)) return false;
+            if (_chunkLoader == null && _storage != null)
+                return _storage.ContainsKey((x, y));
+            else if (_chunkLoader != null)
+                return _chunkLoader.HasStoredCell(x, y);
+            return false;
+        }
+
         private void SetStateStorage(TCell cell, bool storeState)
         {
             var coordinate = (cell.X, cell.Y);
