@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Venomaus.FlowVitae.Grids;
-using Random = UnityEngine.Random;
+using Venomaus.FlowVitae.Procedural;
 
 namespace Assets.Generation.Scripts
 {
@@ -13,8 +14,8 @@ namespace Assets.Generation.Scripts
         public static TileGraphic Instance { get; private set; }
 
         [SerializeField]
-        private int _width, _height;
-        public FlowGrid WorldGrid { get; private set; }
+        private int _width, _height, _chunkWidth, _chunkHeight, seed;
+        public FlowGrid Overworld { get; private set; }
 
         private Tilemap _graphic;
 
@@ -30,36 +31,53 @@ namespace Assets.Generation.Scripts
 
             // Unity tilemap
             _graphic = GetComponent<Tilemap>();
-
-            // FlowVitae grid with update event
-            WorldGrid = new FlowGrid(_width, _height);
-            WorldGrid.OnCellUpdate += UpdateTileGraphic;
-
-            // Some basic initialization on startup
-            InitializeTilemap();
         }
 
-        private void InitializeTilemap()
+        public void CreateOverworld()
         {
-            // Do some initial map generation
-            // Grid.GenerateSomeStartupMapData();
+            // FlowVitae grid with update event
+            switch (GridSettings.Instance.GridType)
+            {
+                case GridSettings.FlowGridType.Static:
+                    // Same generation as procedural, but only one array
+                    int[] chunk = new int[_width * _height];
+                    WorldGenerator.GenerateOverworld(new System.Random(seed), chunk, _width, _height, (0, 0));
+                    Overworld = CreateStaticGrid(chunk);
+                    break;
+                case GridSettings.FlowGridType.Procedural:
+                    Overworld = CreateProceduralGrid(WorldGenerator.GenerateOverworld);
+                    break;
+            }
+
+            // Hook-up cell update event
+            Overworld.OnCellUpdate += UpdateTileGraphic;
 
             // To load tiles that weren't changed in the grid (eg, default 0 values)
             CopyViewportToGraphic();
+        }
 
-            // Example of setting a tile after, graphic update is handled automatically by event
-            // Set one random cell to dirt
-            int randomX = Random.Range(0, WorldGrid.Width);
-            int randomY = Random.Range(0, WorldGrid.Height);
-            WorldGrid.SetCell(randomX, randomY, (int)TileTypes.WorldTile.Dirt);
+        private FlowGrid CreateStaticGrid(int[] chunk)
+        {
+            var grid = new FlowGrid(_width, _height);
+            for (int x = 0; x < _width; x++)
+                for (int y = 0; y < _height; y++)
+                    grid.SetCell(x, y, chunk[y * _width + x]);
+            return grid;
+        }
+
+        private FlowGrid CreateProceduralGrid(Action<System.Random, int[], int, int, (int x, int y)> generator)
+        {
+            var procedural = new ProceduralGenerator<int, FlowCell>(seed, generator);
+            var grid = new FlowGrid(_width, _height, _chunkWidth, _chunkHeight, procedural);
+            return grid;
         }
 
         private void CopyViewportToGraphic()
         {
-            var positionsArr = WorldGrid.GetViewPortWorldCoordinates();
+            var positionsArr = Overworld.GetViewPortWorldCoordinates();
             var positionsArrUnity = positionsArr.Select(a => new Vector3Int(a.x, a.y, 0)).ToArray();
 
-            _graphic.SetTiles(positionsArrUnity, WorldGrid.GetCells(positionsArr)
+            _graphic.SetTiles(positionsArrUnity, Overworld.GetCells(positionsArr)
                 .Select(cell => Converter(cell.CellType))
                 .ToArray());
         }

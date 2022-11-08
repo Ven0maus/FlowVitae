@@ -34,11 +34,6 @@ namespace Venomaus.SadConsoleVisualizer.Core
             Game.Instance.Screen = new MainScreen();
         }
 
-        public void OnFrameUpdate(object? sender, GameHost e)
-        {
-
-        }
-
         public void InitStaticGrid()
         {
             const int screenWidth = Constants.ScreenSettings.Width;

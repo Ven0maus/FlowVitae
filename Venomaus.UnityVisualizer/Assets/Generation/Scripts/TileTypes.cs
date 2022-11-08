@@ -5,7 +5,9 @@
         public enum WorldTile
         {
             Grass = 0,
-            Dirt = 1
+            Dirt = 1,
+            ChunkCoordinateTile = 2,
+            Border = 3
         }
     }
 }

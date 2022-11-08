@@ -17,7 +17,6 @@ namespace Venomaus.SadConsoleVisualizer
 
             // Hook the start event so we can add consoles to the system.
             Game.Instance.OnStart = GameLoop.InitializeGameLoop;
-            Game.Instance.FrameUpdate += GameLoop.Instance.OnFrameUpdate;
 
             // Start the game.
             Game.Instance.Run();

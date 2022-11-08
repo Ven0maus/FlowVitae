@@ -232,12 +232,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ffd960d935aabc458d87ab07c2a10af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _width: 10
-  _height: 10
+  _width: 15
+  _height: 15
+  _chunkWidth: 25
+  _chunkHeight: 25
+  seed: 1000
   _cells:
   - Sprite: {fileID: 21300000, guid: 7118d0b06d0de50488517099d4745449, type: 3}
     Tile: {fileID: 0}
   - Sprite: {fileID: 21300000, guid: 7870364064e9f984881c842396921d83, type: 3}
+    Tile: {fileID: 0}
+  - Sprite: {fileID: 21300000, guid: 77197f2be91f6a2428677dc8246a6304, type: 3}
+    Tile: {fileID: 0}
+  - Sprite: {fileID: 21300000, guid: 9a980928d849a5e4496c44d6b59d9f64, type: 3}
     Tile: {fileID: 0}
 --- !u!483693784 &310806904
 TilemapRenderer:
@@ -337,6 +344,7 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
+  - component: {fileID: 519420033}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -362,7 +370,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -403,13 +411,26 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.85, y: 5.09, z: -10}
+  m_LocalPosition: {x: 7.55, y: 7.48, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &519420033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2442965d1c8e93b4a92f0298e782d058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Target: {fileID: 0}
 --- !u!1 &767031494
 GameObject:
   m_ObjectHideFlags: 0
@@ -420,6 +441,7 @@ GameObject:
   m_Component:
   - component: {fileID: 767031496}
   - component: {fileID: 767031495}
+  - component: {fileID: 767031497}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -454,4 +476,64 @@ Transform:
   - {fileID: 310806902}
   m_Father: {fileID: 0}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &767031497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 767031494}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 564bbb42fa49b7d4da078b4b3989b7cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GridType: 0
+--- !u!1 &1647103931
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1647103933}
+  - component: {fileID: 1647103932}
+  m_Layer: 0
+  m_Name: Game
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1647103932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1647103931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9115e38a4e5ebbd43bcf1f9b530654b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PlayerPrefab: {fileID: 7943910451490508803, guid: e89341da6895637419fd90448dcf7998,
+    type: 3}
+  CameraFollow: {fileID: 519420033}
+--- !u!4 &1647103933
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1647103931}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

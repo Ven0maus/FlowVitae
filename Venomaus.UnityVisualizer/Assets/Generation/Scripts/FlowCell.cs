@@ -8,6 +8,7 @@ namespace Assets.Generation.Scripts
         public int X { get; set; }
         public int Y { get; set; }
         public int CellType { get; set; }
+        public bool Walkable { get; set; } = true;
 
         public bool Equals(ICell<int> other)
         {
