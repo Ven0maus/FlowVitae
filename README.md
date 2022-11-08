@@ -9,6 +9,7 @@ Supports:
 
 Tested with:
 - SadConsole V9
+- Unity 2022.1
 
 # Features
 
@@ -253,4 +254,8 @@ Grid.GetLoadedChunkCoordinates();
 
 # Integration with SadConsole
 
-Checkout the Visualizer project, it is an example project that integrates the FlowVitae grid with SadConsole V9 render engine.
+Checkout the SadConsoleVisualizer project, it is an example project that integrates the FlowVitae grid with SadConsole V9 render engine.
+
+# Integration with Unity
+
+Checkout the UnityVisualizer project, it is an example project that integrates the FlowVitae grid with UnityEngine.
