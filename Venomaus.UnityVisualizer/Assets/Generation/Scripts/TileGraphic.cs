@@ -11,11 +11,13 @@ namespace Assets.Generation.Scripts
 {
     public class TileGraphic : MonoBehaviour
     {
-        public static TileGraphic Instance { get; private set; }
+        private int Width { get { return GridSettings.Instance.Width; } }
+        private int Height { get { return GridSettings.Instance.Height; } }
+        private int ChunkWidth { get { return GridSettings.Instance.ChunkWidth; } }
+        private int ChunkHeight { get { return GridSettings.Instance.ChunkHeight; } }
+        private int WorldSeed { get { return GridSettings.Instance.WorldSeed; } }
 
-        [SerializeField]
-        private int _width, _height, _chunkWidth, _chunkHeight, seed;
-        public FlowGrid Overworld { get; private set; }
+        public FlowGrid Grid { get; private set; }
 
         private Tilemap _graphic;
 
@@ -24,60 +26,62 @@ namespace Assets.Generation.Scripts
 
         private void Start()
         {
-            // Singleton for easy access to the FlowGrid, eg. TileGraphic.Instance.WorldGrid
-            if (Instance != null)
-                throw new Exception("Cannot have more than one TileGraphic in the scene.");
-            Instance = this;
-
             // Unity tilemap
             _graphic = GetComponent<Tilemap>();
         }
 
-        public void CreateOverworld()
+        public void CreateGrid(Action<System.Random, int[], int, int, (int x, int y)> generator)
         {
             // FlowVitae grid with update event
             switch (GridSettings.Instance.GridType)
             {
                 case GridSettings.FlowGridType.Static:
                     // Same generation as procedural, but only one array
-                    int[] chunk = new int[_width * _height];
-                    WorldGenerator.GenerateOverworld(new System.Random(seed), chunk, _width, _height, (0, 0));
-                    Overworld = CreateStaticGrid(chunk);
+                    int[] chunk = new int[Width * Height];
+                    generator(new System.Random(WorldSeed), chunk, Width, Height, (0, 0));
+                    Grid = CreateStaticGrid(chunk);
                     break;
                 case GridSettings.FlowGridType.Procedural:
-                    Overworld = CreateProceduralGrid(WorldGenerator.GenerateOverworld);
+                    Grid = CreateProceduralGrid(generator);
                     break;
             }
 
             // Hook-up cell update event
-            Overworld.OnCellUpdate += UpdateTileGraphic;
+            Grid.OnCellUpdate += UpdateTileGraphic;
+            Grid.SetCustomConverter(CustomCellConverter);
 
             // To load tiles that weren't changed in the grid (eg, default 0 values)
             CopyViewportToGraphic();
         }
 
+        private FlowCell CustomCellConverter(int x, int y, int cellType)
+        {
+            var config = cellType < 0 ? null : _cells[cellType];
+            return new FlowCell { X = x, Y = y, CellType = cellType, Walkable = config != null ? config.Walkable : true };
+        }
+
         private FlowGrid CreateStaticGrid(int[] chunk)
         {
-            var grid = new FlowGrid(_width, _height);
-            for (int x = 0; x < _width; x++)
-                for (int y = 0; y < _height; y++)
-                    grid.SetCell(x, y, chunk[y * _width + x]);
+            var grid = new FlowGrid(Width, Height);
+            for (int x = 0; x < Width; x++)
+                for (int y = 0; y < Height; y++)
+                    grid.SetCell(x, y, chunk[y * Width + x]);
             return grid;
         }
 
         private FlowGrid CreateProceduralGrid(Action<System.Random, int[], int, int, (int x, int y)> generator)
         {
-            var procedural = new ProceduralGenerator<int, FlowCell>(seed, generator);
-            var grid = new FlowGrid(_width, _height, _chunkWidth, _chunkHeight, procedural);
+            var procedural = new ProceduralGenerator<int, FlowCell>(WorldSeed, generator);
+            var grid = new FlowGrid(Width, Height, ChunkWidth, ChunkHeight, procedural);
             return grid;
         }
 
         private void CopyViewportToGraphic()
         {
-            var positionsArr = Overworld.GetViewPortWorldCoordinates();
+            var positionsArr = Grid.GetViewPortWorldCoordinates();
             var positionsArrUnity = positionsArr.Select(a => new Vector3Int(a.x, a.y, 0)).ToArray();
 
-            _graphic.SetTiles(positionsArrUnity, Overworld.GetCells(positionsArr)
+            _graphic.SetTiles(positionsArrUnity, Grid.GetCells(positionsArr)
                 .Select(cell => Converter(cell.CellType))
                 .ToArray());
         }
@@ -91,6 +95,8 @@ namespace Assets.Generation.Scripts
         private readonly Dictionary<int, TileBase> _graphicCellCache = new();
         private TileBase Converter(int cellType)
         {
+            if (cellType < 0) return null;
+
             // Cached impl for retrieving Tile graphic
             if (!_graphicCellCache.TryGetValue(cellType, out var tile))
             {

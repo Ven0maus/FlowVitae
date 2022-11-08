@@ -14,11 +14,12 @@ namespace Assets.Game
         private void Start()
         {
             // First create the world
-            TileGraphic.Instance.CreateOverworld();
+            GridSettings.Instance.TerrainGraphic.CreateGrid(WorldGenerator.GenerateTerrain);
+            GridSettings.Instance.ObjectsGraphic.CreateGrid(WorldGenerator.GenerateObjects);
 
             // Spawn player in center of the map
             var player = Instantiate(PlayerPrefab);
-            player.Position = new Vector2Int(TileGraphic.Instance.Overworld.Width / 2, TileGraphic.Instance.Overworld.Height / 2);
+            player.Position = new Vector2Int(GridSettings.Instance.Width / 2, GridSettings.Instance.Height / 2);
             player.transform.position = new (player.Position.x + 0.5f, player.Position.y + 0.5f, 0f);
             CameraFollow.Target = player.gameObject;
         }

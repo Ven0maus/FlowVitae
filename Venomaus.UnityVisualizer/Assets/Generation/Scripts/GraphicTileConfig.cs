@@ -14,5 +14,9 @@ namespace Assets.Generation.Scripts
         [Header("Use this for custom tiles")]
         [Tooltip("If supplied, this tile will be used, and sprite field will be ignored.")]
         public TileBase Tile;
+
+        [Header("Tile settings")]
+        [Tooltip("Defines if the player can walk onto this tile")]
+        public bool Walkable = true;
     }
 }

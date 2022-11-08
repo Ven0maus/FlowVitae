@@ -186,6 +186,143 @@ LightingSettings:
   m_PVRFilteringAtrousPositionSigmaAO: 1
   m_PVRTiledBaking: 0
   m_NumRaysToShootPerTexel: -1
+--- !u!1 &244850957
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 244850958}
+  - component: {fileID: 244850960}
+  - component: {fileID: 244850959}
+  - component: {fileID: 244850961}
+  m_Layer: 0
+  m_Name: Objects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &244850958
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244850957}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 767031496}
+  m_RootOrder: -1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!483693784 &244850959
+TilemapRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244850957}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_ChunkSize: {x: 32, y: 32, z: 32}
+  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_MaxChunkCount: 16
+  m_MaxFrameAge: 16
+  m_SortOrder: 0
+  m_Mode: 0
+  m_DetectChunkCullingBounds: 0
+  m_MaskInteraction: 0
+--- !u!1839735485 &244850960
+Tilemap:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244850957}
+  m_Enabled: 1
+  m_Tiles: {}
+  m_AnimatedTiles: {}
+  m_TileAssetArray: []
+  m_TileSpriteArray: []
+  m_TileMatrixArray: []
+  m_TileColorArray: []
+  m_TileObjectToInstantiateArray: []
+  m_AnimationFrameRate: 1
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Origin: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0, y: 0, z: 1}
+  m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
+  m_TileOrientation: 0
+  m_TileOrientationMatrix:
+    e00: 1
+    e01: 0
+    e02: 0
+    e03: 0
+    e10: 0
+    e11: 1
+    e12: 0
+    e13: 0
+    e20: 0
+    e21: 0
+    e22: 1
+    e23: 0
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
+--- !u!114 &244850961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244850957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ffd960d935aabc458d87ab07c2a10af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _cells:
+  - Sprite: {fileID: 21300000, guid: de7e62951a7ff2c42a15c6886a58807a, type: 3}
+    Tile: {fileID: 0}
+    Walkable: 0
 --- !u!1 &310806901
 GameObject:
   m_ObjectHideFlags: 0
@@ -197,9 +334,9 @@ GameObject:
   - component: {fileID: 310806902}
   - component: {fileID: 310806905}
   - component: {fileID: 310806904}
-  - component: {fileID: 310806903}
+  - component: {fileID: 310806906}
   m_Layer: 0
-  m_Name: WorldGrid
+  m_Name: Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -220,32 +357,6 @@ Transform:
   m_Father: {fileID: 767031496}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &310806903
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 310806901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ffd960d935aabc458d87ab07c2a10af, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _width: 15
-  _height: 15
-  _chunkWidth: 25
-  _chunkHeight: 25
-  seed: 1000
-  _cells:
-  - Sprite: {fileID: 21300000, guid: 7118d0b06d0de50488517099d4745449, type: 3}
-    Tile: {fileID: 0}
-  - Sprite: {fileID: 21300000, guid: 7870364064e9f984881c842396921d83, type: 3}
-    Tile: {fileID: 0}
-  - Sprite: {fileID: 21300000, guid: 77197f2be91f6a2428677dc8246a6304, type: 3}
-    Tile: {fileID: 0}
-  - Sprite: {fileID: 21300000, guid: 9a980928d849a5e4496c44d6b59d9f64, type: 3}
-    Tile: {fileID: 0}
 --- !u!483693784 &310806904
 TilemapRenderer:
   m_ObjectHideFlags: 0
@@ -333,6 +444,31 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!114 &310806906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 310806901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ffd960d935aabc458d87ab07c2a10af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _cells:
+  - Sprite: {fileID: 21300000, guid: 7118d0b06d0de50488517099d4745449, type: 3}
+    Tile: {fileID: 0}
+    Walkable: 1
+  - Sprite: {fileID: 21300000, guid: 7870364064e9f984881c842396921d83, type: 3}
+    Tile: {fileID: 0}
+    Walkable: 1
+  - Sprite: {fileID: 21300000, guid: 77197f2be91f6a2428677dc8246a6304, type: 3}
+    Tile: {fileID: 0}
+    Walkable: 1
+  - Sprite: {fileID: 21300000, guid: 9a980928d849a5e4496c44d6b59d9f64, type: 3}
+    Tile: {fileID: 0}
+    Walkable: 1
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -474,6 +610,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 310806902}
+  - {fileID: 244850958}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -489,6 +626,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 564bbb42fa49b7d4da078b4b3989b7cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Width: 15
+  Height: 15
+  ChunkWidth: 25
+  ChunkHeight: 25
+  WorldSeed: 1000
+  TerrainGraphic: {fileID: 310806906}
+  ObjectsGraphic: {fileID: 244850961}
   GridType: 0
 --- !u!1 &1647103931
 GameObject:

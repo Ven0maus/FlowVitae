@@ -9,16 +9,33 @@ namespace Assets.Entities
 
         public void MoveTowards(int x, int y, bool checkCanMove = true)
         {
-            var cell = TileGraphic.Instance.Overworld.GetCell(x, y);
-            if (cell == null || (checkCanMove && !cell.Walkable)) return;
+            if (checkCanMove && !CanMove(x, y)) return;
 
             Position = new Vector2Int(x, y);
 
             // If we are on a static grid we don't need to center, but move the actual player coord on screen
             if (GridSettings.Instance.GridType == GridSettings.FlowGridType.Static)
+            {
                 transform.position = new Vector3(x + .5f, y + .5f, 0);
+            }
             else
-                TileGraphic.Instance.Overworld.Center(x, y);
+            {
+                GridSettings.Instance.TerrainGraphic.Grid.Center(x, y);
+                GridSettings.Instance.ObjectsGraphic.Grid.Center(x, y);
+            }
+        }
+
+        private bool CanMove(int x, int y)
+        {
+            // Can't move if there is no terrain, or not walkable terrain
+            var terrainCell = GridSettings.Instance.TerrainGraphic.Grid.GetCell(x, y);
+            if (terrainCell == null || (!terrainCell.Walkable)) return false;
+
+            // Can't move if object is not walkable
+            var objectsCell = GridSettings.Instance.ObjectsGraphic.Grid.GetCell(x, y);
+            if (objectsCell != null && !objectsCell.Walkable) return false;
+
+            return true;
         }
 
         private void Update()
