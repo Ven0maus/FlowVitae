@@ -193,6 +193,8 @@ grid.SetCell(x, y, cellType, storeState);
 grid.SetCell(cell, storeState);
 var cells = grid.GetCells(new [] {(0,0), (1,1)}); // returns collection of TCell
 grid.SetCells(cells, storeState);
+grid.RemoveStoredCell(x, y);
+grid.HasStoredCell(x, y);
 ```
 
 **Center viewport on a coordinate for procedural grids**
@@ -229,6 +231,7 @@ var isInViewPort = grid.IsWorldCoordinateOnViewPort(x,y);
 
 ```csharp
 grid.ClearCache(); // Removes all stored cell data
+grid.RemoveStoredCell(x, y);
 ```
 
 **Be notified of main chunk loading/unloading**
