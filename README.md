@@ -141,7 +141,7 @@ There are some ways to convert the underlying TCellType to TCell.
 	
 Here is an example of the method:
 ```csharp
-_grid.SetCustomConverter(WorldGenerator.CellConverter);
+_grid.SetCustomConverter(ConvertCell);
 	
 public Cell<int> ConvertCell(int x, int y, int cellType)
 {
