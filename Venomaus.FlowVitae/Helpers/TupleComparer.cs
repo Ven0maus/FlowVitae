@@ -12,9 +12,9 @@ namespace Venomaus.FlowVitae.Helpers
         where T : struct, IComparable<T>
     {
         /// <inheritdoc/>
-        public bool Equals((T, T) x, (T, T) y)
+        public bool Equals((T, T) obj1, (T, T) obj2)
         {
-            return x.Item1.Equals(y.Item1) && x.Item2.Equals(y.Item2);
+            return obj1.Item1.Equals(obj2.Item1) && obj1.Item2.Equals(obj2.Item2);
         }
 
         /// <inheritdoc/>

@@ -249,6 +249,17 @@ namespace Venomaus.UnitTests.Tests
         {
             var viewPort = Grid.GetViewPortWorldCoordinates().ToArray();
             Assert.That(viewPort, Has.Length.EqualTo(Grid.Width * Grid.Height));
+
+            // Check if the order is also correct
+            var comparer = new TupleComparer<int>();
+            for (int x=0; x < Grid.Width; x++)
+            {
+                for (int y = 0; y < Grid.Height; y++)
+                {
+                    var index = y * Grid.Width + x;
+                    Assert.That(comparer.Equals(viewPort[index], (x, y)));  
+                }
+            }
         }
 
         [Test]
