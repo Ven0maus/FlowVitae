@@ -347,6 +347,7 @@ namespace Venomaus.UnitTests.Tests
 
             Cell<int>? cell = null;
             Assert.That(() => cell = ChunkLoader.GetChunkCell(posX, posY), Throws.Nothing);
+            Assert.That(() => ChunkLoader.GetChunkCellType(posX, posY), Throws.Nothing);
             Assert.That(cell, Is.Not.Null);
             Assert.Multiple(() =>
             {
@@ -358,7 +359,9 @@ namespace Venomaus.UnitTests.Tests
             Assert.Multiple(() =>
             {
                 Assert.That(() => cell = ChunkLoader.GetChunkCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Throws.Exception);
+                Assert.That(() => ChunkLoader.GetChunkCellType(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Throws.Exception);
                 Assert.That(() => cell = ChunkLoader.GetChunkCell(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, true), Throws.Nothing);
+                Assert.That(() => ChunkLoader.GetChunkCellType(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, true), Throws.Nothing);
             });
             Assert.That(cell, Is.Not.Null);
             Assert.Multiple(() =>
@@ -403,7 +406,9 @@ namespace Venomaus.UnitTests.Tests
             ChunkLoader.SetChunkCell(new Cell<int>(posX, posY, false, 1), false, null, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells);
 
             var changedCell = ChunkLoader.GetChunkCell(posX, posY, false, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells);
+            var changedCellType = ChunkLoader.GetChunkCellType(posX, posY, false, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells);
             Assert.That(changedCell, Is.Not.Null);
+            Assert.That(changedCellType, Is.EqualTo(1));
             Assert.Multiple(() =>
             {
                 Assert.That(changedCell.CellType, Is.EqualTo(1));
@@ -417,6 +422,8 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(Grid.IsChunkLoaded(Grid.Width + 1, Grid.Height));
                 Grid.SetCell(Grid.Width + 1, Grid.Height, -50, false);
                 cell = ChunkLoader.GetChunkCell(Grid.Width + 1, Grid.Height);
+                var cellType = ChunkLoader.GetChunkCellType(Grid.Width + 1, Grid.Height);
+                Assert.That(cellType, Is.EqualTo(-50));
                 Assert.That(cell.CellType, Is.EqualTo(-50));
             }
         }
@@ -730,6 +737,8 @@ namespace Venomaus.UnitTests.Tests
             // Chunks retrieved are null without proper method call
             Assert.That(() => ChunkLoader.GetChunkCell(x, y, false), Throws.Exception);
             Assert.That(() => ChunkLoader.GetChunkCell(x2, y2, false), Throws.Exception);
+            Assert.That(() => ChunkLoader.GetChunkCellType(x, y, false), Throws.Exception);
+            Assert.That(() => ChunkLoader.GetChunkCellType(x2, y2, false), Throws.Exception);
 
             // Chunks retrieved are not null with proper method call with load chunks false
             var cells = new[]
