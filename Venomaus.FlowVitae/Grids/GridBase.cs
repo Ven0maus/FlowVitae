@@ -192,7 +192,7 @@ namespace Venomaus.FlowVitae.Grids
                 yield break;
             }
             var chunkCoordinate = GetChunkCoordinate(x, y);
-            for (var xX= chunkCoordinate.x; xX < chunkCoordinate.x + ChunkWidth; xX++)
+            for (var xX = chunkCoordinate.x; xX < chunkCoordinate.x + ChunkWidth; xX++)
             {
                 for (var yY = chunkCoordinate.y; yY < chunkCoordinate.y + ChunkHeight; yY++)
                 {
@@ -428,7 +428,7 @@ namespace Venomaus.FlowVitae.Grids
         /// </param>
         /// <remarks>When setting multiple cells at once, use <see cref="SetCells(IEnumerable{TCell}, bool)"/> instead.</remarks>
         public virtual void SetCell(int x, int y, TCellType cellType, bool storeState = false)
-            => SetCell(Convert(x, y, cellType), storeState);
+            => SetCell(new TCell { X = x, Y = y, CellType = cellType }, storeState);
 
         /// <summary>
         /// Update all <paramref name="cells"/> within the grid, this method is optimized for setting cells in unloaded chunks.
