@@ -2,7 +2,7 @@
 using SadConsole.Entities;
 using SadRogue.Primitives;
 using Venomaus.FlowVitae.Grids;
-using Venomaus.FlowVitae.Procedural;
+using Venomaus.FlowVitae.Generators;
 using Venomaus.SadConsoleVisualizer.Graphics;
 using Venomaus.SadConsoleVisualizer.World;
 
@@ -75,7 +75,7 @@ namespace Venomaus.SadConsoleVisualizer.Core
 
         private void InitializeMapWindow()
         {
-            Game.Instance.Screen = new MapWindow(Grid.GetCells(Grid.GetViewPortWorldCoordinates()).ToArray());
+            Game.Instance.Screen = new MapWindow(Grid.GetCells(Grid.GetViewPortWorldCoordinates()).Cast<VisualCell<int>>().ToArray());
             Game.Instance.Screen.SadComponents.Add(EntityRenderer);
         }
     }

@@ -2,7 +2,7 @@
 using BenchmarkDotNet.Engines;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
-using Venomaus.FlowVitae.Procedural;
+using Venomaus.FlowVitae.Generators;
 
 namespace Venomaus.BenchmarkTests.Benchmarks
 {

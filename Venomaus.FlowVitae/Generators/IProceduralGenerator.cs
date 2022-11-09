@@ -2,7 +2,7 @@
 using Venomaus.FlowVitae.Chunking;
 using Venomaus.FlowVitae.Grids;
 
-namespace Venomaus.FlowVitae.Procedural
+namespace Venomaus.FlowVitae.Generators
 {
     /// <summary>
     /// Interface for procedural generation that can be supplied to <see cref="GridBase{TCellType, TCell}"/>
