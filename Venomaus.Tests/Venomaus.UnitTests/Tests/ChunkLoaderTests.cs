@@ -1007,7 +1007,7 @@ namespace Venomaus.UnitTests.Tests
         }
 
         [Test]
-        public void GetChunkData_Returns_ValidData()
+        public virtual void GetChunkData_Returns_ValidData()
         {
             // Custom chunk generation implementation
             Func<Random, int[], int, int, (int x, int y), TestChunkData> chunkGenerationMethod = (random, chunk, width, height, chunkCoordinate) =>
