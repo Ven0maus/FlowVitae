@@ -10,7 +10,7 @@ namespace Venomaus.FlowVitae.Grids
     /// <typeparam name="TCell"></typeparam>
     public class CellUpdateArgs<TCellType, TCell> : EventArgs
         where TCellType : struct
-        where TCell : ICell<TCellType>, new()
+        where TCell : class, ICell<TCellType>, new()
     {
         /// <summary>
         /// The X coordinate that represent the cell on the screen
@@ -25,9 +25,9 @@ namespace Venomaus.FlowVitae.Grids
         /// <summary>
         /// The updated <typeparamref name="TCell"/>
         /// </summary>
-        public TCell Cell { get; private set; }
+        public TCell? Cell { get; private set; }
 
-        internal CellUpdateArgs((int x, int y) screenCoordinate, TCell cell)
+        internal CellUpdateArgs((int x, int y) screenCoordinate, TCell? cell)
         {
             ScreenX = screenCoordinate.x;
             ScreenY = screenCoordinate.y;

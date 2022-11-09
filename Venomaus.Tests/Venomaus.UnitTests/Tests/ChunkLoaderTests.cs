@@ -379,8 +379,13 @@ namespace Venomaus.UnitTests.Tests
             {
                 Assert.Multiple(() =>
                 {
-                    Assert.That(cells[i].X, Is.EqualTo(cellPositions[i].Item1));
-                    Assert.That(cells[i].Y, Is.EqualTo(cellPositions[i].Item2));
+                    var cell = cells[i];
+                    Assert.That(cell, Is.Not.Null);
+                    if (cell != null)
+                    {
+                        Assert.That(cell.X, Is.EqualTo(cellPositions[i].Item1));
+                        Assert.That(cell.Y, Is.EqualTo(cellPositions[i].Item2));
+                    }
                 });
             }
         }
@@ -756,10 +761,14 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(sender, Is.Null);
                 Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
                 Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
-                Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
-                Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
-                Assert.That(args.Cell.CellType, Is.EqualTo(-1));
-                Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+                Assert.That(args.Cell, Is.Not.Null);
+                if (args.Cell != null)
+                {
+                    Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
+                    Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                    Assert.That(args.Cell.CellType, Is.EqualTo(-1));
+                    Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+                }
             });
 
             args = null;
@@ -780,10 +789,14 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(sender, Is.Null);
                 Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
                 Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
-                Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
-                Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
-                Assert.That(args.Cell.CellType, Is.EqualTo(-1));
-                Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+                Assert.That(args.Cell, Is.Not.Null);
+                if (args.Cell != null)
+                {
+                    Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
+                    Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                    Assert.That(args.Cell.CellType, Is.EqualTo(-1));
+                    Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+                }
             });
 
             args = null;
@@ -815,10 +828,14 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(sender, Is.Null);
                 Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
                 Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
-                Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
-                Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
-                Assert.That(args.Cell.CellType, Is.EqualTo(-1));
-                Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+                Assert.That(args.Cell, Is.Not.Null);
+                if (args.Cell != null)
+                {
+                    Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
+                    Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                    Assert.That(args.Cell.CellType, Is.EqualTo(-1));
+                    Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+                }
             });
 
             args = null;
@@ -839,10 +856,14 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(sender, Is.Null);
                 Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
                 Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
-                Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
-                Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
-                Assert.That(args.Cell.CellType, Is.EqualTo(-1));
-                Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+                Assert.That(args.Cell, Is.Not.Null);
+                if (args.Cell != null)
+                {
+                    Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
+                    Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                    Assert.That(args.Cell.CellType, Is.EqualTo(-1));
+                    Assert.That(args.Cell.Walkable, Is.EqualTo(false));
+                }
             });
 
             args = null;

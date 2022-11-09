@@ -49,7 +49,7 @@ namespace Venomaus.FlowVitae.Grids
         /// <summary>
         /// A custom converter method, to replace the default cell converter
         /// </summary>
-        private Func<int, int, TCellType, TCell>? _customConverter;
+        private Func<int, int, TCellType, TCell?>? _customConverter;
         /// <summary>
         /// Container for cells that contain extra data
         /// </summary>
@@ -269,7 +269,7 @@ namespace Venomaus.FlowVitae.Grids
         /// Overwrites the Convert method with a custom implementation without having to create a new <see cref="GridBase{TCellType, TCell}"/> implementation.
         /// </summary>
         /// <param name="converter">Converter func that resembles the Convert method</param>
-        public virtual void SetCustomConverter(Func<int, int, TCellType, TCell>? converter)
+        public virtual void SetCustomConverter(Func<int, int, TCellType, TCell?>? converter)
         {
             _customConverter = converter;
         }
@@ -323,7 +323,7 @@ namespace Venomaus.FlowVitae.Grids
         /// <param name="y">Coordinate Y</param>
         /// <param name="cellType">Internal cell <typeparamref name="TCellType"/></param>
         /// <returns><typeparamref name="TCell"/></returns>
-        protected virtual TCell Convert(int x, int y, TCellType cellType)
+        protected virtual TCell? Convert(int x, int y, TCellType cellType)
         {
             return _customConverter != null ? _customConverter.Invoke(x, y, cellType) : new TCell
             {
@@ -561,7 +561,7 @@ namespace Venomaus.FlowVitae.Grids
             else if (_chunkLoader != null)
             {
                 cell = _chunkLoader.GetChunkCell(x, y, true);
-                return cell.CellType;
+                return cell == null ? default : cell.CellType;
             }
             return ScreenCells[y * Width + x];
         }

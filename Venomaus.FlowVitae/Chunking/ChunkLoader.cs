@@ -19,7 +19,7 @@ namespace Venomaus.FlowVitae.Chunking
         private readonly int _width, _height;
         private readonly int _viewPortWidth, _viewPortHeight;
         private readonly IProceduralGen<TCellType, TCell, TChunkData> _generator;
-        private readonly Func<int, int, TCellType, TCell> _cellTypeConverter;
+        private readonly Func<int, int, TCellType, TCell?> _cellTypeConverter;
         private readonly Dictionary<(int x, int y), TChunkData> _chunkDataCache;
         private readonly ConcurrentDictionary<(int x, int y), (TCellType[] chunkCells, TChunkData? chunkData)> _chunks;
         private readonly HashSet<(int x, int y)> _tempLoadedChunks;
@@ -31,7 +31,7 @@ namespace Venomaus.FlowVitae.Chunking
         public (int x, int y) CenterCoordinate { get; private set; }
         public bool RaiseOnlyOnCellTypeChange { get; set; } = true;
 
-        public ChunkLoader(int viewPortWidth, int viewPortHeight, int width, int height, IProceduralGen<TCellType, TCell, TChunkData> generator, Func<int, int, TCellType, TCell> cellTypeConverter)
+        public ChunkLoader(int viewPortWidth, int viewPortHeight, int width, int height, IProceduralGen<TCellType, TCell, TChunkData> generator, Func<int, int, TCellType, TCell?> cellTypeConverter)
         {
             _width = width;
             _height = height;
@@ -221,7 +221,7 @@ namespace Venomaus.FlowVitae.Chunking
             }    
         }
 
-        public TCell GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true)
+        public TCell? GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true)
         {
             var chunkCoordinate = GetChunkCoordinate(x, y);
             var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
@@ -274,7 +274,7 @@ namespace Venomaus.FlowVitae.Chunking
                 chunkCells[remappedCoordinate.y * _width + remappedCoordinate.x]);
         }
 
-        public IEnumerable<TCell> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
+        public IEnumerable<TCell?> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
             var cells = new List<TCell>();
             foreach (var (x, y) in positions)
@@ -540,7 +540,7 @@ namespace Venomaus.FlowVitae.Chunking
                 _tempLoadedChunks.Add(chunkCoordinate);
 
             var cell = GetChunkCell(cellX, cellY, false, isWorldCoordinateOnScreen, screenCells);
-            screenCells[newScreenCoordinate.y * viewPortWidth + newScreenCoordinate.x] = cell.CellType;
+            screenCells[newScreenCoordinate.y * viewPortWidth + newScreenCoordinate.x] = cell == null ? default : cell.CellType;
             onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(newScreenCoordinate, cell));
         }
 
