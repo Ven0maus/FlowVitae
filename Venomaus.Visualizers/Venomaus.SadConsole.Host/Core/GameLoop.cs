@@ -50,27 +50,46 @@ namespace Venomaus.SadConsoleVisualizer.Core
                     _grid.SetCell(x, y, chunk[y * _grid.Width + x]);
 
             InitializeMapWindow();
-            AfterGridInitialization(true);
+            AfterGridInitialization(true, false);
+        }
+
+        public void InitStaticChunkedGrid()
+        {
+            const int screenWidth = Constants.ScreenSettings.Width;
+            const int screenHeight = Constants.ScreenSettings.Height;
+            const int chunkWidth = Constants.GridSettings.ChunkWidthStatic;
+            const int chunkHeight = Constants.GridSettings.ChunkHeightStatic;
+
+            // Generate base map
+            var baseMap = new int[screenWidth * screenHeight];
+            WorldGenerator.Generate(new Random(0), baseMap, screenWidth, screenHeight, (0, 0));
+
+            var chunkGenerator = new StaticGenerator<int, VisualCell<int>>(baseMap, screenWidth, screenHeight, 0);
+            _grid = new(screenWidth, screenHeight, chunkWidth, chunkHeight, chunkGenerator);
+            _grid.SetCustomConverter(WorldGenerator.CellConverter);
+
+            InitializeMapWindow();
+            AfterGridInitialization(true, true);
         }
 
         public void InitProceduralGrid()
         {
             const int screenWidth = Constants.ScreenSettings.Width;
             const int screenHeight = Constants.ScreenSettings.Height;
-            const int chunkWidth = Constants.GridSettings.ChunkWidth;
-            const int chunkHeight = Constants.GridSettings.ChunkHeight;
+            const int chunkWidth = Constants.GridSettings.ChunkWidthProcedural;
+            const int chunkHeight = Constants.GridSettings.ChunkHeightProcedural;
 
             var procedural = new ProceduralGenerator<int, VisualCell<int>>(1000, WorldGenerator.Generate);
             _grid = new(screenWidth, screenHeight, chunkWidth, chunkHeight, procedural);
             _grid.SetCustomConverter(WorldGenerator.CellConverter);
 
             InitializeMapWindow();
-            AfterGridInitialization(false);
+            AfterGridInitialization(false, true);
         }
 
-        private void AfterGridInitialization(bool isStaticGrid)
+        private void AfterGridInitialization(bool isStaticGrid, bool isChunked)
         {
-            Player = new Player(new(Grid.Width / 2, Grid.Height / 2), new ColoredGlyph(Color.White, Color.Transparent, '@'), 1, isStaticGrid);
+            Player = new Player(new(Grid.Width / 2, Grid.Height / 2), new ColoredGlyph(Color.White, Color.Transparent, '@'), 1, isStaticGrid, isChunked);
         }
 
         private void InitializeMapWindow()

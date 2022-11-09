@@ -42,7 +42,7 @@ namespace Venomaus.FlowVitae.Chunking.Generators
         /// <param name="seed">A unique seed for this chunk, mostly not used in static generation</param>
         /// <param name="width">Area width</param>
         /// <param name="height">Area height</param>
-        /// <param name="chunkCoordinate">The most bottom-left coordinate of the chunk</param>
+        /// <param name="chunkCoordinate">The most top-left coordinate of the chunk</param>
         /// <returns><typeparamref name="TCellType"/>[width*height]</returns>
         public (TCellType[] chunkCells, IChunkData? chunkData) Generate(int seed, int width, int height, (int x, int y) chunkCoordinate)
         {
@@ -53,7 +53,7 @@ namespace Venomaus.FlowVitae.Chunking.Generators
                 {
                     var targetX = chunkCoordinate.x + x;
                     var targetY = chunkCoordinate.y + y;
-                    chunk[y * width + x] = InBounds(x, y) ? _baseMap[targetY * width + targetX] : _nullCell;
+                    chunk[y * width + x] = InBounds(targetX, targetY) ? _baseMap[targetY * _width + targetX] : _nullCell;
                 }
             }
             return (chunk, null);
@@ -109,7 +109,7 @@ namespace Venomaus.FlowVitae.Chunking.Generators
         /// <param name="seed">A unique seed for this chunk, mostly not used in static generation</param>
         /// <param name="width">Area width</param>
         /// <param name="height">Area height</param>
-        /// <param name="chunkCoordinate">The most bottom-left coordinate of the chunk</param>
+        /// <param name="chunkCoordinate">The most top-left coordinate of the chunk</param>
         /// <returns><typeparamref name="TCellType"/>[width*height]</returns>
         public (TCellType[] chunkCells, TChunkData? chunkData) Generate(int seed, int width, int height, (int x, int y) chunkCoordinate)
         {
@@ -120,7 +120,7 @@ namespace Venomaus.FlowVitae.Chunking.Generators
                 {
                     var targetX = chunkCoordinate.x + x;
                     var targetY = chunkCoordinate.y + y;
-                    chunk[y * width + x] = InBounds(x, y) ? _baseMap[targetY * width + targetX] : _nullCell;
+                    chunk[y * width + x] = InBounds(targetX, targetY) ? _baseMap[targetY * _width + targetX] : _nullCell;
                 }
             }
             return (chunk, _method(seed, chunk, width, height, chunkCoordinate));

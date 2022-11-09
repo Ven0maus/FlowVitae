@@ -31,21 +31,28 @@ ____   ____.__                    .__  .__
                 }
             }
 
-            var staticBtn = new Button(20, 2)
+            var staticBtn = new Button(26, 2)
             {
-                Position = new Point(Width / 2 - 10, Height / 2 - 1),
+                Position = new Point(Width / 2 - 13, Height / 2 - 1),
                 Text = "Static grid",
             };
             staticBtn.Click += StaticBtn_Click;
 
-            var proceduralBtn = new Button(20, 2)
+            var staticChunkedBtn = new Button(26, 2)
             {
-                Position = new Point(Width / 2 - 10, Height / 2 + 3),
+                Position = new Point(Width / 2 - 13, Height / 2 + 3),
+                Text = "Static chunked grid",
+            };
+            staticChunkedBtn.Click += StaticChunkedBtn_Click;
+
+            var proceduralBtn = new Button(26, 2)
+            {
+                Position = new Point(Width / 2 - 13, Height / 2 + 7),
                 Text = "Procedural grid"
             };
             proceduralBtn.Click += ProceduralBtn_Click;
 
-            var buttons = new [] { staticBtn, proceduralBtn };
+            var buttons = new [] { staticBtn, staticChunkedBtn, proceduralBtn };
             foreach (var button in buttons)
                 Controls.Add(button);
         }
@@ -53,6 +60,11 @@ ____   ____.__                    .__  .__
         private void ProceduralBtn_Click(object? sender, EventArgs e)
         {
             GameLoop.Instance.InitProceduralGrid();
+        }
+
+        private void StaticChunkedBtn_Click(object? sender, EventArgs e)
+        {
+            GameLoop.Instance.InitStaticChunkedGrid();
         }
 
         private void StaticBtn_Click(object? sender, EventArgs e)
