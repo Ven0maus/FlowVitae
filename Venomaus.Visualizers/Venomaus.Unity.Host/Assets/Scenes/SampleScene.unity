@@ -319,6 +319,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ffd960d935aabc458d87ab07c2a10af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _layer: 1
   _cells:
   - Sprite: {fileID: 21300000, guid: de7e62951a7ff2c42a15c6886a58807a, type: 3}
     Tile: {fileID: 0}
@@ -456,7 +457,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ffd960d935aabc458d87ab07c2a10af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _layer: 0
   _cells:
+  - Sprite: {fileID: 0}
+    Tile: {fileID: 0}
+    Walkable: 0
   - Sprite: {fileID: 21300000, guid: 7118d0b06d0de50488517099d4745449, type: 3}
     Tile: {fileID: 0}
     Walkable: 1

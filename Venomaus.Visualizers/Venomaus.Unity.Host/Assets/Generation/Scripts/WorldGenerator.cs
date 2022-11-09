@@ -4,7 +4,8 @@ namespace Assets.Generation.Scripts
 {
     public class WorldGenerator
     {
-        public const TileTypes.TerrainTile DefaultTile = TileTypes.TerrainTile.Grass;
+        public const TileTypes.TerrainTile DefaultTerrainTile = TileTypes.TerrainTile.None;
+        public const TileTypes.ObjectTile DefaultObjectTile = TileTypes.ObjectTile.None;
         public const int DirtChance = 10;
         public const int TreeChance = 10;
 

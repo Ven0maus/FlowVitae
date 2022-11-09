@@ -14,6 +14,7 @@ public class GridSettings : MonoBehaviour
     public enum FlowGridType
     {
         Static,
+        StaticChunked,
         Procedural
     }
 

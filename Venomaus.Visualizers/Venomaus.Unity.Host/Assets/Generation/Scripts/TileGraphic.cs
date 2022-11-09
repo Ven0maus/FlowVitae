@@ -22,6 +22,15 @@ namespace Assets.Generation.Scripts
         private Tilemap _graphic;
 
         [SerializeField]
+        private TilemapLayer _layer;
+
+        public enum TilemapLayer
+        {
+            Terrain,
+            Objects
+        }
+
+        [SerializeField]
         private GraphicTileConfig[] _cells;
 
         private void Start()
@@ -38,6 +47,9 @@ namespace Assets.Generation.Scripts
                 case GridSettings.FlowGridType.Static:
                     // Same generation as procedural, but no chunking
                     Grid = CreateStaticGrid(generator);
+                    break;
+                case GridSettings.FlowGridType.StaticChunked:
+                    Grid = CreateStaticChunkedGrid(generator);
                     break;
                 case GridSettings.FlowGridType.Procedural:
                     Grid = CreateProceduralGrid(generator);
@@ -69,6 +81,19 @@ namespace Assets.Generation.Scripts
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                     grid.SetCell(x, y, chunk[y * Width + x]);
+            return grid;
+        }
+
+        private FlowGrid CreateStaticChunkedGrid(Action<System.Random, int[], int, int, (int x, int y)> generator)
+        {
+            // Create a base map and generate onto it
+            int[] baseMap = new int[Width * Height];
+            generator(new System.Random(WorldSeed), baseMap, Width, Height, (0, 0));
+
+            var staticGen = new StaticGenerator<int, FlowCell>(baseMap, Width, Height, 
+                _layer == TilemapLayer.Terrain ? (int)WorldGenerator.DefaultTerrainTile : 
+                (int)WorldGenerator.DefaultObjectTile);
+            var grid = new FlowGrid(Width, Height, ChunkWidth, ChunkHeight, staticGen);
             return grid;
         }
 
