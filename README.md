@@ -14,18 +14,19 @@ Tested with:
 # Features
 
 **Different grid layouts**
-- Static grid (no chunking)
-- Procedural grid (chunking)
+- Static grid
+- Static chunked grid
+- Procedural chunked grid
 
 **Infinite chunking terrain**
 - Chunking is automatically done
 - Viewport and chunk size is configurable
-- Method to center viewport on a coordinate
+- Method to center viewport on a coordinate, (this handles the chunking)
 - Procedural generation algorithm can be passed straight to the Grid
 
 **Easy to use**
 - Possible to configure custom Grid, Cell, ProceduralGeneration classes
-- Has a visualizer project that serves as an example on how to integrate with a render engine, such as SadConsole.
+- Has some visualizer projects that serves as examples on how to integrate with a render engine, such as SadConsole or Unity.
 
 # Setup
 **FlowVitae grids use 2 generic types**
@@ -42,6 +43,14 @@ Cell<TCellType>
 ```csharp
 var grid = new Grid<int, Cell<int>>(width, height);
 ```
+
+**Static Chunked Grid Creation**
+```csharp
+var staticGen = new StaticGenerator<int, Cell<int>>(baseMap, width, height, outOfBoundsCellType);
+var grid = new Grid<int, Cell<int>>(width, height, chunkWidth, chunkHeight, staticGen);
+```
+
+The baseMap here represents the full static grid.
 
 **Procedural Grid Creation**
 ```csharp
@@ -113,6 +122,12 @@ You can store the chunkdata within the internal cache buffer, which GetChunkData
 ```csharp
 customGrid.StoreChunkData(chunkData);
 customGrid.RemoveChunkData(chunkData, reloadChunk); // chunkdata only refreshes after chunk is reloaded
+```
+
+This works similar for Static chunked grids, you can pass along a chunk data generation method to the constructor.
+```csharp
+// chunkGenerationMethod signature: (seed, baseMap, width, height, chunkCoordinate)
+new StaticGenerator<int, Cell<int>, TestChunkData>(_baseMap, Grid.Width, Grid.Height, NullCell, chunkGenerationMethod)
 ```
 
 # Rendering to a render engine
