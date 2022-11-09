@@ -527,7 +527,7 @@ namespace Venomaus.UnitTests.Tests
             var viewPort = Grid.GetViewPortWorldCoordinates()
                 .ToArray();
             var viewPortCells = Grid.GetCells(viewPort);
-            Assert.That(viewPortCells.All(cell => cell != null && cell.CellType != -10), "Initial viewport is not correct");
+            Assert.That(viewPortCells.Cast<Cell<int>>().All(cell => cell.CellType != -10), "Initial viewport is not correct");
 
             var loadedChunks = ChunkLoader.GetLoadedChunks();
             foreach (var (x, y) in loadedChunks)
@@ -596,7 +596,7 @@ namespace Venomaus.UnitTests.Tests
             // Check if view port matches now
             viewPort = Grid.GetViewPortWorldCoordinates().ToArray();
             viewPortCells = Grid.GetCells(viewPort);
-            Assert.That(viewPortCells.All(cell => cell != null && cell.CellType == -10), "Viewport cells don't match center changes");
+            Assert.That(viewPortCells.Cast<Cell<int>>().All(cell => cell.CellType == -10), "Viewport cells don't match center changes");
         }
 
         [Test]
@@ -896,7 +896,7 @@ namespace Venomaus.UnitTests.Tests
             // Verify that all cells have this default value set properly
             var viewPort = Grid.GetViewPortWorldCoordinates();
             var viewPortCells = Grid.GetCells(viewPort).ToArray();
-            Assert.That(viewPortCells.Count(a => a != null && a.CellType == -5), Is.EqualTo(viewPortCells.Length));
+            Assert.That(viewPortCells.Cast<Cell<int>>().Count(a => a.CellType == -5), Is.EqualTo(viewPortCells.Length));
 
             // Verify that GetCell has this default value set properly
             var cell = Grid.GetCell(0, 0);
