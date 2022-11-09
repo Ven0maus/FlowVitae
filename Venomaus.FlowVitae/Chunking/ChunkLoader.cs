@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Grids;
 using Venomaus.FlowVitae.Helpers;
-using Venomaus.FlowVitae.Procedural;
+using Venomaus.FlowVitae.Chunking.Generators;
 
 namespace Venomaus.FlowVitae.Chunking
 {

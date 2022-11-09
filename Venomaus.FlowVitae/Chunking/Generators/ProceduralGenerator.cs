@@ -1,8 +1,7 @@
 ﻿using System;
 using Venomaus.FlowVitae.Cells;
-using Venomaus.FlowVitae.Chunking;
 
-namespace Venomaus.FlowVitae.Procedural
+namespace Venomaus.FlowVitae.Chunking.Generators
 {
     /// <summary>
     /// Basic procedural generator implementation
@@ -14,7 +13,7 @@ namespace Venomaus.FlowVitae.Procedural
         where TCell : class, ICell<TCellType>, new()
     {
         /// <inheritdoc />
-        public int Seed { get; private set; }
+        public int Seed { get; }
 
         private readonly Action<Random, TCellType[], int, int, (int x, int y)> _method;
 
@@ -59,7 +58,7 @@ namespace Venomaus.FlowVitae.Procedural
         private readonly Func<Random, TCellType[], int, int, (int x, int y), TChunkData> _method;
 
         /// <summary>
-        /// Basic procedural algorithm, method param uses following signature: (<see cref="Random"/>, <typeparamref name="TCellType"/>[], width, height)
+        /// Basic procedural algorithm, method param uses following signature: (<see cref="Random"/>, <typeparamref name="TCellType"/>[], width, height, chunkCoordinate)
         /// </summary>
         /// <param name="seed">Unique seed</param>
         /// <param name="method">Signature: (<see cref="Random"/>, <typeparamref name="TCellType"/>[], width, height)</param>

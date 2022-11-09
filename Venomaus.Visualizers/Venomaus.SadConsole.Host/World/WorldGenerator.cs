@@ -53,7 +53,7 @@ namespace Venomaus.SadConsoleVisualizer.World
                 case Tiles.Tree:
                     return new VisualCell<int>(x, y, cellType, '&', Color.Brown) { Walkable = false };
                 default:
-                    return new VisualCell<int>(x, y, cellType, 0) { Walkable = false};
+                    return new VisualCell<int>(x, y, cellType, 0) { IsVisible = false, Walkable = false };
             }
         }
     }

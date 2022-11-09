@@ -10,12 +10,18 @@ namespace Venomaus.SadConsoleVisualizer.Core
         public Point WorldPosition { get; private set; }
         private readonly bool _isStaticGrid;
 
-        public Player(Point position, ColoredGlyph appearance, int zIndex, bool isStaticGrid) : base(appearance, zIndex)
+        public Player(Point position, ColoredGlyph appearance, int zIndex, bool isStaticGrid, bool isChunked) : base(appearance, zIndex)
         {
-            _isStaticGrid = isStaticGrid;
+            _isStaticGrid = isStaticGrid && !isChunked;
 
-            var (x, y) = isStaticGrid ? (GameLoop.Instance.Grid.Width / 2, GameLoop.Instance.Grid.Height / 2) :
-                (Constants.GridSettings.ChunkWidth / 2, Constants.GridSettings.ChunkHeight / 2);
+            var chunkWidth = isStaticGrid ?
+                GameLoop.Instance.Grid.Width / 2 : 
+                Constants.GridSettings.ChunkWidthProcedural;
+            var chunkHeight = isStaticGrid ?
+                GameLoop.Instance.Grid.Height / 2 : 
+                Constants.GridSettings.ChunkHeightProcedural;
+
+            var (x, y) = (chunkWidth, chunkHeight);
             WorldPosition = new Point(x, y);
 
             // If we are on a static grid we don't need to center, but move the actual player coord on screen

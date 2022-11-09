@@ -2,7 +2,7 @@
 using Venomaus.FlowVitae.Chunking;
 using Venomaus.FlowVitae.Grids;
 using Venomaus.FlowVitae.Helpers;
-using Venomaus.FlowVitae.Procedural;
+using Venomaus.FlowVitae.Chunking.Generators;
 using Venomaus.UnitTests.Tools;
 using Direction = Venomaus.FlowVitae.Helpers.Direction;
 
@@ -1352,6 +1352,24 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(cells, Is.Not.Null);
             Assert.That(cells, Has.Length.EqualTo(1));
             Assert.That(cells[0], Is.Not.Null);
+        }
+
+        [Test]
+        public void GetViewPortCells_Get_Correct()
+        {
+            var viewPort = Grid.GetViewPortWorldCoordinates().ToArray();
+            Assert.That(viewPort, Has.Length.EqualTo(Grid.Width * Grid.Height));
+
+            // Check if the order is also correct
+            var comparer = new TupleComparer<int>();
+            for (int x = 0; x < Grid.Width; x++)
+            {
+                for (int y = 0; y < Grid.Height; y++)
+                {
+                    var index = y * Grid.Width + x;
+                    Assert.That(comparer.Equals(viewPort[index], (x, y)));
+                }
+            }
         }
     }
 }

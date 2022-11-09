@@ -1,8 +1,7 @@
 ﻿using Venomaus.FlowVitae.Cells;
-using Venomaus.FlowVitae.Chunking;
 using Venomaus.FlowVitae.Grids;
 
-namespace Venomaus.FlowVitae.Procedural
+namespace Venomaus.FlowVitae.Chunking.Generators
 {
     /// <summary>
     /// Interface for procedural generation that can be supplied to <see cref="GridBase{TCellType, TCell}"/>
@@ -36,7 +35,7 @@ namespace Venomaus.FlowVitae.Procedural
         /// <param name="seed">Seed used to generate chunks (based on <see cref="Seed"/>)</param>
         /// <param name="width">Area width</param>
         /// <param name="height">Area height</param>
-        /// <param name="chunkCoordinate">The most bottom-left coordinate of the chunk</param>
+        /// <param name="chunkCoordinate">The coordinate where the chunk is placed</param>
         /// <returns><typeparamref name="TCellType"/>[width*height]</returns>
         (TCellType[] chunkCells, TChunkData? chunkData) Generate(int seed, int width, int height, (int x, int y) chunkCoordinate);
     }

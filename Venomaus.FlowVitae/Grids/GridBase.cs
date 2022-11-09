@@ -4,7 +4,7 @@ using System.Linq;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Chunking;
 using Venomaus.FlowVitae.Helpers;
-using Venomaus.FlowVitae.Procedural;
+using Venomaus.FlowVitae.Chunking.Generators;
 
 namespace Venomaus.FlowVitae.Grids
 {
@@ -376,13 +376,13 @@ namespace Venomaus.FlowVitae.Grids
         /// <returns></returns>
         public IEnumerable<(int x, int y)> GetViewPortWorldCoordinates(Func<TCellType, bool>? criteria = null)
         {
-            for (int x = 0; x < Width; x++)
+            var indexes = Width * Height;
+            for (int i=0; i < indexes; i++)
             {
-                for (int y = 0; y < Height; y++)
-                {
-                    if (criteria != null && !criteria.Invoke(ScreenCells[y * Width + x])) continue;
-                    yield return ScreenToWorldCoordinate(x, y);
-                }
+                var x = i % Width;
+                var y = i / Width;
+                if (criteria != null && !criteria.Invoke(ScreenCells[i])) continue;
+                yield return ScreenToWorldCoordinate(x, y);
             }
         }
 
