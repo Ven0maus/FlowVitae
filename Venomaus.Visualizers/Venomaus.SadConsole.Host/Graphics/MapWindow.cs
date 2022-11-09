@@ -11,7 +11,6 @@ namespace Venomaus.SadConsoleVisualizer.Graphics
         public MapWindow(ColoredGlyph[] cells) : base(Constants.ScreenSettings.Width, Constants.ScreenSettings.Height, cells)
         {
             GameLoop.Instance.Grid.OnCellUpdate += Grid_OnCellUpdate;
-            Game.Instance.Screen = this;
         }
 
         private void Grid_OnCellUpdate(object? sender, CellUpdateArgs<int, VisualCell<int>> args)

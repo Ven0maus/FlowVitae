@@ -35,7 +35,7 @@ namespace Venomaus.FlowVitae.Chunking.Generators
         /// <param name="seed">Seed used to generate chunks (based on <see cref="Seed"/>)</param>
         /// <param name="width">Area width</param>
         /// <param name="height">Area height</param>
-        /// <param name="chunkCoordinate">The most bottom-left coordinate of the chunk</param>
+        /// <param name="chunkCoordinate">The coordinate where the chunk is placed</param>
         /// <returns><typeparamref name="TCellType"/>[width*height]</returns>
         (TCellType[] chunkCells, TChunkData? chunkData) Generate(int seed, int width, int height, (int x, int y) chunkCoordinate);
     }

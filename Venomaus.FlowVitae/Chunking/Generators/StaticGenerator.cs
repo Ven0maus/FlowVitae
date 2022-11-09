@@ -42,7 +42,7 @@ namespace Venomaus.FlowVitae.Chunking.Generators
         /// <param name="seed">A unique seed for this chunk, mostly not used in static generation</param>
         /// <param name="width">Area width</param>
         /// <param name="height">Area height</param>
-        /// <param name="chunkCoordinate">The most top-left coordinate of the chunk</param>
+        /// <param name="chunkCoordinate">The coordinate where the chunk is placed</param>
         /// <returns><typeparamref name="TCellType"/>[width*height]</returns>
         public (TCellType[] chunkCells, IChunkData? chunkData) Generate(int seed, int width, int height, (int x, int y) chunkCoordinate)
         {
@@ -109,7 +109,7 @@ namespace Venomaus.FlowVitae.Chunking.Generators
         /// <param name="seed">A unique seed for this chunk, mostly not used in static generation</param>
         /// <param name="width">Area width</param>
         /// <param name="height">Area height</param>
-        /// <param name="chunkCoordinate">The most top-left coordinate of the chunk</param>
+        /// <param name="chunkCoordinate">The coordinate where the chunk is placed</param>
         /// <returns><typeparamref name="TCellType"/>[width*height]</returns>
         public (TCellType[] chunkCells, TChunkData? chunkData) Generate(int seed, int width, int height, (int x, int y) chunkCoordinate)
         {
