@@ -557,7 +557,7 @@ namespace Venomaus.FlowVitae.Grids
         {
             if (_chunkLoader == null && !InBounds(x, y)) return default;
             if (_chunkLoader == null && _storage != null && _storage.TryGetValue((x, y), out TCell? cell))
-                return cell == null ? default : cell.CellType;
+                return cell.CellType; // Can never be null
             else if (_chunkLoader != null)
             {
                 var cellType = _chunkLoader.GetChunkCellType(x, y, true, IsWorldCoordinateOnScreen, ScreenCells);

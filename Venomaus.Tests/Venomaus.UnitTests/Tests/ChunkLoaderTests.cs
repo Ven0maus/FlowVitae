@@ -1252,6 +1252,7 @@ namespace Venomaus.UnitTests.Tests
         {
             var chunkLoaded = Grid.InBounds(ViewPortWidth + ChunkWidth * 10, ViewPortHeight + ChunkHeight * 10);
             Assert.That(chunkLoaded, Is.True);
+            Assert.That(Grid.InBounds(null), Is.False);
         }
 
         [Test]
@@ -1339,6 +1340,13 @@ namespace Venomaus.UnitTests.Tests
             // Check for not null
             cell = Grid.GetCell(pos.x + 1, pos.y + 1);
             Assert.That(cell, Is.Not.Null);
+
+            // With storing state
+            Grid.SetCell(pos.x + 2, pos.y + 2, -1, true);
+            cell = Grid.GetCell(pos.x + 2, pos.y + 2);
+            Assert.That(cell, Is.Not.Null);
+            cellType = Grid.GetCellType(pos.x, pos.y);
+            Assert.That(cellType, Is.EqualTo(-1));
 
             cells = Grid.GetCells(new[] { (pos.x + 1, pos.y + 1) }).ToArray();
             Assert.That(cells, Is.Not.Null);

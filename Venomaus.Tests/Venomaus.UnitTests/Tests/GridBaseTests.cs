@@ -210,6 +210,8 @@ namespace Venomaus.UnitTests.Tests
 
             var inBoundsFalse = Grid.InBounds(-5, 30);
             Assert.That(inBoundsFalse, Is.EqualTo(false));
+
+            Assert.That(Grid.InBounds(null), Is.False);
         }
 
         [Test]

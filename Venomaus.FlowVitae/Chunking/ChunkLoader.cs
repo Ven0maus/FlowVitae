@@ -232,7 +232,7 @@ namespace Venomaus.FlowVitae.Chunking
                 cells.TryGetValue(remappedCoordinate, out var cell))
             {
                 // Return the modified cell if it exists
-                return cell == null ? default : cell.CellType;
+                return cell.CellType;
             }
 
             // Check if coordinate is within viewport
@@ -555,9 +555,9 @@ namespace Venomaus.FlowVitae.Chunking
             if (LoadChunk(cellX, cellY, out var chunkCoordinate))
                 _tempLoadedChunks.Add(chunkCoordinate);
 
-            var cell = GetChunkCell(cellX, cellY, false, isWorldCoordinateOnScreen, screenCells);
-            screenCells[newScreenCoordinate.y * viewPortWidth + newScreenCoordinate.x] = cell == null ? default : cell.CellType;
-            onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(newScreenCoordinate, cell));
+            var cellType = GetChunkCellType(cellX, cellY, false, isWorldCoordinateOnScreen, screenCells);
+            screenCells[newScreenCoordinate.y * viewPortWidth + newScreenCoordinate.x] = cellType;
+            onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(newScreenCoordinate, _cellTypeConverter(cellX, cellY, cellType)));
         }
 
         public static (int x, int y) WorldToScreenCoordinate(int x, int y, int viewPortWidth, int viewPortHeight, (int x, int y) centerCoordinate)
