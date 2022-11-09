@@ -47,9 +47,7 @@ namespace Venomaus.SadConsoleVisualizer.Core
             WorldGenerator.Generate(new Random(1000), chunk, _grid.Width, _grid.Height, (0,0));
             for (int x = 0; x < _grid.Width; x++)
                 for (int y = 0; y < _grid.Height; y++)
-                {
                     _grid.SetCell(x, y, chunk[y * _grid.Width + x], false);
-                }
 
             InitializeMapWindow();
             AfterGridInitialization(true, false);
@@ -96,7 +94,8 @@ namespace Venomaus.SadConsoleVisualizer.Core
 
         private void InitializeMapWindow()
         {
-            Game.Instance.Screen = new MapWindow(Grid.GetCells(Grid.GetViewPortWorldCoordinates()).Cast<VisualCell<int>>().ToArray());
+            var arr = Grid.GetCells(Grid.GetViewPortWorldCoordinates()).Cast<VisualCell<int>>().ToArray();
+            Game.Instance.Screen = new MapWindow(arr);
             Game.Instance.Screen.SadComponents.Add(EntityRenderer);
         }
     }
