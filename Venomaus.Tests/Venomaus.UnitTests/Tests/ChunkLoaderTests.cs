@@ -17,9 +17,9 @@ namespace Venomaus.UnitTests.Tests
     internal class ChunkLoaderTests : BaseTests<int, Cell<int>>
     {
         private const int Seed = 1000;
-        protected override IProceduralGen<int, Cell<int>>? ProcGen => new ProceduralGenerator<int, Cell<int>>(Seed, GenerateChunk);
+        protected override IProceduralGen<int, Cell<int>> ProcGen => new ProceduralGenerator<int, Cell<int>>(Seed, GenerateChunk);
 
-        private event EventHandler<int[]>? OnGenerateChunk;
+        protected event EventHandler<int[]>? OnGenerateChunk;
 
         private void GenerateChunk(Random random, int[] chunk, int width, int height, (int x, int y) chunkCoordinate)
         {
@@ -30,7 +30,12 @@ namespace Venomaus.UnitTests.Tests
                     chunk[y * width + x] = random.Next(0, 10);
                 }
             }
-            OnGenerateChunk?.Invoke(this, chunk);
+            InvokeChunkGenerationEvent(this, chunk);
+        }
+
+        protected void InvokeChunkGenerationEvent(object sender, int[] chunk)
+        {
+            OnGenerateChunk?.Invoke(sender, chunk);
         }
 
         public ChunkLoaderTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight)
@@ -935,7 +940,7 @@ namespace Venomaus.UnitTests.Tests
         }
 
         [Test]
-        public void GenerateChunk_ChunkData_IsAlwaysSame()
+        public virtual void GenerateChunk_ChunkData_IsAlwaysSame()
         {
             int chunkX = ViewPortWidth + ChunkWidth * 10;
             int chunkY = ViewPortHeight + ChunkHeight * 10;
@@ -1236,7 +1241,7 @@ namespace Venomaus.UnitTests.Tests
         {
             var chunkSeed = Grid.GetChunkSeed(0, 0);
             var chunkCoordinate = ChunkLoader.GetChunkCoordinate(0, 0);
-            var seed = Fnv1a.Hash32(chunkCoordinate.x, chunkCoordinate.y, Seed);
+            var seed = Fnv1a.Hash32(chunkCoordinate.x, chunkCoordinate.y, ProcGen.Seed);
             Assert.That(chunkSeed, Is.EqualTo(seed));
         }
 
