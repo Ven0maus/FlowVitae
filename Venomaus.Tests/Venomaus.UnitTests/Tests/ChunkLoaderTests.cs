@@ -1282,5 +1282,35 @@ namespace Venomaus.UnitTests.Tests
             Grid.RemoveStoredCell(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5);
             Assert.That(Grid.HasStoredCell(Grid.ChunkWidth + 5, Grid.ChunkHeight + 5), Is.False);
         }
+
+        [Test]
+        public void GetCells_CanReturn_NullValues()
+        {
+            Grid.SetCustomConverter((x, y, cellType) =>
+            {
+                return cellType != -1 ? new Cell<int>(x, y, cellType) : null;
+            });
+
+            (int x, int y) pos = (Grid.ChunkWidth / 2, Grid.ChunkHeight / 2);
+            Grid.SetCell(pos.x, pos.y, -1);
+
+            // Check for null
+            var cell = Grid.GetCell(pos.x, pos.y);
+            Assert.That(cell, Is.Null);
+
+            var cells = Grid.GetCells(new[] { pos }).ToArray();
+            Assert.That(cells, Is.Not.Null);
+            Assert.That(cells, Has.Length.EqualTo(1));
+            Assert.That(cells[0], Is.Null);
+
+            // Check for not null
+            cell = Grid.GetCell(pos.x + 1, pos.y + 1);
+            Assert.That(cell, Is.Not.Null);
+
+            cells = Grid.GetCells(new[] { (pos.x + 1, pos.y + 1) }).ToArray();
+            Assert.That(cells, Is.Not.Null);
+            Assert.That(cells, Has.Length.EqualTo(1));
+            Assert.That(cells[0], Is.Not.Null);
+        }
     }
 }
