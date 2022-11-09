@@ -522,7 +522,7 @@ namespace Venomaus.UnitTests.Tests
             var viewPort = Grid.GetViewPortWorldCoordinates()
                 .ToArray();
             var viewPortCells = Grid.GetCells(viewPort);
-            Assert.That(viewPortCells.All(cell => cell.CellType != -10), "Initial viewport is not correct");
+            Assert.That(viewPortCells.All(cell => cell != null && cell.CellType != -10), "Initial viewport is not correct");
 
             var loadedChunks = ChunkLoader.GetLoadedChunks();
             foreach (var (x, y) in loadedChunks)
@@ -542,7 +542,8 @@ namespace Venomaus.UnitTests.Tests
             var cells = Grid.GetCells(positions).ToArray();
             foreach (var cell in cells)
             {
-                cell.CellType = -10;
+                if (cell != null)
+                    cell.CellType = -10;
             }
             Grid.SetCells(cells, true);
 
@@ -590,7 +591,7 @@ namespace Venomaus.UnitTests.Tests
             // Check if view port matches now
             viewPort = Grid.GetViewPortWorldCoordinates().ToArray();
             viewPortCells = Grid.GetCells(viewPort);
-            Assert.That(viewPortCells.All(cell => cell.CellType == -10), "Viewport cells don't match center changes");
+            Assert.That(viewPortCells.All(cell => cell != null && cell.CellType == -10), "Viewport cells don't match center changes");
         }
 
         [Test]
@@ -874,7 +875,7 @@ namespace Venomaus.UnitTests.Tests
             // Verify that all cells have this default value set properly
             var viewPort = Grid.GetViewPortWorldCoordinates();
             var viewPortCells = Grid.GetCells(viewPort).ToArray();
-            Assert.That(viewPortCells.Count(a => a.CellType == -5), Is.EqualTo(viewPortCells.Length));
+            Assert.That(viewPortCells.Count(a => a != null && a.CellType == -5), Is.EqualTo(viewPortCells.Length));
 
             // Verify that GetCell has this default value set properly
             var cell = Grid.GetCell(0, 0);
@@ -945,7 +946,7 @@ namespace Venomaus.UnitTests.Tests
         public void ClearGridCache_Throws_NoException()
         {
             // Populate the grid cache
-            var cells = new List<Cell<int>>();
+            var cells = new List<Cell<int>?>();
             for (int x=Grid.Width / 2; x < (Grid.Width / 2) + 10; x++)
             {
                 for (int y = Grid.Height / 2; y < (Grid.Height / 2) + 10; y++)
@@ -954,12 +955,12 @@ namespace Venomaus.UnitTests.Tests
                 }
             }
 
-            List<Cell<int>> prevState = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToList();
+            List<Cell<int>?> prevState = Grid.GetCells(cells.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y))).ToList();
             Grid.SetCells(cells, true);
 
             Assert.That(() => Grid.ClearCache(), Throws.Nothing);
 
-            cells = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToList();
+            cells = Grid.GetCells(cells.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y))).ToList();
 
             Assert.That(cells.SequenceEqual(prevState, new CellFullComparer<int>()), "Cells are not reset.");
         }
@@ -1063,7 +1064,7 @@ namespace Venomaus.UnitTests.Tests
                 (4,5), (6,5),
                 (5, 4), (5, 6)
             };
-            Assert.That(neighbors4Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+            Assert.That(neighbors4Way.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
 
             var neighbors8Way = Grid.GetNeighbors(5, 5, AdjacencyRule.EightWay);
             Assert.That(neighbors8Way.Count(), Is.EqualTo(8));
@@ -1076,7 +1077,7 @@ namespace Venomaus.UnitTests.Tests
                 (5,6), (6,4),
                 (6, 5), (6, 6)
             };
-            Assert.That(neighbors8Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+            Assert.That(neighbors8Way.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
         }
 
         [Test]

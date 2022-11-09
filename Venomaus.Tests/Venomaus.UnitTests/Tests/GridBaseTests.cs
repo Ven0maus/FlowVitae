@@ -72,8 +72,13 @@ namespace Venomaus.UnitTests.Tests
             {
                 Assert.Multiple(() =>
                 {
-                    Assert.That(cells[i].X, Is.EqualTo(cellPositions[i].Item1));
-                    Assert.That(cells[i].Y, Is.EqualTo(cellPositions[i].Item2));
+                    var cell = cells[i];
+                    Assert.That(cell, Is.Not.Null);
+                    if (cell != null)
+                    {
+                        Assert.That(cell.X, Is.EqualTo(cellPositions[i].Item1));
+                        Assert.That(cell.Y, Is.EqualTo(cellPositions[i].Item2));
+                    }
                 });
             }
         }
@@ -96,10 +101,15 @@ namespace Venomaus.UnitTests.Tests
             {
                 Assert.Multiple(() =>
                 {
-                    Assert.That(newCells[i].X, Is.EqualTo(cells[i].X));
-                    Assert.That(newCells[i].Y, Is.EqualTo(cells[i].Y));
-                    Assert.That(newCells[i].CellType, Is.EqualTo(cells[i].CellType), "Cell type is invalid");
-                    Assert.That(newCells[i].Walkable, Is.EqualTo(cells[i].Walkable), "Cell number is invalid");
+                    var newCell = newCells[i];
+                    Assert.That(newCell, Is.Not.Null);
+                    if (newCell != null)
+                    {
+                        Assert.That(newCell.X, Is.EqualTo(cells[i].X));
+                        Assert.That(newCell.Y, Is.EqualTo(cells[i].Y));
+                        Assert.That(newCell.CellType, Is.EqualTo(cells[i].CellType), "Cell type is invalid");
+                        Assert.That(newCell.Walkable, Is.EqualTo(cells[i].Walkable), "Cell number is invalid");
+                    }
                 });
             }
 
@@ -111,10 +121,15 @@ namespace Venomaus.UnitTests.Tests
             {
                 Assert.Multiple(() =>
                 {
-                    Assert.That(newCells[i].X, Is.EqualTo(cells[i].X));
-                    Assert.That(newCells[i].Y, Is.EqualTo(cells[i].Y));
-                    Assert.That(newCells[i].CellType, Is.EqualTo(cells[i].CellType), "Cell type is invalid");
-                    Assert.That(newCells[i].Walkable, Is.EqualTo(true), "Cell number is invalid");
+                    var newCell = newCells[i];
+                    Assert.That(newCell, Is.Not.Null);
+                    if (newCell != null)
+                    {
+                        Assert.That(newCell.X, Is.EqualTo(cells[i].X));
+                        Assert.That(newCell.Y, Is.EqualTo(cells[i].Y));
+                        Assert.That(newCell.CellType, Is.EqualTo(cells[i].CellType), "Cell type is invalid");
+                        Assert.That(newCell.Walkable, Is.EqualTo(true), "Cell number is invalid");
+                    }
                 });
             }
         }
@@ -420,7 +435,7 @@ namespace Venomaus.UnitTests.Tests
         public void ClearGridCache_Throws_NoException()
         {
             // Populate the grid cache
-            var cells = new List<Cell<int>>();
+            var cells = new List<Cell<int>?>();
             for (int x = Grid.Width / 2; x < (Grid.Width / 2) + 10; x++)
             {
                 for (int y = Grid.Height / 2; y < (Grid.Height / 2) + 10; y++)
@@ -429,12 +444,12 @@ namespace Venomaus.UnitTests.Tests
                 }
             }
 
-            List<Cell<int>> prevState = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToList();
+            List<Cell<int>?> prevState = Grid.GetCells(cells.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y))).ToList();
             Grid.SetCells(cells, true);
 
             Assert.That(() => Grid.ClearCache(), Throws.Nothing);
 
-            cells = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToList();
+            cells = Grid.GetCells(cells.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y))).ToList();
 
             Assert.That(cells.SequenceEqual(prevState, new CellWalkableComparer<int>()));
         }
@@ -467,7 +482,7 @@ namespace Venomaus.UnitTests.Tests
                 (4,5), (6,5),
                 (5, 4), (5, 6)
             };
-            Assert.That(neighbors4Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+            Assert.That(neighbors4Way.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
 
             var neighbors8Way = Grid.GetNeighbors(5, 5, AdjacencyRule.EightWay);
             Assert.That(neighbors8Way.Count(), Is.EqualTo(8));
@@ -480,7 +495,7 @@ namespace Venomaus.UnitTests.Tests
                 (5,6), (6,4),
                 (6, 5), (6, 6)
             };
-            Assert.That(neighbors8Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+            Assert.That(neighbors8Way.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
         }
 
         [Test]
@@ -495,7 +510,7 @@ namespace Venomaus.UnitTests.Tests
             {
                 (1,0), (0,1),
             };
-            Assert.That(neighbors4Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+            Assert.That(neighbors4Way.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
 
             var neighbors8Way = Grid.GetNeighbors(0, 0, AdjacencyRule.EightWay);
             Assert.That(neighbors8Way.Count(), Is.EqualTo(3));
@@ -505,7 +520,7 @@ namespace Venomaus.UnitTests.Tests
             {
                 (0,1), (1,0), (1,1)
             };
-            Assert.That(neighbors8Way.Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
+            Assert.That(neighbors8Way.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
         }
 
         [Test]

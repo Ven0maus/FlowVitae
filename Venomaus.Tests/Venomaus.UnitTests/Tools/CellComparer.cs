@@ -4,7 +4,7 @@ using Venomaus.FlowVitae.Helpers;
 
 namespace Venomaus.UnitTests.Tools
 {
-    internal class CellFullComparer<TCellType> : IEqualityComparer<Cell<TCellType>>
+    internal class CellFullComparer<TCellType> : IEqualityComparer<Cell<TCellType>?>
         where TCellType : struct
     {
         public bool Equals(Cell<TCellType>? cell, Cell<TCellType>? other)
@@ -22,7 +22,7 @@ namespace Venomaus.UnitTests.Tools
         }
     }
 
-    internal class CellWalkableComparer<TCellType> : IEqualityComparer<Cell<TCellType>>
+    internal class CellWalkableComparer<TCellType> : IEqualityComparer<Cell<TCellType>?>
     where TCellType : struct
     {
         public bool Equals(Cell<TCellType>? cell, Cell<TCellType>? other)

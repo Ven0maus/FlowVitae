@@ -297,11 +297,12 @@ namespace Venomaus.FlowVitae.Chunking
             return false;
         }
 
-        public void SetChunkCell(TCell cell, bool storeState = false, 
+        public void SetChunkCell(TCell? cell, bool storeState = false, 
             EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, 
             Checker? isWorldCoordinateOnScreen = null, 
             TCellType[]? screenCells = null)
         {
+            if (cell == null) return;
             var chunkCoordinate = GetChunkCoordinate(cell.X, cell.Y);
             var remappedCoordinate = RemapChunkCoordinate(cell.X, cell.Y, chunkCoordinate);
 
@@ -353,7 +354,7 @@ namespace Venomaus.FlowVitae.Chunking
         }
 
         public delegate bool Checker(int x, int y, out (int x, int y)? coordinate, out int screenWidth);
-        public void SetChunkCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
+        public void SetChunkCells(IEnumerable<TCell?> cells, Func<TCell?, bool>? storeCellStateFunc = null, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
             foreach (var cell in cells.Where(a => a != null))
                 SetChunkCell(cell, storeCellStateFunc?.Invoke(cell) ?? false, onCellUpdate: onCellUpdate, isWorldCoordinateOnScreen: isWorldCoordinateOnScreen, screenCells: screenCells);

@@ -395,7 +395,7 @@ namespace Venomaus.FlowVitae.Grids
         /// </param>
         /// <remarks>When storeState is <see langword="false"/>, and <typeparamref name="TCellType"/> is modified <see cref="OnCellUpdate"/> will be raised.
         /// When storeState is <see langword="true"/> <see cref="OnCellUpdate"/> will always be raised.</remarks>
-        public virtual void SetCell(TCell cell, bool storeState = false)
+        public virtual void SetCell(TCell? cell, bool storeState = false)
         {
             if (cell == null) return;
 
@@ -436,7 +436,7 @@ namespace Venomaus.FlowVitae.Grids
         /// <param name="cells">Collection of <typeparamref name="TCell"/></param>
         /// <param name="storeCellState">If <see langword="true"/>, stores all properties and field values of all <paramref name="cells"/>.</param>
         /// <remarks>If you want to control which cells to store state for, use the <see cref="SetCells(IEnumerable{TCell}, Func{TCell, bool}?)"/> overload.</remarks>
-        public virtual void SetCells(IEnumerable<TCell> cells, bool storeCellState)
+        public virtual void SetCells(IEnumerable<TCell?> cells, bool storeCellState)
             => SetCells(cells, (s) => storeCellState);
 
         /// <summary>
@@ -444,7 +444,7 @@ namespace Venomaus.FlowVitae.Grids
         /// </summary>
         /// <param name="cells">Collection of <typeparamref name="TCell"/></param>
         /// <param name="storeCellStateFunc">Method to decide which cell to store state for or not, default false if null.</param>
-        public virtual void SetCells(IEnumerable<TCell> cells, Func<TCell, bool>? storeCellStateFunc = null)
+        public virtual void SetCells(IEnumerable<TCell?> cells, Func<TCell?, bool>? storeCellStateFunc = null)
         {
             if (_chunkLoader == null)
             {
@@ -596,9 +596,9 @@ namespace Venomaus.FlowVitae.Grids
         /// <param name="cell"></param>
         /// <remarks>Always true when chunking is used.</remarks>
         /// <returns><see langword="true"/> or <see langword="false"/></returns>
-        public bool InBounds(TCell cell)
+        public bool InBounds(TCell? cell)
         {
-            return InBounds(cell.X, cell.Y);
+            return cell != null ? InBounds(cell.X, cell.Y) : false;
         }
 
         /// <summary>
