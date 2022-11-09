@@ -1,8 +1,7 @@
 ﻿using System;
 using Venomaus.FlowVitae.Cells;
-using Venomaus.FlowVitae.Chunking;
 
-namespace Venomaus.FlowVitae.Generators
+namespace Venomaus.FlowVitae.Chunking.Generators
 {
     /// <summary>
     /// Basic procedural generator implementation

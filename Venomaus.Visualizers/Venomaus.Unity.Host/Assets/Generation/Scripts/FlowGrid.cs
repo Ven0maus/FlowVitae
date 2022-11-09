@@ -1,5 +1,5 @@
 ﻿using Venomaus.FlowVitae.Grids;
-using Venomaus.FlowVitae.Generators;
+using Venomaus.FlowVitae.Chunking.Generators;
 
 namespace Assets.Generation.Scripts
 {

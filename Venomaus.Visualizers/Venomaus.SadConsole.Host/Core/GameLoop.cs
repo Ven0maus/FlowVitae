@@ -2,7 +2,7 @@
 using SadConsole.Entities;
 using SadRogue.Primitives;
 using Venomaus.FlowVitae.Grids;
-using Venomaus.FlowVitae.Generators;
+using Venomaus.FlowVitae.Chunking.Generators;
 using Venomaus.SadConsoleVisualizer.Graphics;
 using Venomaus.SadConsoleVisualizer.World;
 

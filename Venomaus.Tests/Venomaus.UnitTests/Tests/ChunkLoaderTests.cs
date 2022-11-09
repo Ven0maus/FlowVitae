@@ -2,7 +2,7 @@
 using Venomaus.FlowVitae.Chunking;
 using Venomaus.FlowVitae.Grids;
 using Venomaus.FlowVitae.Helpers;
-using Venomaus.FlowVitae.Generators;
+using Venomaus.FlowVitae.Chunking.Generators;
 using Venomaus.UnitTests.Tools;
 using Direction = Venomaus.FlowVitae.Helpers.Direction;
 
