@@ -459,9 +459,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _layer: 0
   _cells:
-  - Sprite: {fileID: 0}
-    Tile: {fileID: 0}
-    Walkable: 0
   - Sprite: {fileID: 21300000, guid: 7118d0b06d0de50488517099d4745449, type: 3}
     Tile: {fileID: 0}
     Walkable: 1
@@ -638,7 +635,7 @@ MonoBehaviour:
   WorldSeed: 1000
   TerrainGraphic: {fileID: 310806906}
   ObjectsGraphic: {fileID: 244850961}
-  GridType: 0
+  GridType: 1
 --- !u!1 &1647103931
 GameObject:
   m_ObjectHideFlags: 0

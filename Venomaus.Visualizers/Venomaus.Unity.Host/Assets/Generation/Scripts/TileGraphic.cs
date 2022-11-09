@@ -67,7 +67,12 @@ namespace Assets.Generation.Scripts
         private FlowCell CustomCellConverter(int x, int y, int cellType)
         {
             var config = cellType < 0 ? null : _cells[cellType];
-            return new FlowCell { X = x, Y = y, CellType = cellType, Walkable = config != null ? config.Walkable : true };
+            var cell = new FlowCell { X = x, Y = y, CellType = cellType };
+            if (config != null)
+                cell.Walkable = config.Walkable;
+            else
+                cell.Walkable = _layer == TilemapLayer.Objects; // Object layer can walk over non configurated values
+            return cell;
         }
 
         private FlowGrid CreateStaticGrid(Action<System.Random, int[], int, int, (int x, int y)> generator)

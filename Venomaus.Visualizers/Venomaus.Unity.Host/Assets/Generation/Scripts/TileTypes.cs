@@ -4,11 +4,11 @@
     {
         public enum TerrainTile
         {
-            None = 0,
-            Grass = 1,
-            Dirt = 2,
-            ChunkCoordinateTile = 3,
-            Border = 4
+            None = -1,
+            Grass = 0,
+            Dirt = 1,
+            ChunkCoordinateTile = 2,
+            Border = 3
         }
 
         public enum ObjectTile
