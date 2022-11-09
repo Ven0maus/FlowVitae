@@ -14,12 +14,12 @@ namespace Venomaus.SadConsoleVisualizer.Core
         {
             _isStaticGrid = isStaticGrid && !isChunked;
 
-            var chunkWidth = isStaticGrid && isChunked ?
-                Constants.GridSettings.ChunkWidthStatic : !isStaticGrid ?
-                Constants.GridSettings.ChunkWidthProcedural : GameLoop.Instance.Grid.Width / 2;
-            var chunkHeight = isStaticGrid && isChunked ?
-                Constants.GridSettings.ChunkHeightStatic : !isStaticGrid ?
-                Constants.GridSettings.ChunkHeightProcedural : GameLoop.Instance.Grid.Height / 2;
+            var chunkWidth = isStaticGrid ?
+                GameLoop.Instance.Grid.Width / 2 : 
+                Constants.GridSettings.ChunkWidthProcedural;
+            var chunkHeight = isStaticGrid ?
+                GameLoop.Instance.Grid.Height / 2 : 
+                Constants.GridSettings.ChunkHeightProcedural;
 
             var (x, y) = (chunkWidth, chunkHeight);
             WorldPosition = new Point(x, y);
