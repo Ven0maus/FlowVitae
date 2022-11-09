@@ -36,10 +36,8 @@ namespace Assets.Generation.Scripts
             switch (GridSettings.Instance.GridType)
             {
                 case GridSettings.FlowGridType.Static:
-                    // Same generation as procedural, but only one array
-                    int[] chunk = new int[Width * Height];
-                    generator(new System.Random(WorldSeed), chunk, Width, Height, (0, 0));
-                    Grid = CreateStaticGrid(chunk);
+                    // Same generation as procedural, but no chunking
+                    Grid = CreateStaticGrid(generator);
                     break;
                 case GridSettings.FlowGridType.Procedural:
                     Grid = CreateProceduralGrid(generator);
@@ -60,8 +58,13 @@ namespace Assets.Generation.Scripts
             return new FlowCell { X = x, Y = y, CellType = cellType, Walkable = config != null ? config.Walkable : true };
         }
 
-        private FlowGrid CreateStaticGrid(int[] chunk)
+        private FlowGrid CreateStaticGrid(Action<System.Random, int[], int, int, (int x, int y)> generator)
         {
+            // Create a static chunk and generate onto it
+            int[] chunk = new int[Width * Height];
+            generator(new System.Random(WorldSeed), chunk, Width, Height, (0, 0));
+
+            // Add data from static chunk into the grid
             var grid = new FlowGrid(Width, Height);
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
