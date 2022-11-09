@@ -20,6 +20,7 @@ namespace Venomaus.FlowVitae.Generators
 
         private readonly TCellType[] _baseMap;
         private readonly int _width, _height;
+        private readonly TCellType _nullCell;
 
         /// <summary>
         /// Constructor for static generation
@@ -27,11 +28,13 @@ namespace Venomaus.FlowVitae.Generators
         /// <param name="baseMap">The static base map</param>
         /// <param name="width">The width of the baseMap</param>
         /// <param name="height">The height of the baseMap</param>
-        public StaticGenerator(TCellType[] baseMap, int width, int height)
+        /// <param name="outOfBoundsCellType">The <typeparamref name="TCellType"/> to be used when a chunk has cells that don't fit the base map.</param>
+        public StaticGenerator(TCellType[] baseMap, int width, int height, TCellType outOfBoundsCellType)
         {
             _baseMap = baseMap;
             _width = width;
             _height = height;
+            _nullCell = outOfBoundsCellType;
         }
 
         /// <summary>
@@ -51,7 +54,7 @@ namespace Venomaus.FlowVitae.Generators
                 {
                     var targetX = chunkCoordinate.x + x;
                     var targetY = chunkCoordinate.y + y;
-                    chunk[y * width + x] = InBounds(x, y) ? _baseMap[targetY * width + targetX] : default;
+                    chunk[y * width + x] = InBounds(x, y) ? _baseMap[targetY * width + targetX] : _nullCell;
                 }
             }
             return (chunk, null);
@@ -81,6 +84,7 @@ namespace Venomaus.FlowVitae.Generators
 
         private readonly TCellType[] _baseMap;
         private readonly int _width, _height;
+        private readonly TCellType _nullCell;
         private readonly Func<int, TCellType[], int, int, (int x, int y), TChunkData> _method;
 
         /// <summary>
@@ -89,13 +93,15 @@ namespace Venomaus.FlowVitae.Generators
         /// <param name="baseMap">The static base map</param>
         /// <param name="width">The width of the baseMap</param>
         /// <param name="height">The height of the baseMap</param>
+        /// <param name="outOfBoundsCellType">The <typeparamref name="TCellType"/> to be used when a chunk has cells that don't fit the base map.</param>
         /// <param name="method">Signature: (seed, <typeparamref name="TCellType"/>[], width, height, chunkCoordinate)</param>
-        public StaticGenerator(TCellType[] baseMap, int width, int height, Func<int, TCellType[], int, int, (int x, int y), TChunkData> method)
+        public StaticGenerator(TCellType[] baseMap, int width, int height, TCellType outOfBoundsCellType, Func<int, TCellType[], int, int, (int x, int y), TChunkData> method)
         {
             _baseMap = baseMap;
             _width = width;
             _height = height;
             _method = method;
+            _nullCell = outOfBoundsCellType;
         }
 
         /// <summary>
@@ -115,7 +121,7 @@ namespace Venomaus.FlowVitae.Generators
                 {
                     var targetX = chunkCoordinate.x + x;
                     var targetY = chunkCoordinate.y + y;
-                    chunk[y * width + x] = InBounds(x, y) ? _baseMap[targetY * width + targetX] : default;
+                    chunk[y * width + x] = InBounds(x, y) ? _baseMap[targetY * width + targetX] : _nullCell;
                 }
             }
             return (chunk, _method(seed, chunk, width, height, chunkCoordinate));
