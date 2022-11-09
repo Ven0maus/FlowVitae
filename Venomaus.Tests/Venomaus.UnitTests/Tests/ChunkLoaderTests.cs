@@ -1319,6 +1319,8 @@ namespace Venomaus.UnitTests.Tests
             // Check for null
             var cell = Grid.GetCell(pos.x, pos.y);
             Assert.That(cell, Is.Null);
+            var cellType = Grid.GetCellType(pos.x, pos.y);
+            Assert.That(cellType, Is.EqualTo(-1));
 
             var cells = Grid.GetCells(new[] { pos }).ToArray();
             Assert.That(cells, Is.Not.Null);

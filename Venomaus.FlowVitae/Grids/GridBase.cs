@@ -557,11 +557,11 @@ namespace Venomaus.FlowVitae.Grids
         {
             if (_chunkLoader == null && !InBounds(x, y)) return default;
             if (_chunkLoader == null && _storage != null && _storage.TryGetValue((x, y), out TCell? cell))
-                return cell.CellType;
+                return cell == null ? default : cell.CellType;
             else if (_chunkLoader != null)
             {
-                cell = _chunkLoader.GetChunkCell(x, y, true);
-                return cell == null ? default : cell.CellType;
+                var cellType = _chunkLoader.GetChunkCellType(x, y, true, IsWorldCoordinateOnScreen, ScreenCells);
+                return cellType;
             }
             return ScreenCells[y * Width + x];
         }
@@ -598,7 +598,7 @@ namespace Venomaus.FlowVitae.Grids
         /// <returns><see langword="true"/> or <see langword="false"/></returns>
         public bool InBounds(TCell? cell)
         {
-            return cell != null ? InBounds(cell.X, cell.Y) : false;
+            return cell != null && InBounds(cell.X, cell.Y);
         }
 
         /// <summary>

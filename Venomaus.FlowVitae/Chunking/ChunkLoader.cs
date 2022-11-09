@@ -221,6 +221,58 @@ namespace Venomaus.FlowVitae.Chunking
             }    
         }
 
+        public TCellType GetChunkCellType(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true)
+        {
+            var chunkCoordinate = GetChunkCoordinate(x, y);
+            var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
+
+            // Check if there are modified cell tiles within this chunk
+            if (_modifiedCellsInChunks != null && _modifiedCellsInChunks
+                .TryGetValue(chunkCoordinate, out var cells) &&
+                cells.TryGetValue(remappedCoordinate, out var cell))
+            {
+                // Return the modified cell if it exists
+                return cell == null ? default : cell.CellType;
+            }
+
+            // Check if coordinate is within viewport
+            var (chunkCells, _) = GetChunk(x, y, out _);
+            if (isWorldCoordinateOnScreen != null && screenCells != null &&
+                isWorldCoordinateOnScreen.Invoke(x, y, out (int x, int y)? screenCoordinate, out var screenWidth) &&
+                screenCoordinate != null)
+            {
+                if (chunkCells != null)
+                {
+                    // Adjust screen cell if it doesn't match with chunk cell && no modified cell was stored
+                    var screenCell = screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x];
+                    var chunkCell = chunkCells[remappedCoordinate.y * _width + remappedCoordinate.x];
+                    if (!screenCell.Equals(chunkCell))
+                    {
+                        screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = chunkCell;
+                    }
+                }
+
+                return screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x];
+            }
+
+            bool wasChunkLoaded = false;
+            if (loadChunk)
+                wasChunkLoaded = LoadChunk(x, y, out _);
+
+            // Load chunk after all other options are validated
+            (chunkCells, _) = GetChunk(x, y, out _);
+            if (chunkCells == null)
+                throw new Exception("Something went wrong during chunk retrieval.");
+
+            if (loadChunk && wasChunkLoaded && unloadChunkAfterLoad)
+                UnloadChunk(x, y);
+            else if (loadChunk && wasChunkLoaded && !unloadChunkAfterLoad)
+                _tempLoadedChunks.Add(chunkCoordinate);
+
+            // Return the non-modified cell
+            return chunkCells[remappedCoordinate.y * _width + remappedCoordinate.x];
+        }
+
         public TCell? GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true)
         {
             var chunkCoordinate = GetChunkCoordinate(x, y);
