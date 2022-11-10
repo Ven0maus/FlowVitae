@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Chunking;
-using Venomaus.FlowVitae.Helpers;
 using Venomaus.FlowVitae.Chunking.Generators;
+using Venomaus.FlowVitae.Helpers;
 
 namespace Venomaus.FlowVitae.Grids
 {

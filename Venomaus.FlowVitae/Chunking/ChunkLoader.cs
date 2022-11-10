@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Venomaus.FlowVitae.Cells;
+using Venomaus.FlowVitae.Chunking.Generators;
 using Venomaus.FlowVitae.Grids;
 using Venomaus.FlowVitae.Helpers;
-using Venomaus.FlowVitae.Chunking.Generators;
 
 namespace Venomaus.FlowVitae.Chunking
 {
@@ -314,12 +314,11 @@ namespace Venomaus.FlowVitae.Chunking
             return false;
         }
 
-        public void SetChunkCell(TCell? cell, bool storeState = false, 
+        public void SetChunkCell(TCell cell, bool storeState = false, 
             EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, 
             Checker? isWorldCoordinateOnScreen = null, 
             TCellType[]? screenCells = null)
         {
-            if (cell == null) return;
             var chunkCoordinate = GetChunkCoordinate(cell.X, cell.Y);
             var remappedCoordinate = RemapChunkCoordinate(cell.X, cell.Y, chunkCoordinate);
 
@@ -373,7 +372,7 @@ namespace Venomaus.FlowVitae.Chunking
         public delegate bool Checker(int x, int y, out (int x, int y)? coordinate, out int screenWidth);
         public void SetChunkCells(IEnumerable<TCell?> cells, Func<TCell?, bool>? storeCellStateFunc = null, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
         {
-            foreach (var cell in cells.Where(a => a != null))
+            foreach (var cell in cells.Where(a => a != null).Cast<TCell>())
                 SetChunkCell(cell, storeCellStateFunc?.Invoke(cell) ?? false, onCellUpdate: onCellUpdate, isWorldCoordinateOnScreen: isWorldCoordinateOnScreen, screenCells: screenCells);
         }
 
@@ -582,6 +581,11 @@ namespace Venomaus.FlowVitae.Chunking
             // Get a unique hash seed based on the chunk (x,y) and the main seed
             var chunkSeed = Fnv1a.Hash32(coordinate.x, coordinate.y, _seed);
             var chunk = _generator.Generate(chunkSeed, _width, _height, coordinate);
+
+            if (chunk.chunkCells == null)
+                throw new Exception("Generated chunk cannot be null.");
+            else if (chunk.chunkCells.Length != (_width * _height))
+                throw new Exception("Generated chunk length does not match the provided width and height.");
 
             // Update chunk data with the cached version
             if (_chunkDataCache.TryGetValue(coordinate, out var chunkData))

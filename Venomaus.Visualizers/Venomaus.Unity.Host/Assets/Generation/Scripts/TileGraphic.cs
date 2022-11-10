@@ -4,8 +4,8 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using Venomaus.FlowVitae.Grids;
 using Venomaus.FlowVitae.Chunking.Generators;
+using Venomaus.FlowVitae.Grids;
 
 namespace Assets.Generation.Scripts
 {

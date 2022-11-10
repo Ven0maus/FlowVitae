@@ -1,8 +1,8 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using Venomaus.FlowVitae.Cells;
-using Venomaus.FlowVitae.Grids;
 using Venomaus.FlowVitae.Chunking.Generators;
+using Venomaus.FlowVitae.Grids;
 
 namespace Venomaus.BenchmarkTests.Benchmarks
 {

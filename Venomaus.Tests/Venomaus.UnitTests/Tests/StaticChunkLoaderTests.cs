@@ -69,7 +69,8 @@ namespace Venomaus.UnitTests.Tests
                     Assert.Multiple(() =>
                     {
                         Assert.That(cell, Is.Not.Null);
-                        Assert.That(chunkData[y * ChunkWidth + x], Is.EqualTo(cell.CellType));
+                        if (cell != null)
+                            Assert.That(chunkData[y * ChunkWidth + x], Is.EqualTo(cell.CellType));
                     });
                 }
             }

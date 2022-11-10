@@ -183,6 +183,8 @@ namespace Venomaus.UnitTests.Tests
             var customCell = new Cell<int>(5, 5, false, 20);
             Grid.SetCell(customCell, true);
 
+            Assert.That(() => Grid.SetCell(null), Throws.Nothing);
+
             var changedCell = Grid.GetCell(5, 5);
             Assert.That(changedCell, Is.Not.Null);
             Assert.Multiple(() =>

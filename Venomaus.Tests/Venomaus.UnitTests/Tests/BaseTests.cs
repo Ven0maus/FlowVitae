@@ -1,7 +1,7 @@
 ﻿using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Chunking;
-using Venomaus.FlowVitae.Grids;
 using Venomaus.FlowVitae.Chunking.Generators;
+using Venomaus.FlowVitae.Grids;
 
 namespace Venomaus.UnitTests.Tests
 {

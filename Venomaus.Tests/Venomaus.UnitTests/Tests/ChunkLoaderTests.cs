@@ -1,8 +1,8 @@
 ﻿using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Chunking;
+using Venomaus.FlowVitae.Chunking.Generators;
 using Venomaus.FlowVitae.Grids;
 using Venomaus.FlowVitae.Helpers;
-using Venomaus.FlowVitae.Chunking.Generators;
 using Venomaus.UnitTests.Tools;
 using Direction = Venomaus.FlowVitae.Helpers.Direction;
 
@@ -82,6 +82,7 @@ namespace Venomaus.UnitTests.Tests
 
             // Change cell to 4 with store state
             Grid.SetCell(new Cell<int>(posX, posY, false, -10), true);
+            Assert.That(() => Grid.SetCell(null), Throws.Nothing);
 
             // Verify if cell is 4 and number matches stored state
             cell = Grid.GetCell(posX, posY);
@@ -1374,6 +1375,44 @@ namespace Venomaus.UnitTests.Tests
                     var index = y * Grid.Width + x;
                     Assert.That(comparer.Equals(viewPort[index], (x, y)));
                 }
+            }
+        }
+
+        [Test]
+        public void Exceptions_WhenChunkGenerator_RetrievesInvalidChunks()
+        {
+            var nullCellProcGen = new CustomGenerator(ProcGen.Seed, CustomGenerator.ReturnValue.NullCells);
+            Assert.That(() => new Grid<int, Cell<int>>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, nullCellProcGen), Throws.Exception);
+            var invalidSizeProcGen = new CustomGenerator(ProcGen.Seed, CustomGenerator.ReturnValue.InvalidChunkSize);
+            Assert.That(() => new Grid<int, Cell<int>>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, invalidSizeProcGen), Throws.Exception);
+        }
+
+        class CustomGenerator : IProceduralGen<int, Cell<int>>
+        {
+            public int Seed { get; }
+
+            public enum ReturnValue
+            {
+                NullCells,
+                InvalidChunkSize
+            }
+
+            private readonly ReturnValue _returnValue;
+
+            public CustomGenerator(int seed, ReturnValue returnValue)
+            {
+                Seed = seed;
+                _returnValue = returnValue;
+            }
+
+            public (int[] chunkCells, IChunkData? chunkData) Generate(int seed, int width, int height, (int x, int y) chunkCoordinate)
+            {
+                if (_returnValue == ReturnValue.NullCells)
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+                    return (null, null);
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                else
+                    return (new int[width / 2 * (height / 2)], null);
             }
         }
     }

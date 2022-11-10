@@ -1,5 +1,4 @@
-﻿using Assets.Generation.Scripts;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Assets.Entities
 {
