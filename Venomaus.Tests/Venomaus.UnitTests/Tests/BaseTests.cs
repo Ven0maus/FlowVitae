@@ -28,6 +28,7 @@ namespace Venomaus.UnitTests.Tests
         {
             var procGen = new ProceduralGenerator<TCellType, TCell>(seed, method);
             Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, procGen);
+            Grid.SetCustomConverter(CustomConverter);
         }
     }
 }

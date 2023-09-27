@@ -148,7 +148,7 @@ namespace Venomaus.UnitTests.Tests
         public void CurrentChunk_GetAndSet_Correct()
         {
             var current = ChunkLoader.CurrentChunk;
-            var chunkCoordinate = ChunkLoader.GetChunkCoordinate(Grid.Width / 2, Grid.Height /2);
+            var chunkCoordinate = ChunkLoader.GetChunkCoordinate(Grid.Width / 2, Grid.Height / 2);
             Assert.That(current.x, Is.EqualTo(chunkCoordinate.x));
             Assert.That(current.y, Is.EqualTo(chunkCoordinate.y));
 
@@ -220,7 +220,7 @@ namespace Venomaus.UnitTests.Tests
                 (baseChunk.x + ChunkWidth, baseChunk.y + ChunkHeight)
             }.ToArray();
 
-            var neighborChunks = new[] 
+            var neighborChunks = new[]
             {
                 ChunkLoader.GetNeighborChunk(0, 0, Direction.North),
                 ChunkLoader.GetNeighborChunk(0, 0, Direction.East),
@@ -232,7 +232,7 @@ namespace Venomaus.UnitTests.Tests
                 ChunkLoader.GetNeighborChunk(0, 0, Direction.SouthWest),
             }.OrderBy(a => a.x).ThenBy(a => a.y).ToArray();
 
-            for (int i=0; i < neighborChunks.Length; i++)
+            for (int i = 0; i < neighborChunks.Length; i++)
                 Assert.That(neighborChunks[i], Is.EqualTo(mapping[i]));
         }
 
@@ -447,12 +447,12 @@ namespace Venomaus.UnitTests.Tests
                     loadedChunk.y == ChunkLoader.CurrentChunk.y), "No base chunk available.");
 
                 // Can't load already loaded chunk
-                Assert.That(ChunkLoader.LoadChunk(ChunkLoader.CurrentChunk.x, ChunkLoader.CurrentChunk.y, out _), Is.False, "Was able to load base chunk."); 
+                Assert.That(ChunkLoader.LoadChunk(ChunkLoader.CurrentChunk.x, ChunkLoader.CurrentChunk.y, out _), Is.False, "Was able to load base chunk.");
                 Assert.That(ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, out _), Is.True, "Was not able to load new chunk.");
             });
             loadedChunks = ChunkLoader.GetLoadedChunks();
-            
-            Assert.That(loadedChunks.Any(loadedChunk => loadedChunk.x == x && 
+
+            Assert.That(loadedChunks.Any(loadedChunk => loadedChunk.x == x &&
                             loadedChunk.y == y));
         }
 
@@ -507,7 +507,7 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(x, Is.EqualTo(ChunkWidth));
                 Assert.That(y, Is.EqualTo(ChunkHeight));
             });
-            (x, y) = ChunkLoader.GetChunkCoordinate(- 5, -5);
+            (x, y) = ChunkLoader.GetChunkCoordinate(-5, -5);
             Assert.Multiple(() =>
             {
                 Assert.That(x, Is.EqualTo(-ChunkWidth));
@@ -570,7 +570,7 @@ namespace Venomaus.UnitTests.Tests
             var baseChunk = (x: 100 - moduloWidth, y: 100 - moduloHeight);
 
             var cellsUpdated = new List<Cell<int>>();
-            Grid.OnCellUpdate += (sender, args) => cellsUpdated.Add(args.Cell);
+            Grid.OnCellUpdate += (sender, args) => { if (args?.Cell != null) cellsUpdated.Add(args.Cell); };
             loadedChunks = ChunkLoader.GetLoadedChunks();
             Assert.Multiple(() =>
             {
@@ -597,7 +597,7 @@ namespace Venomaus.UnitTests.Tests
                 (baseChunk.x + ChunkWidth, baseChunk.y + ChunkHeight)
             }.ToArray();
 
-            for (int i=0; i < loadedChunks.Length; i++)
+            for (int i = 0; i < loadedChunks.Length; i++)
             {
                 Assert.Multiple(() =>
                 {
@@ -657,10 +657,17 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void ChunkLoading_CorrectDuring_Centering()
         {
+            // Test non-diagonal centering
             CenterTowards(0, 0, Direction.North);
             CenterTowards(0, 0, Direction.East);
             CenterTowards(0, 0, Direction.South);
             CenterTowards(0, 0, Direction.West);
+
+            // Test diagonal centering
+            CenterTowards(0, 0, Direction.NorthEast);
+            CenterTowards(0, 0, Direction.NorthWest);
+            CenterTowards(0, 0, Direction.SouthEast);
+            CenterTowards(0, 0, Direction.SouthWest);
         }
 
         private void CenterTowards(int startX, int startY, Direction dir)
@@ -683,25 +690,44 @@ namespace Venomaus.UnitTests.Tests
                 case Direction.West:
                     dirX = startX - ChunkWidth;
                     break;
+                case Direction.NorthEast:
+                    dirY = startY + ChunkHeight;
+                    dirX = startX + ChunkWidth;
+                    break;
+                case Direction.NorthWest:
+                    dirY = startY + ChunkHeight;
+                    dirX = startX - ChunkWidth;
+                    break;
+                case Direction.SouthEast:
+                    dirY = startY - ChunkHeight;
+                    dirX = startX + ChunkWidth;
+                    break;
+                case Direction.SouthWest:
+                    dirY = startY - ChunkHeight;
+                    dirX = startX - ChunkWidth;
+                    break;
             }
 
             (int x, int y)[] loadedChunks = Array.Empty<(int x, int y)>();
             Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(1).MilliSeconds);
             Assert.Multiple(() =>
             {
-                Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), "Base chunk not loaded!");
-                Assert.That(loadedChunks.Any(a => a.x == dirX && a.y == dirY), "New direction chunk not loaded!");
+                Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), $"Base chunk not loaded! | Dir: {dir}");
+                Assert.That(loadedChunks.Any(a => a.x == dirX && a.y == dirY), $"New direction chunk not loaded! | Dir: {dir}");
             });
 
             // Move upwards
-            var sizeDir = dirX != 0 ? ChunkWidth : ChunkHeight;
+            var sizeDir = dirX != 0 && dirY != 0 ? Math.Max(ChunkWidth, ChunkHeight) : dirX != 0 ? ChunkWidth : ChunkHeight;
             for (int i = 0; i < sizeDir; i++)
             {
-                Grid.Center(dirX != 0 ? (dirX < 0 ? -i : i) : 0, dirY != 0 ? (dirY < 0 ? -i : i) : 0);
+                var xOffset = dirX != 0 ? dirX < 0 ? i > ChunkWidth ? -ChunkWidth : -i : i > ChunkWidth ? ChunkWidth : i : 0;
+                var yOffset = dirY != 0 ? dirY < 0 ? i > ChunkHeight ? -ChunkHeight : -i : i > ChunkHeight ? ChunkHeight : i : 0;
+                Grid.Center(xOffset, yOffset);
+
                 Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(1).MilliSeconds);
                 Assert.Multiple(() =>
                 {
-                    Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), "Chunk (0, 0) not loaded");
+                    Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), $"Chunk (0, 0) not loaded | Dir: {dir}");
                     Assert.That(loadedChunks.Any(a => a.x == dirX && a.y == dirY));
                 });
             }
@@ -710,7 +736,7 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(1).MilliSeconds);
             Assert.Multiple(() =>
             {
-                Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), "Chunk (0, 0) not loaded");
+                Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), $"Chunk (0, 0) not loaded | Dir: {dir}");
                 Assert.That(!loadedChunks.Any(a => a.x == -dirX && a.y == -dirY));
             });
         }
@@ -895,7 +921,7 @@ namespace Venomaus.UnitTests.Tests
             AdjustProceduralGridGen(Seed, (rand, chunk, width, height, chunkCoordinate) =>
             {
                 // Set default to -5 on all cells
-                for (int x=0; x < width; x++)
+                for (int x = 0; x < width; x++)
                 {
                     for (int y = 0; y < height; y++)
                     {
@@ -911,7 +937,8 @@ namespace Venomaus.UnitTests.Tests
             // Verify that all cells have this default value set properly
             var viewPort = Grid.GetViewPortWorldCoordinates();
             var viewPortCells = Grid.GetCells(viewPort).ToArray();
-            Assert.That(viewPortCells.Cast<Cell<int>>().Count(a => a.CellType == -5), Is.EqualTo(viewPortCells.Length));
+            Assert.That(viewPortCells.Cast<Cell<int>>().Count(a => a.CellType == -5), Is.EqualTo(viewPortCells.Length),
+                string.Join(",", viewPortCells.Cast<Cell<int>>().GroupBy(a => a.CellType).Select(a => a.Key)));
 
             // Verify that GetCell has this default value set properly
             var cell = Grid.GetCell(0, 0);
@@ -951,7 +978,7 @@ namespace Venomaus.UnitTests.Tests
 
             // Collect current chunk data
             int[] chunkData = new int[ChunkWidth * ChunkHeight];
-            for (int x=0; x < ChunkWidth; x++)
+            for (int x = 0; x < ChunkWidth; x++)
             {
                 for (int y = 0; y < ChunkHeight; y++)
                 {
@@ -983,7 +1010,7 @@ namespace Venomaus.UnitTests.Tests
         {
             // Populate the grid cache
             var cells = new List<Cell<int>?>();
-            for (int x=Grid.Width / 2; x < (Grid.Width / 2) + 10; x++)
+            for (int x = Grid.Width / 2; x < (Grid.Width / 2) + 10; x++)
             {
                 for (int y = Grid.Height / 2; y < (Grid.Height / 2) + 10; y++)
                 {
@@ -1122,15 +1149,15 @@ namespace Venomaus.UnitTests.Tests
             var chunksLoaded = new List<(int x, int y)>();
             var chunksUnloaded = new List<(int x, int y)>();
 
-            Grid.OnChunkLoad += (sender, args) => 
+            Grid.UseThreading = false;
+            Grid.OnChunkLoad += (sender, args) =>
             {
                 chunksLoaded.Add((args.ChunkX, args.ChunkY));
             };
-            Grid.OnChunkUnload += (sender, args) => 
+            Grid.OnChunkUnload += (sender, args) =>
             {
                 chunksUnloaded.Add((args.ChunkX, args.ChunkY));
             };
-            Grid.UseThreading = false;
             Grid.Center(ViewPortWidth / 2 + ChunkWidth, ViewPortHeight / 2);
 
             var (x, y) = ChunkLoader.GetChunkCoordinate(ViewPortWidth / 2, ViewPortHeight / 2);
@@ -1154,8 +1181,8 @@ namespace Venomaus.UnitTests.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.That(chunksLoaded, Has.Count.EqualTo(3), "Times load incorrect");
-                Assert.That(chunksUnloaded, Has.Count.EqualTo(3), "Times unload incorrect");
+                Assert.That(chunksLoaded, Has.Count.EqualTo(3), "Loaded: " + chunksLoaded.Count);
+                Assert.That(chunksUnloaded, Has.Count.EqualTo(3), "Unloaded: " + chunksUnloaded.Count);
                 Assert.That(chunksLoaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctLoaded, comparer), "Loaded chunks was incorrect");
                 Assert.That(chunksUnloaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctUnloaded, comparer), "Unloaded chunks was incorrect");
             });

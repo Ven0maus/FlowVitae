@@ -159,6 +159,10 @@ namespace Venomaus.FlowVitae.Grids
             _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert);
             _chunkLoader.LoadChunksAround(0, 0, true);
 
+            // This will set the screen cells properly on start, so everything syncs well
+            var screenCellPositions = GetViewPortWorldCoordinates();
+            _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true).ToArray();
+
             // Default center on the middle of the viewport
             Center(viewPortWidth / 2, viewPortHeight / 2);
             _viewPortInitialized = true;

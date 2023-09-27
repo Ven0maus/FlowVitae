@@ -221,7 +221,7 @@ namespace Venomaus.FlowVitae.Chunking
             }    
         }
 
-        public TCellType GetChunkCellType(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true, bool checkModifiedCells = true)
+        public TCellType GetChunkCellType(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true, bool checkModifiedCells = true, bool forceLoadScreenCells = false)
         {
             var chunkCoordinate = GetChunkCoordinate(x, y);
             var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
@@ -252,10 +252,24 @@ namespace Venomaus.FlowVitae.Chunking
                         screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = chunkCell;
                     }
                 }
+                else if (forceLoadScreenCells)
+                {
+                    var screenCell = screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x];
+                    var chunkCell = GetCellTypeWithLoadOption(x, y, true, unloadChunkAfterLoad, chunkCoordinate, remappedCoordinate, out _);
+                    if (!screenCell.Equals(chunkCell))
+                    {
+                        screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = chunkCell;
+                    }
+                }
 
                 return screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x];
             }
 
+            return GetCellTypeWithLoadOption(x, y, loadChunk, unloadChunkAfterLoad, chunkCoordinate, remappedCoordinate, out _);
+        }
+
+        private TCellType GetCellTypeWithLoadOption(int x, int y, bool loadChunk, bool unloadChunkAfterLoad, (int x, int y) chunkCoordinate, (int x, int y) remappedCoordinate, out (TCellType[]? chunkCells, TChunkData? chunkData)? chunk)
+        {
             bool wasChunkLoaded = false;
             if (loadChunk)
                 wasChunkLoaded = LoadChunk(x, y, out _);
@@ -274,7 +288,7 @@ namespace Venomaus.FlowVitae.Chunking
             return chunk.Value.chunkCells[remappedCoordinate.y * _width + remappedCoordinate.x];
         }
 
-        public TCell? GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true)
+        public TCell? GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true, bool forceLoadScreenCells = false)
         {
             var chunkCoordinate = GetChunkCoordinate(x, y);
             var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
@@ -288,15 +302,15 @@ namespace Venomaus.FlowVitae.Chunking
                 return cell;
             }
 
-            return _cellTypeConverter(x, y, GetChunkCellType(x, y, loadChunk, isWorldCoordinateOnScreen, screenCells, unloadChunkAfterLoad, false));
+            return _cellTypeConverter(x, y, GetChunkCellType(x, y, loadChunk, isWorldCoordinateOnScreen, screenCells, unloadChunkAfterLoad, false, forceLoadScreenCells));
         }
 
-        public IEnumerable<TCell?> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null)
+        public IEnumerable<TCell?> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool forceLoadScreenCells = false)
         {
             var cells = new List<TCell>();
             foreach (var (x, y) in positions)
             {
-                yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false);
+                yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells);
             }
             foreach (var (x, y) in _tempLoadedChunks)
                 UnloadChunk(x, y);
@@ -453,6 +467,7 @@ namespace Venomaus.FlowVitae.Chunking
                 return false;
             }
         }
+
         private object _unLoadChunkLock = new object();
 
         public bool UnloadChunk(int x, int y, bool forceUnload = false)
@@ -511,7 +526,23 @@ namespace Venomaus.FlowVitae.Chunking
             // Eg center from left to right, it will shift cells left
             // The inverse loop here makes sure that when going from 0,0 to right, it won't copy over the same value
             // If diffX or diffY > 0 then inverse the loop
-            if (diffX > 0 || diffY > 0)
+            if (diffX >= 1 && diffY <= -1)
+            {
+                for (var xX = viewPortWidth - 1; xX >= 0; xX--)
+                    for (var yY = 0; yY < viewPortHeight; yY++)
+                        SyncViewportCellOnCenter(minX, minY, xX, yY, viewPortWidth, viewPortHeight,
+                            centerCoordinate, diffX, diffY, viewPortInitialized, isWorldCoordinateOnScreen,
+                            screenCells, onCellUpdate);
+            }
+            else if (diffX <= -1 && diffY >= 1)
+            {
+                for (var xX = 0; xX < viewPortWidth; xX++)
+                    for (var yY = viewPortHeight - 1; yY >= 0; yY--)
+                        SyncViewportCellOnCenter(minX, minY, xX, yY, viewPortWidth, viewPortHeight,
+                            centerCoordinate, diffX, diffY, viewPortInitialized, isWorldCoordinateOnScreen,
+                            screenCells, onCellUpdate);
+            }
+            else if (diffX > 0 || diffY > 0)
             {
                 for (var xX = viewPortWidth - 1; xX >= 0; xX--)
                     for (var yY = viewPortHeight - 1; yY >= 0; yY--)
@@ -519,7 +550,7 @@ namespace Venomaus.FlowVitae.Chunking
                             centerCoordinate, diffX, diffY, viewPortInitialized, isWorldCoordinateOnScreen,
                             screenCells, onCellUpdate);
             }
-            else
+            else if (diffX < 0 || diffY < 0)
             {
                 for (var xX = 0; xX < viewPortWidth; xX++)
                     for (var yY = 0; yY < viewPortHeight; yY++)
