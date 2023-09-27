@@ -1149,6 +1149,9 @@ namespace Venomaus.UnitTests.Tests
             var chunksLoaded = new List<(int x, int y)>();
             var chunksUnloaded = new List<(int x, int y)>();
 
+            var loadedChunkCoords = Grid.GetLoadedChunkCoordinates().ToArray();
+            Assert.That(loadedChunkCoords, Has.Length.EqualTo(9), $"Preloaded: {loadedChunkCoords.Length} | {string.Join(", ", loadedChunkCoords)}");
+
             Grid.UseThreading = false;
             Grid.OnChunkLoad += (sender, args) =>
             {
@@ -1181,8 +1184,8 @@ namespace Venomaus.UnitTests.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.That(chunksLoaded, Has.Count.EqualTo(3), "Loaded: " + chunksLoaded.Count);
-                Assert.That(chunksUnloaded, Has.Count.EqualTo(3), "Unloaded: " + chunksUnloaded.Count);
+                Assert.That(chunksLoaded, Has.Count.EqualTo(3), "Loaded: " + chunksLoaded.Count + " | " + string.Join(", ", chunksLoaded));
+                Assert.That(chunksUnloaded, Has.Count.EqualTo(3), "Unloaded: " + chunksUnloaded.Count + " | " + string.Join(", ", chunksUnloaded));
                 Assert.That(chunksLoaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctLoaded, comparer), "Loaded chunks was incorrect");
                 Assert.That(chunksUnloaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctUnloaded, comparer), "Unloaded chunks was incorrect");
             });

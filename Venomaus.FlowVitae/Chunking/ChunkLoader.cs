@@ -95,18 +95,7 @@ namespace Venomaus.FlowVitae.Chunking
             var mandatoryChunks = GetMandatoryChunks();
 
             // Visible chunks
-            var onScreenChunks = mandatoryChunks.Where(chunk => 
-            {
-                for (int x=0; x < _width; x++)
-                {
-                    for (int y = 0; y < _height; y++)
-                    {
-                        if (checker.Invoke(chunk.x + x, chunk.y + y, out _, out _)) 
-                            return true;
-                    }
-                }
-                return false;
-            }).ToArray();
+            var onScreenChunks = GetOnScreenChunks(mandatoryChunks, checker);
 
             // Non-visible chunks
             var offScreenChunks = mandatoryChunks
@@ -119,41 +108,56 @@ namespace Venomaus.FlowVitae.Chunking
                 .Select(a => (a.Key.x, a.Key.y))
                 .ToArray();
 
-            // Load on screen chunks on this thread
-            foreach (var chunk in onScreenChunks)
-            {
-                if (LoadChunk(chunk.x, chunk.y, out _))
-                    onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
-            }
-
             foreach (var chunk in nonMandatoryChunks)
             {
                 if (UnloadChunk(chunk.x, chunk.y))
                     onChunkUnload?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
             }
 
-            // Load the rest off thread
-            // ToArray required so foreach doesn't influence _chunks
-            LoadChunksThreaded(offScreenChunks, onChunkLoad);
+            // Use parallel processing to load on screen chunks
+            Parallel.ForEach(onScreenChunks, chunk =>
+            {
+                if (LoadChunk(chunk.x, chunk.y, out _, false))
+                    onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
+            });
+
+            // Use parallel processing to load off screen chunks
+            Parallel.ForEach(offScreenChunks, chunk =>
+            {
+                if (LoadChunk(chunk.Item1, chunk.Item2, out _, false))
+                    onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
+            });
         }
 
-        private readonly ConcurrentDictionary<(int x, int y), bool> _lockedChunks = new ConcurrentDictionary<(int x, int y), bool>(new TupleComparer<int>());
-
-        private void LoadChunksThreaded((int x, int y)[] chunks, EventHandler<ChunkUpdateArgs>? onChunkLoad)
+        private IReadOnlyList<(int x, int y)> GetOnScreenChunks(IEnumerable<(int x, int y)> mandatoryChunks, Checker checker)
         {
-            if (!chunks.Any()) return;
-            _ = Task.Factory.StartNew(() =>
+            var onScreenChunks = new List<(int x, int y)>(); // Initialize a list to store on-screen chunks
+
+            // Use parallel processing to check the chunks
+            Parallel.ForEach(mandatoryChunks, chunk =>
             {
-                foreach (var chunk in chunks)
+                bool isOnScreen = false;
+                for (int x = 0; x < _width && !isOnScreen; x++)
                 {
-                    if (_lockedChunks.TryAdd(chunk, true)) // TryAdd returns true if added successfully
+                    for (int y = 0; y < _height && !isOnScreen; y++)
                     {
-                        if (LoadChunk(chunk.x, chunk.y, out _))
-                            onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
-                        _lockedChunks.TryRemove(chunk, out _); // Remove the key from the dictionary
+                        if (checker.Invoke(chunk.x + x, chunk.y + y, out _, out _))
+                        {
+                            isOnScreen = true;
+                        }
                     }
                 }
-            }, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
+
+                if (isOnScreen)
+                {
+                    lock (onScreenChunks) // Ensure thread safety when adding to the list
+                    {
+                        onScreenChunks.Add(chunk);
+                    }
+                }
+            });
+
+            return onScreenChunks;
         }
 
         public (int x, int y)[] GetLoadedChunks()
@@ -455,13 +459,28 @@ namespace Venomaus.FlowVitae.Chunking
 
         private object _loadChunkLock = new object();
 
-        public bool LoadChunk(int x, int y, out (int x, int y) chunkCoordinate)
+        public bool LoadChunk(int x, int y, out (int x, int y) chunkCoordinate, bool applyLock = true)
         {
-            lock (_loadChunkLock)
+            if (applyLock)
+            {
+                lock (_loadChunkLock)
+                {
+                    chunkCoordinate = GetChunkCoordinate(x, y);
+
+                    if (!_chunks.ContainsKey(chunkCoordinate) ||
+                        _chunks[chunkCoordinate].chunkCells == null)
+                    {
+                        GenerateChunk(chunkCoordinate);
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            else
             {
                 chunkCoordinate = GetChunkCoordinate(x, y);
 
-                if (!_chunks.ContainsKey(chunkCoordinate) || 
+                if (!_chunks.ContainsKey(chunkCoordinate) ||
                     _chunks[chunkCoordinate].chunkCells == null)
                 {
                     GenerateChunk(chunkCoordinate);
