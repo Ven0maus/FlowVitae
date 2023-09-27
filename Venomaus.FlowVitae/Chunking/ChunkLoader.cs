@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Chunking.Generators;
@@ -68,7 +69,6 @@ namespace Venomaus.FlowVitae.Chunking
             return (x: Math.Abs(x - chunkCoordinate.x), y: Math.Abs(y - chunkCoordinate.y));
         }
 
-        private readonly HashSet<(int x, int y)> _lockedChunks = new HashSet<(int x, int y)>(new TupleComparer<int>());
         public void SetCurrentChunk(int x, int y, Checker checker, 
             EventHandler<ChunkUpdateArgs>? onChunkLoad = null, EventHandler<ChunkUpdateArgs>? onChunkUnload = null)
         {
@@ -137,6 +137,8 @@ namespace Venomaus.FlowVitae.Chunking
             LoadChunksThreaded(offScreenChunks, onChunkLoad);
         }
 
+        private readonly ConcurrentDictionary<(int x, int y), bool> _lockedChunks = new ConcurrentDictionary<(int x, int y), bool>(new TupleComparer<int>());
+
         private void LoadChunksThreaded((int x, int y)[] chunks, EventHandler<ChunkUpdateArgs>? onChunkLoad)
         {
             if (!chunks.Any()) return;
@@ -144,13 +146,14 @@ namespace Venomaus.FlowVitae.Chunking
             {
                 foreach (var chunk in chunks)
                 {
-                    if (_lockedChunks.Contains(chunk)) continue;
-                    _lockedChunks.Add(chunk);
-                    if (LoadChunk(chunk.x, chunk.y, out _))
-                        onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
-                    _lockedChunks.Remove(chunk);
+                    if (_lockedChunks.TryAdd(chunk, true)) // TryAdd returns true if added successfully
+                    {
+                        if (LoadChunk(chunk.x, chunk.y, out _))
+                            onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _width, _height));
+                        _lockedChunks.TryRemove(chunk, out _); // Remove the key from the dictionary
+                    }
                 }
-            }).ConfigureAwait(false);
+            }, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
         }
 
         public (int x, int y)[] GetLoadedChunks()
