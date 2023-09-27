@@ -23,7 +23,7 @@ namespace Venomaus.FlowVitae.Chunking
         private readonly Func<int, int, TCellType, TCell?> _cellTypeConverter;
         private readonly Dictionary<(int x, int y), TChunkData> _chunkDataCache;
         private readonly ConcurrentDictionary<(int x, int y), (TCellType[] chunkCells, TChunkData? chunkData)> _chunks;
-        private readonly HashSet<(int x, int y)> _tempLoadedChunks;
+        private readonly ConcurrentHashSet<(int x, int y)> _tempLoadedChunks;
         private Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>? _modifiedCellsInChunks;
 
         public bool UseThreading { get; set; } = true;
@@ -41,7 +41,7 @@ namespace Venomaus.FlowVitae.Chunking
             _seed = generator.Seed;
             _generator = generator;
             _cellTypeConverter = cellTypeConverter;
-            _tempLoadedChunks = new HashSet<(int x, int y)>(new TupleComparer<int>());
+            _tempLoadedChunks = new ConcurrentHashSet<(int x, int y)>(new TupleComparer<int>());
             _chunks = new ConcurrentDictionary<(int x, int y), (TCellType[], TChunkData?)>(new TupleComparer<int>());
             _chunkDataCache = new Dictionary<(int x, int y), TChunkData>(new TupleComparer<int>());
         }
