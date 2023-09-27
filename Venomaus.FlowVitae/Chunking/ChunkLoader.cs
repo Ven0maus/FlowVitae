@@ -314,11 +314,30 @@ namespace Venomaus.FlowVitae.Chunking
 
         public IEnumerable<TCell?> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool forceLoadScreenCells = false)
         {
-            var cells = new List<TCell>();
-            foreach (var (x, y) in positions)
+            var coords = positions.ToArray();
+            if (!UseThreading)
             {
-                yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells);
+                foreach (var (x, y) in coords)
+                {
+                    yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells);
+                }
             }
+            else
+            {
+                var cellDictionary = new ConcurrentDictionary<(int x, int y), TCell?>();
+                Parallel.ForEach(coords, pos =>
+                {
+                    cellDictionary.TryAdd(pos, GetChunkCell(pos.x, pos.y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells));
+                });
+
+                // Return cells in the same order as the input order
+                foreach (var pos in coords)
+                {
+                    if (cellDictionary.TryGetValue(pos, out var cell))
+                        yield return cell;
+                }
+            }
+
             foreach (var (x, y) in _tempLoadedChunks)
                 UnloadChunk(x, y);
             _tempLoadedChunks.Clear();

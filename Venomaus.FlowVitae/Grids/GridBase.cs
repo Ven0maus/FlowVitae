@@ -233,11 +233,17 @@ namespace Venomaus.FlowVitae.Grids
 
                 // Re-center and load chunks within the main thread
                 _viewPortInitialized = false;
+                var prevThreadingUse = UseThreading;
                 UseThreading = false;
                 _chunkLoader.LoadChunksAround(_centerCoordinate.x, _centerCoordinate.y, true, OnChunkLoad);
+
+                // This will set the screen cells properly on start, so everything syncs well
+                var screenCellPositions = GetViewPortWorldCoordinates();
+                _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true).ToArray();
+
                 Center(_centerCoordinate.x, _centerCoordinate.y);
                 _viewPortInitialized = true;
-                UseThreading = true;
+                UseThreading = prevThreadingUse;
             }
         }
 
