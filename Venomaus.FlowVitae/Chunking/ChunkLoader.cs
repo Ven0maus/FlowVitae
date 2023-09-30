@@ -343,7 +343,7 @@ namespace Venomaus.FlowVitae.Chunking
                 return cell;
             }
 
-            return _cellTypeConverter(x, y, GetChunkCellType(x, y, loadChunk, isWorldCoordinateOnScreen, screenCells, unloadChunkAfterLoad, false, forceLoadScreenCells));
+            return _cellTypeConverter(x, y, GetChunkCellType(x, y, loadChunk, isWorldCoordinateOnScreen, screenCells, unloadChunkAfterLoad, false, forceLoadScreenCells, onCellUpdate));
         }
 
         public IEnumerable<TCell?> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool forceLoadScreenCells = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null)
@@ -353,7 +353,7 @@ namespace Venomaus.FlowVitae.Chunking
             {
                 foreach (var (x, y) in coords)
                 {
-                    yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells);
+                    yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells, onCellUpdate);
                 }
             }
             else
@@ -363,7 +363,7 @@ namespace Venomaus.FlowVitae.Chunking
                     var cellDictionary = new ConcurrentDictionary<(int x, int y), TCell?>();
                     Parallel.ForEach(coords, pos =>
                     {
-                        cellDictionary.TryAdd(pos, GetChunkCell(pos.x, pos.y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells));
+                        cellDictionary.TryAdd(pos, GetChunkCell(pos.x, pos.y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells, onCellUpdate));
                     });
 
                     // Return cells in the same order as the input order
@@ -377,7 +377,7 @@ namespace Venomaus.FlowVitae.Chunking
                 {
                     foreach (var (x, y) in coords)
                     {
-                        yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells);
+                        yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells, onCellUpdate);
                     }
                 }
             }
