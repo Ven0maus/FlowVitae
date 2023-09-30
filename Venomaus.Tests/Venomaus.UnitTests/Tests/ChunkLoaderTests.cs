@@ -391,6 +391,23 @@ namespace Venomaus.UnitTests.Tests
         }
 
         [Test]
+        public void UpdateScreenCells_Correct()
+        {
+            var coords = Grid.GetViewPortWorldCoordinates();
+            int total = 0;
+            Grid.OnCellUpdate += (sender, args) =>
+            {
+                total++;
+            };
+            Grid.UpdateScreenCells();
+            Assert.That(total, Is.EqualTo(0));
+
+            Grid.RaiseOnlyOnCellTypeChange = false;
+            Grid.UpdateScreenCells();
+            Assert.That(total, Is.EqualTo(coords.Count()));
+        }
+
+        [Test]
         public void Center_NoThreading_Works()
         {
             Grid.UseThreading = false;

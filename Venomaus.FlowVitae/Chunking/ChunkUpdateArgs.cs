@@ -17,6 +17,11 @@ namespace Venomaus.FlowVitae.Chunking
         /// </summary>
         public int ChunkY { get; }
 
+        /// <summary>
+        /// Defines if this chunk is within the current viewport
+        /// </summary>
+        public bool ChunkInsideViewPort { get; }
+
         private readonly int _chunkSizeX, _chunkSizeY;
 
         /// <summary>
@@ -25,10 +30,12 @@ namespace Venomaus.FlowVitae.Chunking
         /// <param name="chunkCoordinate">The chunk coordinate</param>
         /// <param name="chunkSizeX">Chunk size X</param>
         /// <param name="chunkSizeY">Chunk size Y</param>
-        internal ChunkUpdateArgs((int x, int y) chunkCoordinate, int chunkSizeX, int chunkSizeY)
+        /// <param name="chunkInViewPort">Define if the chunk is within the viewport</param>
+        internal ChunkUpdateArgs((int x, int y) chunkCoordinate, int chunkSizeX, int chunkSizeY, bool chunkInViewPort)
         {
             ChunkX = chunkCoordinate.x;
             ChunkY = chunkCoordinate.y;
+            ChunkInsideViewPort = chunkInViewPort;
             _chunkSizeX = chunkSizeX;
             _chunkSizeY = chunkSizeY;
         }

@@ -180,12 +180,12 @@ namespace Venomaus.FlowVitae.Grids
 
             // Initialize chunkloader if grid uses chunks
             _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert, _cancellationTokenSource.Token, chunksOutsideViewportRadiusToLoad);
-            var baseChunkCoordinate = GetChunkCoordinate(viewPortWidth / 2, viewPortHeight / 2);
-            _chunkLoader.SetCurrentChunk(baseChunkCoordinate.x, baseChunkCoordinate.y);
+            var (x, y) = GetChunkCoordinate(viewPortWidth / 2, viewPortHeight / 2);
+            _chunkLoader.SetCurrentChunk(x, y);
 
             // This will set the screen cells properly on start, so everything syncs well
             var screenCellPositions = GetViewPortWorldCoordinates();
-            _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true, OnCellUpdate).ToArray();
+            _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true).ToArray();
 
             // Default center on the middle of the viewport
             Center(viewPortWidth / 2, viewPortHeight / 2);
@@ -253,23 +253,26 @@ namespace Venomaus.FlowVitae.Grids
             if (_chunkLoader != null)
             {
                 // Clear chunks and data
+                var chunksToBeLoaded = _chunkLoader.GetChunksToLoad(_centerCoordinate.x, _centerCoordinate.y);
+                var comparer = new TupleComparer<int>();
                 var loadedChunks = _chunkLoader.GetLoadedChunks();
                 foreach (var (chunkX, chunkY) in loadedChunks)
                     if (_chunkLoader.UnloadChunk(chunkX, chunkY, true))
-                        OnChunkUnload?.Invoke(null, new ChunkUpdateArgs((chunkX, chunkY), ChunkWidth, ChunkHeight));
+                        OnChunkUnload?.Invoke(null, new ChunkUpdateArgs((chunkX, chunkY), ChunkWidth, ChunkHeight, chunksToBeLoaded.ChunksInsideViewport.Contains((chunkX, chunkY), comparer)));
 
                 // Re-center and load chunks within the main thread
                 _viewPortInitialized = false;
                 var prevThreadingUse = UseThreading;
                 UseThreading = false;
-                var baseChunkCoordinate = GetChunkCoordinate(_centerCoordinate.x, _centerCoordinate.y);
-                _chunkLoader.SetCurrentChunk(baseChunkCoordinate.x, baseChunkCoordinate.y, OnChunkLoad);
+                var (x, y) = GetChunkCoordinate(_centerCoordinate.x, _centerCoordinate.y);
+                _chunkLoader.SetCurrentChunk(x, y, OnChunkLoad);
 
                 // This will set the screen cells properly on start, so everything syncs well
                 var screenCellPositions = GetViewPortWorldCoordinates();
-                _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true, OnCellUpdate).ToArray();
+                _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true).ToArray();
 
                 Center(_centerCoordinate.x, _centerCoordinate.y);
+                UpdateScreenCells();
                 _viewPortInitialized = true;
                 UseThreading = prevThreadingUse;
             }
@@ -718,6 +721,23 @@ namespace Venomaus.FlowVitae.Grids
             }
             screenCoordinate = null;
             return false;
+        }
+
+        /// <summary>
+        /// Raises OnCellUpdate for each cell visible on the screen,
+        /// if (RaiseOnlyOnCellTypeChange) is true, will only raise for cells that have been modified
+        /// </summary>
+        public void UpdateScreenCells()
+        {
+            var viewPort = GetViewPortWorldCoordinates();
+            foreach (var (x, y) in viewPort)
+            {
+                var cell = GetCell(x, y);
+                if (cell == null) continue;
+                var screenCoordinate = WorldToScreenCoordinate(x, y);
+                if (!RaiseOnlyOnCellTypeChange || (RaiseOnlyOnCellTypeChange && !cell.CellType.Equals(ScreenCells[screenCoordinate.y * Width + screenCoordinate.x])))
+                    OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate, GetCell(x, y)));
+            }
         }
 
         /// <inheritdoc/>
