@@ -63,10 +63,10 @@ namespace Venomaus.FlowVitae.Chunking
             }
         }
 
-        public ChunkLoadInformation GetChunksToLoad(int viewPortCenterX, int viewPortCenterY)
+        public ChunkLoadInformation GetChunksToLoad(int viewPortCenterX, int viewPortCenterY, int rangeOutsideViewport = 1)
         {
-            int rangeX = Math.Max((_viewPortWidth / 2) / _chunkWidth + 1, 1); // Calculate range in X direction
-            int rangeY = Math.Max((_viewPortHeight / 2) / _chunkHeight + 1, 1); // Calculate range in Y direction
+            int rangeX = Math.Max((_viewPortWidth / 2) / _chunkWidth + rangeOutsideViewport, 1); // Calculate range in X direction
+            int rangeY = Math.Max((_viewPortHeight / 2) / _chunkHeight + rangeOutsideViewport, 1); // Calculate range in Y direction
 
             var chunksInsideViewport = new List<(int x, int y)>();
             var chunksOutsideViewport = new List<(int x, int y)>();
