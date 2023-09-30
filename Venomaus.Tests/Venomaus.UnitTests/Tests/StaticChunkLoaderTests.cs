@@ -10,7 +10,7 @@ namespace Venomaus.UnitTests.Tests
     {
         private const int NullCell = -1000;
         private const int Seed = 0;
-        private IProceduralGen<int, Cell<int>> _procGen;
+        private readonly IProceduralGen<int, Cell<int>> _procGen;
         protected override IProceduralGen<int, Cell<int>> ProcGen => _procGen;
 
         private readonly int[] _baseMap;

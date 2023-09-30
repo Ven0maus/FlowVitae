@@ -61,7 +61,7 @@ namespace Venomaus.FlowVitae.Grids
         internal readonly ChunkLoader<TCellType, TCell, TChunkData>? _chunkLoader;
 
         /// <summary>
-        /// True if chunks should be loaded in a seperate thread if possible, this improves performance.
+        /// True if chunks should be loaded in a seperate thread if possible, this could improve performance.
         /// This is by default enabled.
         /// </summary>
         /// <remarks>This property works only for chunked grids.</remarks>
@@ -75,6 +75,24 @@ namespace Venomaus.FlowVitae.Grids
             {
                 if (_chunkLoader != null)
                     _chunkLoader.UseThreading = value;
+            }
+        }
+
+        /// <summary>
+        /// True if chunks should be loaded in parallel if possible (only when threading is enabled), this could improve performance.
+        /// This is by default enabled.
+        /// </summary>
+        /// <remarks>This property works only for chunked grids.</remarks>
+        public bool LoadChunksInParallel
+        {
+            get
+            {
+                return _chunkLoader != null && _chunkLoader.LoadChunksInParallel;
+            }
+            set
+            {
+                if (_chunkLoader != null)
+                    _chunkLoader.LoadChunksInParallel = value;
             }
         }
 
@@ -145,7 +163,8 @@ namespace Venomaus.FlowVitae.Grids
         /// <param name="chunkWidth">The width of the chunk</param>
         /// <param name="chunkHeight">The height of the chunk</param>
         /// <param name="generator">The procedural algorithm used to generate the chunk data</param>
-        public GridBase(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell, TChunkData>? generator)
+        /// <param name="chunksOutsideViewportRadiusToLoad">The radius of chunks to load extra on the outside of the viewport, 1 is default</param>
+        public GridBase(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell, TChunkData>? generator, int chunksOutsideViewportRadiusToLoad = 1)
             : this(viewPortWidth, viewPortHeight)
         {
             if (generator == null) return;
@@ -160,7 +179,7 @@ namespace Venomaus.FlowVitae.Grids
             ChunkHeight = chunkHeight;
 
             // Initialize chunkloader if grid uses chunks
-            _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert, _cancellationTokenSource.Token);
+            _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert, _cancellationTokenSource.Token, chunksOutsideViewportRadiusToLoad);
             var baseChunkCoordinate = GetChunkCoordinate(viewPortWidth / 2, viewPortHeight / 2);
             _chunkLoader.SetCurrentChunk(baseChunkCoordinate.x, baseChunkCoordinate.y);
 
@@ -183,8 +202,9 @@ namespace Venomaus.FlowVitae.Grids
         /// <param name="viewPortWidth">Width of <see cref="ScreenCells"/></param>
         /// <param name="viewPortHeight">Height of <see cref="ScreenCells"/></param>
         /// <param name="generator">The procedural algorithm used to generate the chunk data</param>
-        public GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell, TChunkData>? generator)
-            : this(viewPortWidth, viewPortHeight, viewPortWidth, viewPortHeight, generator)
+        /// <param name="chunksOutsideViewportRadiusToLoad">The radius of chunks to load extra on the outside of the viewport, 1 is default</param>
+        public GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell, TChunkData>? generator, int chunksOutsideViewportRadiusToLoad = 1)
+            : this(viewPortWidth, viewPortHeight, viewPortWidth, viewPortHeight, generator, chunksOutsideViewportRadiusToLoad)
         { }
 
         /// <summary>
@@ -395,7 +415,7 @@ namespace Venomaus.FlowVitae.Grids
         public IEnumerable<(int x, int y)> GetViewPortWorldCoordinates(Func<TCellType, bool>? criteria = null)
         {
             var indexes = Width * Height;
-            for (int i=0; i < indexes; i++)
+            for (int i = 0; i < indexes; i++)
             {
                 var x = i % Width;
                 var y = i / Width;
@@ -726,11 +746,13 @@ namespace Venomaus.FlowVitae.Grids
         { }
 
         /// <inheritdoc />
-        protected GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell>? generator) : base(viewPortWidth, viewPortHeight, generator)
+        protected GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell>? generator) :
+            base(viewPortWidth, viewPortHeight, generator)
         { }
 
         /// <inheritdoc />
-        protected GridBase(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell>? generator) : base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator)
+        protected GridBase(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell>? generator) :
+            base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator)
         { }
     }
 }

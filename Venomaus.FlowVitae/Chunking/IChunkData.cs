@@ -14,5 +14,5 @@
         /// The base coordinate where the chunk starts
         /// </summary>
         public (int x, int y) ChunkCoordinate { get; set; }
-}
+    }
 }

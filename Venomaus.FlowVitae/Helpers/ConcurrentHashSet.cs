@@ -8,7 +8,7 @@ namespace Venomaus.FlowVitae.Helpers
     {
         private readonly ConcurrentDictionary<T, byte> _dictionary = new ConcurrentDictionary<T, byte>();
 
-        public ConcurrentHashSet(IEqualityComparer<T>? comparer = null) 
+        public ConcurrentHashSet(IEqualityComparer<T>? comparer = null)
         {
             _dictionary = new ConcurrentDictionary<T, byte>(comparer);
         }

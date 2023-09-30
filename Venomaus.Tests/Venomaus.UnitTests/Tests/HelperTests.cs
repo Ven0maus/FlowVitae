@@ -4,6 +4,8 @@ using Venomaus.UnitTests.Tools;
 
 namespace Venomaus.UnitTests.Tests
 {
+    [TestFixture]
+    [Parallelizable(ParallelScope.All)]
     internal class HelperTests
     {
         [Test]

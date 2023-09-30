@@ -32,9 +32,12 @@ namespace Venomaus.FlowVitae.Chunking
         public (int x, int y) CenterCoordinate { get; private set; }
         public bool RaiseOnlyOnCellTypeChange { get; set; } = true;
 
-        private readonly CancellationToken _cancellationToken;
+        public bool LoadChunksInParallel { get; set; } = true;
 
-        public ChunkLoader(int viewPortWidth, int viewPortHeight, int width, int height, IProceduralGen<TCellType, TCell, TChunkData> generator, Func<int, int, TCellType, TCell?> cellTypeConverter, CancellationToken cancellationToken)
+        private readonly CancellationToken _cancellationToken;
+        private readonly int _chunksOutsideViewportRadiusToLoad;
+
+        public ChunkLoader(int viewPortWidth, int viewPortHeight, int width, int height, IProceduralGen<TCellType, TCell, TChunkData> generator, Func<int, int, TCellType, TCell?> cellTypeConverter, CancellationToken cancellationToken, int chunksOutsideViewportRadiusToLoad)
         {
             _chunkWidth = width;
             _chunkHeight = height;
@@ -47,6 +50,7 @@ namespace Venomaus.FlowVitae.Chunking
             _tempLoadedChunks = new ConcurrentHashSet<(int x, int y)>(new TupleComparer<int>());
             _chunks = new ConcurrentDictionary<(int x, int y), (TCellType[], TChunkData?)>(new TupleComparer<int>());
             _chunkDataCache = new Dictionary<(int x, int y), TChunkData>(new TupleComparer<int>());
+            _chunksOutsideViewportRadiusToLoad = chunksOutsideViewportRadiusToLoad;
         }
 
         public int GetChunkSeed(int x, int y)
@@ -130,7 +134,7 @@ namespace Venomaus.FlowVitae.Chunking
             EventHandler<ChunkUpdateArgs>? onChunkLoad = null, EventHandler<ChunkUpdateArgs>? onChunkUnload = null)
         {
             CurrentChunk = GetChunkCoordinate(x, y);
-            var chunksToLoad = GetChunksToLoad(x, y);
+            var chunksToLoad = GetChunksToLoad(x, y, _chunksOutsideViewportRadiusToLoad);
 
             if (!UseThreading)
             {
@@ -156,7 +160,6 @@ namespace Venomaus.FlowVitae.Chunking
                 // Load chunks inside the viewport on the main thread
                 foreach (var chunk in chunksInsideViewport)
                 {
-                    // TODO: Check if we need to parallel this or not
                     if (LoadChunk(chunk.x, chunk.y, out _))
                         onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _chunkWidth, _chunkHeight));
                 }
@@ -173,23 +176,43 @@ namespace Venomaus.FlowVitae.Chunking
                 {
                     try
                     {
-                        // TODO: Check if parallel is worth it
-                        Parallel.ForEach(chunksOutsideViewport, (chunk) =>
+                        if (LoadChunksInParallel)
+                        {
+                            Parallel.ForEach(chunksOutsideViewport, (chunk) =>
+                            {
+                                try
+                                {
+
+                                    _cancellationToken.ThrowIfCancellationRequested();
+                                    if (LoadChunk(chunk.x, chunk.y, out _))
+                                    {
+                                        onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _chunkWidth, _chunkHeight));
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    throw;
+                                }
+                            });
+                        }
+                        else
                         {
                             try
                             {
-
-                                if (_cancellationToken.IsCancellationRequested) return;
-                                if (LoadChunk(chunk.x, chunk.y, out _))
+                                foreach (var chunk in chunksOutsideViewport)
                                 {
-                                    onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _chunkWidth, _chunkHeight));
+                                    _cancellationToken.ThrowIfCancellationRequested();
+                                    if (LoadChunk(chunk.x, chunk.y, out _))
+                                    {
+                                        onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _chunkWidth, _chunkHeight));
+                                    }
                                 }
                             }
                             catch (Exception)
                             {
                                 throw;
                             }
-                        });
+                        }
                     }
                     catch (AggregateException ex)
                     {
@@ -234,7 +257,7 @@ namespace Venomaus.FlowVitae.Chunking
             {
                 UnloadChunk(chunkData.ChunkCoordinate.x, chunkData.ChunkCoordinate.y, true);
                 LoadChunk(chunkData.ChunkCoordinate.x, chunkData.ChunkCoordinate.y, out _);
-            }    
+            }
         }
 
         public TCellType GetChunkCellType(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true, bool checkModifiedCells = true, bool forceLoadScreenCells = false)
@@ -363,9 +386,9 @@ namespace Venomaus.FlowVitae.Chunking
             return false;
         }
 
-        public void SetChunkCell(TCell cell, bool storeState = false, 
-            EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null, 
-            Checker? isWorldCoordinateOnScreen = null, 
+        public void SetChunkCell(TCell cell, bool storeState = false,
+            EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null,
+            Checker? isWorldCoordinateOnScreen = null,
             TCellType[]? screenCells = null)
         {
             var chunkCoordinate = GetChunkCoordinate(cell.X, cell.Y);
@@ -401,7 +424,7 @@ namespace Venomaus.FlowVitae.Chunking
 
                 if (!RaiseOnlyOnCellTypeChange || !prev.Equals(cell.CellType))
                     onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, cell));
-                
+
                 var chunk = GetChunk(cell.X, cell.Y, out _);
                 if (chunk?.chunkCells != null)
                 {
@@ -461,7 +484,7 @@ namespace Venomaus.FlowVitae.Chunking
             if (!forceUnload)
             {
                 // Check that we are not unloading current or neighbor chunks
-                var chunksToLoad = GetChunksToLoad(CenterCoordinate.x, CenterCoordinate.y);
+                var chunksToLoad = GetChunksToLoad(CenterCoordinate.x, CenterCoordinate.y, _chunksOutsideViewportRadiusToLoad);
 
                 // Acquire a lock to ensure that the check and removal are atomic.
                 lock (unloadChunkLock)
@@ -556,8 +579,8 @@ namespace Venomaus.FlowVitae.Chunking
             _tempLoadedChunks.Clear();
         }
 
-        private void SyncViewportCellOnCenter(int minX, int minY, int xX, int yY, int viewPortWidth, int viewPortHeight, 
-            (int x, int y) centerCoordinate, int diffX, int diffY, bool viewPortInitialized, Checker isWorldCoordinateOnScreen, 
+        private void SyncViewportCellOnCenter(int minX, int minY, int xX, int yY, int viewPortWidth, int viewPortHeight,
+            (int x, int y) centerCoordinate, int diffX, int diffY, bool viewPortInitialized, Checker isWorldCoordinateOnScreen,
             TCellType[] screenCells, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate)
         {
             var cellX = minX + xX;

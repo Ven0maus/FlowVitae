@@ -9,6 +9,7 @@ namespace Venomaus.UnitTests.Tests
     [TestFixture(25, 25, 25, 25)]
     [TestFixture(17, 28, 17, 28)]
     [TestOf(typeof(GridBase<int, Cell<int>>))]
+    [Parallelizable(ParallelScope.Fixtures)]
     internal class GridBaseTests : BaseTests<int, Cell<int>>
     {
         public GridBaseTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight)
