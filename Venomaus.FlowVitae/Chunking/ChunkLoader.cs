@@ -260,7 +260,7 @@ namespace Venomaus.FlowVitae.Chunking
             }
         }
 
-        public TCellType GetChunkCellType(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true, bool checkModifiedCells = true, bool forceLoadScreenCells = false)
+        public TCellType GetChunkCellType(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true, bool checkModifiedCells = true, bool forceLoadScreenCells = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null)
         {
             var chunkCoordinate = GetChunkCoordinate(x, y);
             var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
@@ -289,6 +289,7 @@ namespace Venomaus.FlowVitae.Chunking
                     if (!screenCell.Equals(chunkCell))
                     {
                         screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = chunkCell;
+                        onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, _cellTypeConverter.Invoke(x, y, chunkCell)));
                     }
                 }
                 else if (forceLoadScreenCells)
@@ -298,6 +299,7 @@ namespace Venomaus.FlowVitae.Chunking
                     if (!screenCell.Equals(chunkCell))
                     {
                         screenCells[screenCoordinate.Value.y * screenWidth + screenCoordinate.Value.x] = chunkCell;
+                        onCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate.Value, _cellTypeConverter.Invoke(x, y, chunkCell)));
                     }
                 }
 
@@ -327,7 +329,7 @@ namespace Venomaus.FlowVitae.Chunking
             return chunk.Value.chunkCells[remappedCoordinate.y * _chunkWidth + remappedCoordinate.x];
         }
 
-        public TCell? GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true, bool forceLoadScreenCells = false)
+        public TCell? GetChunkCell(int x, int y, bool loadChunk = false, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool unloadChunkAfterLoad = true, bool forceLoadScreenCells = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null)
         {
             var chunkCoordinate = GetChunkCoordinate(x, y);
             var remappedCoordinate = RemapChunkCoordinate(x, y, chunkCoordinate);
@@ -344,7 +346,7 @@ namespace Venomaus.FlowVitae.Chunking
             return _cellTypeConverter(x, y, GetChunkCellType(x, y, loadChunk, isWorldCoordinateOnScreen, screenCells, unloadChunkAfterLoad, false, forceLoadScreenCells));
         }
 
-        public IEnumerable<TCell?> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool forceLoadScreenCells = false)
+        public IEnumerable<TCell?> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool forceLoadScreenCells = false, EventHandler<CellUpdateArgs<TCellType, TCell>>? onCellUpdate = null)
         {
             var coords = positions.ToArray();
             if (!UseThreading)
@@ -356,17 +358,27 @@ namespace Venomaus.FlowVitae.Chunking
             }
             else
             {
-                var cellDictionary = new ConcurrentDictionary<(int x, int y), TCell?>();
-                Parallel.ForEach(coords, pos =>
+                if (LoadChunksInParallel)
                 {
-                    cellDictionary.TryAdd(pos, GetChunkCell(pos.x, pos.y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells));
-                });
+                    var cellDictionary = new ConcurrentDictionary<(int x, int y), TCell?>();
+                    Parallel.ForEach(coords, pos =>
+                    {
+                        cellDictionary.TryAdd(pos, GetChunkCell(pos.x, pos.y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells));
+                    });
 
-                // Return cells in the same order as the input order
-                foreach (var pos in coords)
+                    // Return cells in the same order as the input order
+                    foreach (var pos in coords)
+                    {
+                        if (cellDictionary.TryGetValue(pos, out var cell))
+                            yield return cell;
+                    }
+                }
+                else
                 {
-                    if (cellDictionary.TryGetValue(pos, out var cell))
-                        yield return cell;
+                    foreach (var (x, y) in coords)
+                    {
+                        yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells);
+                    }
                 }
             }
 

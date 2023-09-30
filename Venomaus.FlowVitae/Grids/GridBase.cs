@@ -185,7 +185,7 @@ namespace Venomaus.FlowVitae.Grids
 
             // This will set the screen cells properly on start, so everything syncs well
             var screenCellPositions = GetViewPortWorldCoordinates();
-            _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true).ToArray();
+            _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true, OnCellUpdate).ToArray();
 
             // Default center on the middle of the viewport
             Center(viewPortWidth / 2, viewPortHeight / 2);
@@ -267,7 +267,7 @@ namespace Venomaus.FlowVitae.Grids
 
                 // This will set the screen cells properly on start, so everything syncs well
                 var screenCellPositions = GetViewPortWorldCoordinates();
-                _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true).ToArray();
+                _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true, OnCellUpdate).ToArray();
 
                 Center(_centerCoordinate.x, _centerCoordinate.y);
                 _viewPortInitialized = true;
