@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Venomaus.SadConsole.Host", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Venomaus.BenchmarkTests", "Venomaus.Tests\Venomaus.BenchmarkTests\Venomaus.BenchmarkTests.csproj", "{4B252078-898D-45D3-8352-82D1E35C8BE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Venomaus.Unity.Host", "Venomaus.Visualizers\Venomaus.Unity.Host\Venomaus.Unity.Host.csproj", "{E46DF1CF-31C8-80F5-434E-4452FF152A59}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Visualizers", "Visualizers", "{F944816C-3504-43B1-AA19-F58D3B81DD4E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5C9DAD76-611A-4512-AF9E-EE082F65BE2F}"
@@ -41,10 +39,6 @@ Global
 		{4B252078-898D-45D3-8352-82D1E35C8BE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B252078-898D-45D3-8352-82D1E35C8BE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B252078-898D-45D3-8352-82D1E35C8BE5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E46DF1CF-31C8-80F5-434E-4452FF152A59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E46DF1CF-31C8-80F5-434E-4452FF152A59}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E46DF1CF-31C8-80F5-434E-4452FF152A59}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E46DF1CF-31C8-80F5-434E-4452FF152A59}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,7 +47,6 @@ Global
 		{78BC0C4C-623B-4A9C-BC59-50FD6AD51F9C} = {5C9DAD76-611A-4512-AF9E-EE082F65BE2F}
 		{8C9FD2F6-F0E5-4450-AFDF-68E10D85AD04} = {F944816C-3504-43B1-AA19-F58D3B81DD4E}
 		{4B252078-898D-45D3-8352-82D1E35C8BE5} = {70F736D0-55AB-44D6-B699-F341C117D4F8}
-		{E46DF1CF-31C8-80F5-434E-4452FF152A59} = {F944816C-3504-43B1-AA19-F58D3B81DD4E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9292375C-A022-4487-BAF7-9C24699877FF}
