@@ -157,7 +157,8 @@ namespace Venomaus.FlowVitae.Grids
 
             // Initialize chunkloader if grid uses chunks
             _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert);
-            _chunkLoader.LoadChunksAround(0, 0, true);
+            var baseChunkCoordinate = GetChunkCoordinate(viewPortWidth / 2, viewPortHeight / 2);
+            _chunkLoader.SetCurrentChunk(baseChunkCoordinate.x, baseChunkCoordinate.y);
 
             // This will set the screen cells properly on start, so everything syncs well
             var screenCellPositions = GetViewPortWorldCoordinates();
@@ -216,8 +217,9 @@ namespace Venomaus.FlowVitae.Grids
 
         /// <summary>
         /// Sets all cells of which the state was stored, to be eligible for garbage collection.
+        /// All chunks are unloaded and reloaded also and the viewport is reset.
         /// </summary>
-        /// <remarks>Use this when you want to remove all stored states from the grid, Note: this also resets the viewport cells for chunkloaded grids.</remarks>
+        /// <remarks>Use this when you want to effectively reset the grid.</remarks>
         public void ClearCache()
         {
             _storage = null;
@@ -227,7 +229,8 @@ namespace Venomaus.FlowVitae.Grids
             if (_chunkLoader != null)
             {
                 // Clear chunks and data
-                foreach (var (chunkX, chunkY) in _chunkLoader.GetLoadedChunks())
+                var loadedChunks = _chunkLoader.GetLoadedChunks();
+                foreach (var (chunkX, chunkY) in loadedChunks)
                     if (_chunkLoader.UnloadChunk(chunkX, chunkY, true))
                         OnChunkUnload?.Invoke(null, new ChunkUpdateArgs((chunkX, chunkY), ChunkWidth, ChunkHeight));
 
@@ -235,7 +238,8 @@ namespace Venomaus.FlowVitae.Grids
                 _viewPortInitialized = false;
                 var prevThreadingUse = UseThreading;
                 UseThreading = false;
-                _chunkLoader.LoadChunksAround(_centerCoordinate.x, _centerCoordinate.y, true, OnChunkLoad);
+                var baseChunkCoordinate = GetChunkCoordinate(_centerCoordinate.x, _centerCoordinate.y);
+                _chunkLoader.SetCurrentChunk(baseChunkCoordinate.x, baseChunkCoordinate.y, OnChunkLoad);
 
                 // This will set the screen cells properly on start, so everything syncs well
                 var screenCellPositions = GetViewPortWorldCoordinates();

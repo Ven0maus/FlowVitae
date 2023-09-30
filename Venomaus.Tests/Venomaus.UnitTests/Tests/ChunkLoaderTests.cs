@@ -187,162 +187,15 @@ namespace Venomaus.UnitTests.Tests
             Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(chunkCoordinate.x));
             Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(chunkCoordinate.y));
 
-            ChunkLoader.SetCurrentChunk(250, 250, Grid.IsWorldCoordinateOnScreen);
+            ChunkLoader.SetCurrentChunk(250, 250);
             chunkCoordinate = ChunkLoader.GetChunkCoordinate(250, 250);
             Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(chunkCoordinate.x));
             Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(chunkCoordinate.y));
 
-            ChunkLoader.SetCurrentChunk(-250, -250, Grid.IsWorldCoordinateOnScreen);
+            ChunkLoader.SetCurrentChunk(-250, -250);
             chunkCoordinate = ChunkLoader.GetChunkCoordinate(-250, -250);
             Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(chunkCoordinate.x));
             Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(chunkCoordinate.y));
-        }
-
-        [Test]
-        public void GetNeighborChunk_AllDirections_Correct()
-        {
-            Grid.Center(0, 0);
-
-            int moduloWidth = (0 % ChunkWidth);
-            int moduloHeight = (0 % ChunkHeight);
-            var baseChunk = (x: 0 - moduloWidth, y: 0 - moduloHeight);
-
-            // All mandatory chunks
-            var mapping = new[]
-            {
-                (baseChunk.x - ChunkWidth, baseChunk.y - ChunkHeight),
-                (baseChunk.x - ChunkWidth, baseChunk.y),
-                (baseChunk.x - ChunkWidth, baseChunk.y + ChunkHeight),
-                (baseChunk.x, baseChunk.y - ChunkHeight),
-                (baseChunk.x, baseChunk.y + ChunkHeight),
-                (baseChunk.x + ChunkWidth, baseChunk.y - ChunkHeight),
-                (baseChunk.x + ChunkWidth, baseChunk.y),
-                (baseChunk.x + ChunkWidth, baseChunk.y + ChunkHeight)
-            }.ToArray();
-
-            var neighborChunks = new[]
-            {
-                ChunkLoader.GetNeighborChunk(0, 0, Direction.North),
-                ChunkLoader.GetNeighborChunk(0, 0, Direction.East),
-                ChunkLoader.GetNeighborChunk(0, 0, Direction.South),
-                ChunkLoader.GetNeighborChunk(0, 0, Direction.West),
-                ChunkLoader.GetNeighborChunk(0, 0, Direction.NorthEast),
-                ChunkLoader.GetNeighborChunk(0, 0, Direction.NorthWest),
-                ChunkLoader.GetNeighborChunk(0, 0, Direction.SouthEast),
-                ChunkLoader.GetNeighborChunk(0, 0, Direction.SouthWest),
-            }.OrderBy(a => a.x).ThenBy(a => a.y).ToArray();
-
-            for (int i = 0; i < neighborChunks.Length; i++)
-                Assert.That(neighborChunks[i], Is.EqualTo(mapping[i]));
-        }
-
-        [Test]
-        public void LoadChunksAround_NotIncludedSelf_Correct()
-        {
-            var loadedChunks = ChunkLoader.GetLoadedChunks();
-
-            // Unload all chunks first
-            foreach (var (x, y) in loadedChunks)
-                ChunkLoader.UnloadChunk(x, y, true);
-
-            ChunkLoader.LoadChunksAround(0, 0, false);
-
-            loadedChunks = ChunkLoader.GetLoadedChunks();
-
-            var neighbors = ChunkLoader.GetNeighborChunks(0, 0);
-            foreach (var (x, y) in neighbors)
-                Assert.That(loadedChunks.Any(loadedChunk => loadedChunk.x == x && loadedChunk.y == y));
-        }
-
-        [Test]
-        public void LoadChunksAround_IncludedSelf_Correct()
-        {
-            var loadedChunks = ChunkLoader.GetLoadedChunks();
-
-            // Unload all chunks first
-            foreach (var (x, y) in loadedChunks)
-                ChunkLoader.UnloadChunk(x, y, true);
-
-            ChunkLoader.LoadChunksAround(0, 0, true);
-
-            loadedChunks = ChunkLoader.GetLoadedChunks();
-
-            var neighbors = ChunkLoader.GetNeighborChunks(0, 0).ToList();
-            neighbors.Add((0, 0));
-            foreach (var (x, y) in neighbors)
-                Assert.That(loadedChunks.Any(loadedChunk => loadedChunk.x == x && loadedChunk.y == y));
-        }
-
-        [Test]
-        public void UnloadNonMandatoryChunks_Correct()
-        {
-            var loadedChunks = ChunkLoader.GetLoadedChunks();
-            Assert.That(loadedChunks, Has.Length.EqualTo(9));
-
-            ChunkLoader.UnloadNonMandatoryChunks();
-
-            var newLoadedChunks = ChunkLoader.GetLoadedChunks();
-            Assert.That(newLoadedChunks, Has.Length.EqualTo(loadedChunks.Length));
-
-            for (int i = 0; i < loadedChunks.Length; i++)
-            {
-                Assert.Multiple(() =>
-                {
-                    Assert.That(newLoadedChunks[i].x, Is.EqualTo(loadedChunks[i].x));
-                    Assert.That(newLoadedChunks[i].y, Is.EqualTo(loadedChunks[i].y));
-                });
-            }
-
-            // Load useless chunks
-            ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, out _);
-            ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 8, ViewPortHeight + ChunkHeight * 8, out _);
-
-            newLoadedChunks = ChunkLoader.GetLoadedChunks();
-            Assert.That(newLoadedChunks, Has.Length.EqualTo(11));
-
-            ChunkLoader.UnloadNonMandatoryChunks();
-
-            newLoadedChunks = ChunkLoader.GetLoadedChunks();
-            Assert.That(newLoadedChunks, Has.Length.EqualTo(9));
-
-            for (int i = 0; i < loadedChunks.Length; i++)
-            {
-                Assert.Multiple(() =>
-                {
-                    Assert.That(newLoadedChunks[i].x, Is.EqualTo(loadedChunks[i].x));
-                    Assert.That(newLoadedChunks[i].y, Is.EqualTo(loadedChunks[i].y));
-                });
-            }
-        }
-
-        [Test]
-        public void GetMandatoryChunks_Get_Correct()
-        {
-            Grid.Center(0, 0);
-
-            int moduloWidth = (0 % ChunkWidth);
-            int moduloHeight = (0 % ChunkHeight);
-            var baseChunk = (x: 0 - moduloWidth, y: 0 - moduloHeight);
-
-            // All mandatory chunks
-            var mapping = new[]
-            {
-                (baseChunk.x - ChunkWidth, baseChunk.y - ChunkHeight),
-                (baseChunk.x - ChunkWidth, baseChunk.y),
-                (baseChunk.x - ChunkWidth, baseChunk.y + ChunkHeight),
-                (baseChunk.x, baseChunk.y - ChunkHeight),
-                (baseChunk.x, baseChunk.y),
-                (baseChunk.x, baseChunk.y + ChunkHeight),
-                (baseChunk.x + ChunkWidth, baseChunk.y - ChunkHeight),
-                (baseChunk.x + ChunkWidth, baseChunk.y),
-                (baseChunk.x + ChunkWidth, baseChunk.y + ChunkHeight)
-            }.ToArray();
-
-            var mandatoyChunks = ChunkLoader.GetMandatoryChunks().OrderBy(a => a.x).ThenBy(a => a.y).ToArray();
-            Assert.That(mandatoyChunks, Has.Length.EqualTo(mapping.Length));
-
-            foreach (var (x, y) in mandatoyChunks)
-                Assert.That(mapping.Any(a => a.Item1 == x && a.Item2 == y));
         }
 
         [Test]
@@ -460,8 +313,9 @@ namespace Venomaus.UnitTests.Tests
         public void UnloadChunk_Unload_Correct()
         {
             (int x, int y)[] loadedChunks = ChunkLoader.GetLoadedChunks();
+            var expectedChunks = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y);
             Assert.That(loadedChunks, Is.Not.Null);
-            Assert.That(loadedChunks, Has.Length.EqualTo(9));
+            Assert.That(loadedChunks, Has.Length.EqualTo(expectedChunks.AllChunks.Count));
 
             Assert.Multiple(() =>
             {
@@ -472,9 +326,9 @@ namespace Venomaus.UnitTests.Tests
                 // Force unload it
                 Assert.That(ChunkLoader.UnloadChunk(ChunkLoader.CurrentChunk.x, ChunkLoader.CurrentChunk.y, true), Is.True, "Could not force unload");
                 // Load an arbitrary chunk
-                Assert.That(ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, out _), Is.True);
+                Assert.That(ChunkLoader.LoadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5, out _), Is.True, "Could not load arbitrary chunk");
                 // See if it can be non force unloaded
-                Assert.That(ChunkLoader.UnloadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Is.True);
+                Assert.That(ChunkLoader.UnloadChunk(ViewPortWidth + ChunkWidth * 5, ViewPortHeight + ChunkHeight * 5), Is.True, "Could not unload arbitrary chunk");
             });
             loadedChunks = ChunkLoader.GetLoadedChunks();
 
@@ -578,9 +432,10 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(ChunkLoader.CurrentChunk.x, Is.EqualTo(baseChunk.x), "Current chunk x is not correct");
                 Assert.That(ChunkLoader.CurrentChunk.y, Is.EqualTo(baseChunk.y), "Current chunk y is not correct");
             });
+            var chunksToBeLoaded = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y).AllChunks.Count;
             Assert.Multiple(() =>
             {
-                Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks().OrderBy(a => a.x).ThenBy(a => a.y).ToArray(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(1).MilliSeconds, "Loaded chunks not equal to 9");
+                Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks().OrderBy(a => a.x).ThenBy(a => a.y).ToArray(), Has.Length.EqualTo(chunksToBeLoaded).After(1).Seconds.PollEvery(1).MilliSeconds, $"Loaded chunks not equal to {chunksToBeLoaded}");
                 Assert.That(cellsUpdated, Has.Count.EqualTo(viewPort.Length), "cellsUpdated not equal to viewport length");
             });
 
@@ -988,7 +843,7 @@ namespace Venomaus.UnitTests.Tests
                 }
             }
 
-            Assert.That(() => ChunkLoader.UnloadChunk(chunkX, chunkY), Is.True);
+            Assert.That(() => ChunkLoader.UnloadChunk(chunkX, chunkY), Is.True, "Chunk not unloaded.");
 
             bool eventRaised = false;
             void genCheck(object? sender, int[] chunk)
@@ -1216,8 +1071,14 @@ namespace Venomaus.UnitTests.Tests
                 foreach (var pos in positions)
                     Assert.That(comparer.Equals(ChunkLoader.GetChunkCoordinate(pos.x, pos.y), (args.ChunkX, args.ChunkY)));
             };
+
+            var currentLoadedChunks = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y);
+
             Grid.UseThreading = true;
             Grid.Center(ViewPortWidth / 2 + ChunkWidth, ViewPortHeight / 2);
+
+            var expectedChunksLoaded = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y);
+            var differenceBetweenChunksLoaded = expectedChunksLoaded.GetDifference(currentLoadedChunks);
 
             var (x, y) = ChunkLoader.GetChunkCoordinate(ViewPortWidth / 2, ViewPortHeight / 2);
             int baseWidth = x;
@@ -1239,32 +1100,11 @@ namespace Venomaus.UnitTests.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.That(() => chunksLoaded, Has.Count.EqualTo(3).After(1).Seconds.PollEvery(10).MilliSeconds, "Times load incorrect");
-                Assert.That(() => chunksUnloaded, Has.Count.EqualTo(3).After(1).Seconds.PollEvery(10).MilliSeconds, "Times unload incorrect");
+                Assert.That(() => chunksLoaded, Has.Count.EqualTo(differenceBetweenChunksLoaded.ChunksOutsideViewport.Count).After(2).Seconds.PollEvery(10).MilliSeconds, "Times load incorrect");
+                Assert.That(() => chunksUnloaded, Has.Count.EqualTo(differenceBetweenChunksLoaded.ChunksOutsideViewport.Count).After(2).Seconds.PollEvery(10).MilliSeconds, "Times unload incorrect");
                 Assert.That(chunksLoaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctLoaded, comparer), "Loaded chunks was incorrect");
                 Assert.That(chunksUnloaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctUnloaded, comparer), "Unloaded chunks was incorrect");
             });
-        }
-
-        [Test]
-        public void LoadChunksAround_IncludeSource_RaisesEvents()
-        {
-            Grid.UseThreading = false;
-
-            var chunks = ChunkLoader.GetLoadedChunks();
-            foreach (var chunk in chunks)
-                ChunkLoader.UnloadChunk(chunk.x, chunk.y, true);
-            var loaded = ChunkLoader.GetLoadedChunks();
-            Assert.That(loaded, Has.Length.EqualTo(0));
-
-            int loadCount = 0;
-            EventHandler<ChunkUpdateArgs> onChunkLoad = (sender, args) =>
-            {
-                loadCount++;
-            };
-
-            ChunkLoader.LoadChunksAround(0, 0, true, onChunkLoad);
-            Assert.That(() => loadCount, Is.EqualTo(9));
         }
 
         [Test]
@@ -1298,8 +1138,9 @@ namespace Venomaus.UnitTests.Tests
             Grid.OnChunkLoad += (sender, args) => { loaded++; };
             Grid.OnChunkUnload += (sender, args) => { unloaded++; };
             Grid.ClearCache();
-            Assert.That(loaded, Is.EqualTo(9));
-            Assert.That(unloaded, Is.EqualTo(9));
+            var expectedChunkInfo = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y);
+            Assert.That(loaded, Is.EqualTo(expectedChunkInfo.AllChunks.Count), "Loaded chunks not correct");
+            Assert.That(unloaded, Is.EqualTo(expectedChunkInfo.AllChunks.Count), "Unloaded chunks not correct");
         }
 
         [Test]
