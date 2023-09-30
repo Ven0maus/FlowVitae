@@ -24,8 +24,18 @@ namespace Venomaus.UnitTests.Tests
             Grid.SetCustomConverter(CustomConverter);
         }
 
+        [TearDown]
+        public virtual void TearDown()
+        {
+            if (Grid != null)
+                Grid.Dispose();
+        }
+
         protected void AdjustProceduralGridGen(int seed, Action<Random, TCellType[], int, int, (int x, int y)> method)
         {
+            if (Grid != null)
+                Grid.Dispose();
+
             var procGen = new ProceduralGenerator<TCellType, TCell>(seed, method);
             Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, procGen);
             Grid.SetCustomConverter(CustomConverter);

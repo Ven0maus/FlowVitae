@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Chunking;
 using Venomaus.FlowVitae.Chunking.Generators;
@@ -14,7 +15,7 @@ namespace Venomaus.FlowVitae.Grids
     /// <typeparam name="TCellType">The cell type to be used within the <see cref="GridBase{TCellType, TCell, TChunkData}"/></typeparam>
     /// <typeparam name="TCell">The wrapper object used to wrap around the cell type</typeparam>
     /// <typeparam name="TChunkData">The custom chunk data type to be returned from chunks</typeparam>
-    public abstract class GridBase<TCellType, TCell, TChunkData>
+    public abstract class GridBase<TCellType, TCell, TChunkData> : IDisposable
         where TCellType : struct
         where TCell : class, ICell<TCellType>, new()
         where TChunkData : class, IChunkData
@@ -114,6 +115,7 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         private bool _viewPortInitialized = false;
+        private readonly CancellationTokenSource? _cancellationTokenSource;
 
         /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
@@ -150,13 +152,15 @@ namespace Venomaus.FlowVitae.Grids
             if (chunkWidth <= 0 || chunkHeight <= 0)
                 throw new Exception("Cannot define a grid with a chunk width/height smaller or equal to 0");
 
+            _cancellationTokenSource = new CancellationTokenSource();
+
             // Disable for initial load
             UseThreading = false;
             ChunkWidth = chunkWidth;
             ChunkHeight = chunkHeight;
 
             // Initialize chunkloader if grid uses chunks
-            _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert);
+            _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert, _cancellationTokenSource.Token);
             var baseChunkCoordinate = GetChunkCoordinate(viewPortWidth / 2, viewPortHeight / 2);
             _chunkLoader.SetCurrentChunk(baseChunkCoordinate.x, baseChunkCoordinate.y);
 
@@ -694,6 +698,17 @@ namespace Venomaus.FlowVitae.Grids
             }
             screenCoordinate = null;
             return false;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            if (_cancellationTokenSource != null)
+            {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+            }
+            GC.SuppressFinalize(this);
         }
     }
 

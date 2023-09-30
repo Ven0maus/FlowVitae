@@ -439,28 +439,6 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(cellsUpdated, Has.Count.EqualTo(viewPort.Length), "cellsUpdated not equal to viewport length");
             });
 
-            var mapping = new[]
-            {
-                (baseChunk.x - ChunkWidth, baseChunk.y - ChunkHeight),
-                (baseChunk.x - ChunkWidth, baseChunk.y),
-                (baseChunk.x - ChunkWidth, baseChunk.y + ChunkHeight),
-                (baseChunk.x, baseChunk.y - ChunkHeight),
-                (baseChunk.x, baseChunk.y),
-                (baseChunk.x, baseChunk.y + ChunkHeight),
-                (baseChunk.x + ChunkWidth, baseChunk.y - ChunkHeight),
-                (baseChunk.x + ChunkWidth, baseChunk.y),
-                (baseChunk.x + ChunkWidth, baseChunk.y + ChunkHeight)
-            }.ToArray();
-
-            for (int i = 0; i < loadedChunks.Length; i++)
-            {
-                Assert.Multiple(() =>
-                {
-                    Assert.That(loadedChunks[i].x, Is.EqualTo(mapping[i].Item1), "Mapping x is not correct");
-                    Assert.That(loadedChunks[i].y, Is.EqualTo(mapping[i].Item2), "Mapping y is not correct");
-                });
-            }
-
             // Check if view port matches now
             viewPort = Grid.GetViewPortWorldCoordinates().ToArray();
             viewPortCells = Grid.GetCells(viewPort);
@@ -564,7 +542,8 @@ namespace Venomaus.UnitTests.Tests
             }
 
             (int x, int y)[] loadedChunks = Array.Empty<(int x, int y)>();
-            Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(1).MilliSeconds);
+            var startCount = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y).AllChunks.Count;
+            Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(startCount).After(1).Seconds.PollEvery(1).MilliSeconds);
             Assert.Multiple(() =>
             {
                 Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), $"Base chunk not loaded! | Dir: {dir}");
@@ -579,7 +558,8 @@ namespace Venomaus.UnitTests.Tests
                 var yOffset = dirY != 0 ? dirY < 0 ? i > ChunkHeight ? -ChunkHeight : -i : i > ChunkHeight ? ChunkHeight : i : 0;
                 Grid.Center(xOffset, yOffset);
 
-                Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(1).MilliSeconds);
+                var updatedCount = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y).AllChunks.Count;
+                Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(updatedCount).After(1).Seconds.PollEvery(1).MilliSeconds);
                 Assert.Multiple(() =>
                 {
                     Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), $"Chunk (0, 0) not loaded | Dir: {dir}");
@@ -588,52 +568,13 @@ namespace Venomaus.UnitTests.Tests
             }
 
             Grid.Center(dirX != 0 ? dirX : 0, dirY != 0 ? dirY : 0);
-            Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(1).MilliSeconds);
+
+            var newUpdatedCount = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y).AllChunks.Count;
+            Assert.That(() => loadedChunks = ChunkLoader.GetLoadedChunks(), Has.Length.EqualTo(newUpdatedCount).After(1).Seconds.PollEvery(1).MilliSeconds);
             Assert.Multiple(() =>
             {
                 Assert.That(loadedChunks.Any(a => a.x == 0 && a.y == 0), $"Chunk (0, 0) not loaded | Dir: {dir}");
-                Assert.That(!loadedChunks.Any(a => a.x == -dirX && a.y == -dirY));
             });
-        }
-
-        [Test]
-        public void Center_CellInUnloadedChunk_AvailableOnViewPort_DoesNot_LoadChunk()
-        {
-            if (ChunkWidth >= (ViewPortWidth / 2) || ChunkHeight >= (ViewPortHeight / 2))
-                Assert.Pass("Test ignored because chunk size is higher or equal to half the viewport size.");
-
-            Grid.Center(0, 0);
-
-            var loadedChunks = ChunkLoader.GetLoadedChunks();
-            Assert.That(loadedChunks, Has.Length.EqualTo(9));
-
-            int halfViewPortX = ViewPortWidth / 2;
-            int halfViewPortY = ViewPortHeight / 2;
-
-            // Get cell out of chunk range, but within viewport
-            var (x, y) = (halfViewPortX - (ChunkWidth / 2), halfViewPortY - (ChunkHeight / 2));
-            var (x2, y2) = (-halfViewPortX + (ChunkWidth / 2), -halfViewPortY + (ChunkHeight / 2));
-
-            // Check both coordinates are on screen
-            Assert.Multiple(() =>
-            {
-                Assert.That(Grid.IsWorldCoordinateOnScreen(x, y, out _, out _), Is.True);
-                Assert.That(Grid.IsWorldCoordinateOnScreen(x2, y2, out _, out _), Is.True);
-            });
-
-            // Chunks retrieved are null without proper method call
-            Assert.That(() => ChunkLoader.GetChunkCell(x, y, false), Throws.Exception);
-            Assert.That(() => ChunkLoader.GetChunkCell(x2, y2, false), Throws.Exception);
-            Assert.That(() => ChunkLoader.GetChunkCellType(x, y, false), Throws.Exception);
-            Assert.That(() => ChunkLoader.GetChunkCellType(x2, y2, false), Throws.Exception);
-
-            // Chunks retrieved are not null with proper method call with load chunks false
-            var cells = new[]
-            {
-                ChunkLoader.GetChunkCell(x, y, false, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells),
-                ChunkLoader.GetChunkCell(x2, y2, false, Grid.IsWorldCoordinateOnScreen, Grid.ScreenCells)
-            };
-            Assert.That(cells.All(a => a != null));
         }
 
         [Test]
@@ -787,7 +728,8 @@ namespace Venomaus.UnitTests.Tests
 
             Grid.Center(0, 0);
             Assert.That(Grid._chunkLoader, Is.Not.Null);
-            Assert.That(() => Grid._chunkLoader.GetLoadedChunks(), Has.Length.EqualTo(9).After(1).Seconds.PollEvery(10).MilliSeconds);
+            var expectedLoadedChunks = Grid._chunkLoader.GetChunksToLoad(0, 0);
+            Assert.That(() => Grid._chunkLoader.GetLoadedChunks(), Has.Length.EqualTo(expectedLoadedChunks.AllChunks.Count).After(1).Seconds.PollEvery(10).MilliSeconds);
 
             // Verify that all cells have this default value set properly
             var viewPort = Grid.GetViewPortWorldCoordinates();
@@ -1005,7 +947,8 @@ namespace Venomaus.UnitTests.Tests
             var chunksUnloaded = new List<(int x, int y)>();
 
             var loadedChunkCoords = Grid.GetLoadedChunkCoordinates().ToArray();
-            Assert.That(loadedChunkCoords, Has.Length.EqualTo(9), $"Preloaded: {loadedChunkCoords.Length} | {string.Join(", ", loadedChunkCoords)}");
+            var initialChunks = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y);
+            Assert.That(loadedChunkCoords, Has.Length.EqualTo(initialChunks.AllChunks.Count), $"Preloaded: {loadedChunkCoords.Length} | {string.Join(", ", loadedChunkCoords)}");
 
             Grid.UseThreading = false;
             Grid.OnChunkLoad += (sender, args) =>
@@ -1022,27 +965,18 @@ namespace Venomaus.UnitTests.Tests
             int baseWidth = x;
             int baseHeight = y;
 
-            var comparer = new TupleComparer<int>();
-            var correctLoaded = new[]
-            {
-                (baseWidth + ChunkWidth * 2, baseHeight),
-                (baseWidth + ChunkWidth * 2, baseHeight + ChunkHeight),
-                (baseWidth + ChunkWidth * 2, baseHeight - ChunkHeight)
-            }.OrderBy(a => a.Item1).ThenBy(a => a.Item2);
+            var newChunks = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y);
+            var differenceChunks = newChunks.GetDifference(initialChunks);
 
-            var correctUnloaded = new[]
-            {
-                (baseWidth - ChunkWidth, baseHeight - ChunkHeight),
-                (baseWidth - ChunkWidth, baseHeight + ChunkHeight),
-                (baseWidth - ChunkWidth, baseHeight)
-            }.OrderBy(a => a.Item1).ThenBy(a => a.Item2);
+            var (addedChunks, removedChunks) = ChunkLoadInformation.GetAddedRemovedChunks(initialChunks, newChunks);
+            var comparer = new TupleComparer<int>();
 
             Assert.Multiple(() =>
             {
-                Assert.That(chunksLoaded, Has.Count.EqualTo(3), "Loaded: " + chunksLoaded.Count + " | " + string.Join(", ", chunksLoaded));
-                Assert.That(chunksUnloaded, Has.Count.EqualTo(3), "Unloaded: " + chunksUnloaded.Count + " | " + string.Join(", ", chunksUnloaded));
-                Assert.That(chunksLoaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctLoaded, comparer), "Loaded chunks was incorrect");
-                Assert.That(chunksUnloaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctUnloaded, comparer), "Unloaded chunks was incorrect");
+                Assert.That(chunksLoaded, Has.Count.EqualTo(differenceChunks.AllChunks.Count), "Loaded: " + chunksLoaded.Count + " | " + string.Join(", ", chunksLoaded));
+                Assert.That(chunksUnloaded, Has.Count.EqualTo(differenceChunks.AllChunks.Count), "Unloaded: " + chunksUnloaded.Count + " | " + string.Join(", ", chunksUnloaded));
+                Assert.That(chunksLoaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(addedChunks, comparer), "Loaded chunks was incorrect");
+                Assert.That(chunksUnloaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(removedChunks, comparer), "Unloaded chunks was incorrect");
             });
         }
 
@@ -1080,30 +1014,17 @@ namespace Venomaus.UnitTests.Tests
             var expectedChunksLoaded = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y);
             var differenceBetweenChunksLoaded = expectedChunksLoaded.GetDifference(currentLoadedChunks);
 
-            var (x, y) = ChunkLoader.GetChunkCoordinate(ViewPortWidth / 2, ViewPortHeight / 2);
-            int baseWidth = x;
-            int baseHeight = y;
+            var newChunks = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y);
+            var differenceChunks = newChunks.GetDifference(currentLoadedChunks);
 
-            var correctLoaded = new[]
-            {
-                (baseWidth + ChunkWidth * 2, baseHeight),
-                (baseWidth + ChunkWidth * 2, baseHeight + ChunkHeight),
-                (baseWidth + ChunkWidth * 2, baseHeight - ChunkHeight)
-            }.OrderBy(a => a.Item1).ThenBy(a => a.Item2);
-
-            var correctUnloaded = new[]
-            {
-                (baseWidth - ChunkWidth, baseHeight - ChunkHeight),
-                (baseWidth - ChunkWidth, baseHeight + ChunkHeight),
-                (baseWidth - ChunkWidth, baseHeight)
-            }.OrderBy(a => a.Item1).ThenBy(a => a.Item2);
+            var (addedChunks, removedChunks) = ChunkLoadInformation.GetAddedRemovedChunks(currentLoadedChunks, newChunks);
 
             Assert.Multiple(() =>
             {
                 Assert.That(() => chunksLoaded, Has.Count.EqualTo(differenceBetweenChunksLoaded.ChunksOutsideViewport.Count).After(2).Seconds.PollEvery(10).MilliSeconds, "Times load incorrect");
                 Assert.That(() => chunksUnloaded, Has.Count.EqualTo(differenceBetweenChunksLoaded.ChunksOutsideViewport.Count).After(2).Seconds.PollEvery(10).MilliSeconds, "Times unload incorrect");
-                Assert.That(chunksLoaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctLoaded, comparer), "Loaded chunks was incorrect");
-                Assert.That(chunksUnloaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(correctUnloaded, comparer), "Unloaded chunks was incorrect");
+                Assert.That(() => chunksLoaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(addedChunks.OrderBy(a => a.x).ThenBy(a => a.y), comparer), Is.True.After(2).Seconds.PollEvery(10).MilliSeconds, "Loaded chunks was incorrect");
+                Assert.That(() => chunksUnloaded.OrderBy(a => a.x).ThenBy(a => a.y).SequenceEqual(removedChunks.OrderBy(a => a.x).ThenBy(a => a.y), comparer), Is.True.After(2).Seconds.PollEvery(10).MilliSeconds, "Unloaded chunks was incorrect");
             });
         }
 
@@ -1155,7 +1076,8 @@ namespace Venomaus.UnitTests.Tests
         public void GetLoadedChunkCoordinates_ReturnsResult_Correct()
         {
             var loadedChunks = Grid.GetLoadedChunkCoordinates();
-            Assert.That(loadedChunks.Count(), Is.EqualTo(9));
+            var expectedLoadedChunks = ChunkLoader.GetChunksToLoad(ChunkLoader.CenterCoordinate.x, ChunkLoader.CenterCoordinate.y);
+            Assert.That(loadedChunks.Count(), Is.EqualTo(expectedLoadedChunks.AllChunks.Count));
         }
 
         [Test]

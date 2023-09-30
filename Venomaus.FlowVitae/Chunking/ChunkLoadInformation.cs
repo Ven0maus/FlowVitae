@@ -36,5 +36,26 @@ namespace Venomaus.FlowVitae.Chunking
                 ChunksInsideViewport.Except(information.ChunksInsideViewport, comparer).ToList(),
                 ChunksOutsideViewport.Except(information.ChunksOutsideViewport, comparer).ToList());
         }
+
+        internal static (IEnumerable<(int x, int y)> addedChunks, IEnumerable<(int x, int y)> removedChunks) 
+            GetAddedRemovedChunks(ChunkLoadInformation initial, ChunkLoadInformation updated)
+        {
+            var addedChunksInsideViewport = updated.ChunksInsideViewport
+                .Except(initial.ChunksInsideViewport, new TupleComparer<int>())
+                .ToList();
+            var addedChunksOutsideViewport = updated.ChunksOutsideViewport
+                .Except(initial.ChunksOutsideViewport, new TupleComparer<int>())
+                .ToList();
+            var removedChunksInsideViewport = initial.ChunksInsideViewport
+                .Except(updated.ChunksInsideViewport, new TupleComparer<int>())
+                .ToList();
+            var removedChunksOutsideViewport = initial.ChunksOutsideViewport
+                .Except(updated.ChunksOutsideViewport, new TupleComparer<int>())
+                .ToList();
+            
+            var addedChunks = addedChunksInsideViewport.Concat(addedChunksOutsideViewport);
+            var removedChunks = removedChunksInsideViewport.Concat(removedChunksOutsideViewport);
+            return (addedChunks, removedChunks);
+        }
     }
 }

@@ -32,7 +32,9 @@ namespace Venomaus.FlowVitae.Chunking
         public (int x, int y) CenterCoordinate { get; private set; }
         public bool RaiseOnlyOnCellTypeChange { get; set; } = true;
 
-        public ChunkLoader(int viewPortWidth, int viewPortHeight, int width, int height, IProceduralGen<TCellType, TCell, TChunkData> generator, Func<int, int, TCellType, TCell?> cellTypeConverter)
+        private readonly CancellationToken _cancellationToken;
+
+        public ChunkLoader(int viewPortWidth, int viewPortHeight, int width, int height, IProceduralGen<TCellType, TCell, TChunkData> generator, Func<int, int, TCellType, TCell?> cellTypeConverter, CancellationToken cancellationToken)
         {
             _chunkWidth = width;
             _chunkHeight = height;
@@ -41,6 +43,7 @@ namespace Venomaus.FlowVitae.Chunking
             _seed = generator.Seed;
             _generator = generator;
             _cellTypeConverter = cellTypeConverter;
+            _cancellationToken = cancellationToken;
             _tempLoadedChunks = new ConcurrentHashSet<(int x, int y)>(new TupleComparer<int>());
             _chunks = new ConcurrentDictionary<(int x, int y), (TCellType[], TChunkData?)>(new TupleComparer<int>());
             _chunkDataCache = new Dictionary<(int x, int y), TChunkData>(new TupleComparer<int>());
@@ -153,6 +156,7 @@ namespace Venomaus.FlowVitae.Chunking
                 // Load chunks inside the viewport on the main thread
                 foreach (var chunk in chunksInsideViewport)
                 {
+                    // TODO: Check if we need to parallel this or not
                     if (LoadChunk(chunk.x, chunk.y, out _))
                         onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _chunkWidth, _chunkHeight));
                 }
@@ -167,25 +171,35 @@ namespace Venomaus.FlowVitae.Chunking
                 // Load chunks outside the viewport on a background thread
                 _ = Task.Run(() =>
                 {
-                    foreach (var chunk in chunksOutsideViewport)
+                    try
                     {
-                        try
+                        // TODO: Check if parallel is worth it
+                        Parallel.ForEach(chunksOutsideViewport, (chunk) =>
                         {
-                            if (LoadChunk(chunk.x, chunk.y, out _))
+                            try
                             {
-                                onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _chunkWidth, _chunkHeight));
+
+                                if (_cancellationToken.IsCancellationRequested) return;
+                                if (LoadChunk(chunk.x, chunk.y, out _))
+                                {
+                                    onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _chunkWidth, _chunkHeight));
+                                }
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            Task.Run(() =>
+                            catch (Exception)
                             {
-                                throw ex;
-                            });
-                            return;
-                        }
+                                throw;
+                            }
+                        });
                     }
-                });
+                    catch (AggregateException ex)
+                    {
+                        Task.Run(() =>
+                        {
+                            throw ex;
+                        }, _cancellationToken);
+                        return;
+                    }
+                }, _cancellationToken);
             }
         }
 
@@ -421,6 +435,7 @@ namespace Venomaus.FlowVitae.Chunking
             {
                 lock (loadChunkLock)
                 {
+                    if (_cancellationToken.IsCancellationRequested) return false;
                     // Recheck the condition inside the lock
                     if (!_chunks.ContainsKey(chunkCoordinate) ||
                         _chunks[chunkCoordinate].chunkCells == null)
