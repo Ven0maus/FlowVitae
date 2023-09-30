@@ -270,7 +270,3 @@ Grid.GetLoadedChunkCoordinates();
 # Integration with SadConsole
 
 Checkout the SadConsoleVisualizer project, it is an example project that integrates the FlowVitae grid with SadConsole V9 render engine.
-
-# Integration with Unity
-
-Checkout the UnityVisualizer project, it is an example project that integrates the FlowVitae grid with UnityEngine.
