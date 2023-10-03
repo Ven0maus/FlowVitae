@@ -766,13 +766,13 @@ namespace Venomaus.FlowVitae.Grids
         { }
 
         /// <inheritdoc />
-        protected GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell>? generator) :
-            base(viewPortWidth, viewPortHeight, generator)
+        protected GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell>? generator, int chunksOutsideViewportRadiusToLoad = 1) :
+            base(viewPortWidth, viewPortHeight, generator, chunksOutsideViewportRadiusToLoad)
         { }
 
         /// <inheritdoc />
-        protected GridBase(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell>? generator) :
-            base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator)
+        protected GridBase(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell>? generator, int chunksOutsideViewportRadiusToLoad = 1) :
+            base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, chunksOutsideViewportRadiusToLoad)
         { }
     }
 }

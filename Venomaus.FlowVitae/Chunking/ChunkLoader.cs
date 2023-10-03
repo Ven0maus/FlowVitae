@@ -493,12 +493,16 @@ namespace Venomaus.FlowVitae.Chunking
 
             if (!forceUnload)
             {
-                // Check that we are not unloading current or neighbor chunks
-                var chunksToLoad = GetChunksToLoad(CenterCoordinate.x, CenterCoordinate.y, _chunksOutsideViewportRadiusToLoad);
-
                 // Acquire a lock to ensure that the check and removal are atomic.
                 lock (unloadChunkLock)
                 {
+                    if (!_chunks.ContainsKey(coordinate))
+                    {
+                        return false; // The chunk doesn't exist, nothing to unload.
+                    }
+
+                    // Check that we are not unloading current or neighbor chunks
+                    var chunksToLoad = GetChunksToLoad(CenterCoordinate.x, CenterCoordinate.y, _chunksOutsideViewportRadiusToLoad);
                     if (chunksToLoad.AllChunks.Any(m => m.x == coordinate.x && m.y == coordinate.y))
                     {
                         return false; // Don't unload this chunk.

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net5.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0;netstandard2.1</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -45,6 +45,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+	<Content Include="readme.txt">
+      <Pack>true</Pack>
+	  <PackagePath>readme.txt</PackagePath>
+	</Content>
   </ItemGroup>
 
 

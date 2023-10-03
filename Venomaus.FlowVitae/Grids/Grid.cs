@@ -14,13 +14,13 @@ namespace Venomaus.FlowVitae.Grids
         { }
 
         /// <inheritdoc />
-        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell>? generator) :
-            base(viewPortWidth, viewPortHeight, generator)
+        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell>? generator, int chunksOutsideViewportRadiusToLoad = 1) :
+            base(viewPortWidth, viewPortHeight, generator, chunksOutsideViewportRadiusToLoad)
         { }
 
         /// <inheritdoc />
-        public Grid(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell>? generator) :
-            base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator)
+        public Grid(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell>? generator, int chunksOutsideViewportRadiusToLoad = 1) :
+            base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, chunksOutsideViewportRadiusToLoad)
         { }
     }
 
@@ -38,13 +38,13 @@ namespace Venomaus.FlowVitae.Grids
         { }
 
         /// <inheritdoc />
-        public Grid(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell, TChunkData>? generator)
-            : base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator)
+        public Grid(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, IProceduralGen<TCellType, TCell, TChunkData>? generator, int chunksOutsideViewportRadiusToLoad = 1)
+            : base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, chunksOutsideViewportRadiusToLoad)
         { }
 
         /// <inheritdoc />
-        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell, TChunkData>? generator)
-            : base(viewPortWidth, viewPortHeight, generator)
+        public Grid(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell, TChunkData>? generator, int chunksOutsideViewportRadiusToLoad = 1)
+            : base(viewPortWidth, viewPortHeight, generator, chunksOutsideViewportRadiusToLoad)
         { }
     }
 }

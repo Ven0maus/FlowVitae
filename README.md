@@ -3,8 +3,7 @@ FlowVitae is a memory and performance efficient 2D grid library designed for sma
 Can be easily integrated with most render engines.
 
 Supports:
-- net6.0 
-- net5.0
+- net6.0
 - netstandard2.1
 
 Tested with:
@@ -47,7 +46,7 @@ var grid = new Grid<int, Cell<int>>(width, height);
 **Static Chunked Grid Creation**
 ```csharp
 var staticGen = new StaticGenerator<int, Cell<int>>(baseMap, width, height, outOfBoundsCellType);
-var grid = new Grid<int, Cell<int>>(width, height, chunkWidth, chunkHeight, staticGen);
+var grid = new Grid<int, Cell<int>>(width, height, chunkWidth, chunkHeight, staticGen, extraChunkRadius = 1);
 ```
 
 The baseMap here represents the full static grid.
@@ -55,7 +54,7 @@ The baseMap here represents the full static grid.
 **Procedural Grid Creation**
 ```csharp
 var procGen = new ProceduralGenerator<int, Cell<int>>(Seed, GenerateChunkMethod);
-var grid = new Grid<int, Cell<int>>(width, height, chunkWidth, chunkHeight, procGen);
+var grid = new Grid<int, Cell<int>>(width, height, chunkWidth, chunkHeight, procGen, extraChunkRadius = 1);
 ```
 
 GenerateChunkMethod can look something like this:
@@ -112,7 +111,7 @@ Func<Random, int[], int, int, TestChunkData> chunkGenerationMethod = (random, ch
 
 // Initialize the custom implementations
 var customProcGen = new ProceduralGenerator<int, Cell<int>, TestChunkData>(Seed, chunkGenerationMethod);
-var customGrid = new Grid<int, Cell<int>, TestChunkData>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, customProcGen);
+var customGrid = new Grid<int, Cell<int>, TestChunkData>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, customProcGen, extraChunkRadius = 1);
 
 // Retrieve the chunk data, for the whole chunk where position (5, 5) resides in
 var chunkData = customGrid.GetChunkData(5, 5);
@@ -127,7 +126,7 @@ customGrid.RemoveChunkData(chunkData, reloadChunk); // chunkdata only refreshes 
 This works similar for Static chunked grids, you can pass along a chunk data generation method to the constructor.
 ```csharp
 // chunkGenerationMethod signature: (seed, baseMap, width, height, chunkCoordinate)
-new StaticGenerator<int, Cell<int>, TestChunkData>(_baseMap, Grid.Width, Grid.Height, NullCell, chunkGenerationMethod)
+new StaticGenerator<int, Cell<int>, TestChunkData>(_baseMap, Grid.Width, Grid.Height, NullCell, chunkGenerationMethod, extraChunkRadius = 1)
 ```
 
 # Rendering to a render engine

@@ -9,6 +9,7 @@ namespace Venomaus.UnitTests.Tests
         where TCellType : struct
         where TCell : class, ICell<TCellType>, new()
     {
+        // TODO: Rework into NewGrid() method instead, and remove this property
         protected Grid<TCellType, TCell> Grid { get; private set; }
         protected virtual IProceduralGen<TCellType, TCell>? ProcGen { get; }
         protected virtual Func<int, int, TCellType, TCell>? CustomConverter { get; }
