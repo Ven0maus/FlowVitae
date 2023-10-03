@@ -6,4 +6,4 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 25
       assignees:
-      - Ven0maus
+      - "Ven0maus"
