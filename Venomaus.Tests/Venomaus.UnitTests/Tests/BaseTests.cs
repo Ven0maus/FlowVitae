@@ -1,5 +1,4 @@
 ﻿using Venomaus.FlowVitae.Cells;
-using Venomaus.FlowVitae.Chunking;
 using Venomaus.FlowVitae.Chunking.Generators;
 using Venomaus.FlowVitae.Grids;
 
@@ -9,37 +8,23 @@ namespace Venomaus.UnitTests.Tests
         where TCellType : struct
         where TCell : class, ICell<TCellType>, new()
     {
-        // TODO: Rework into NewGrid() method instead, and remove this property
-        protected Grid<TCellType, TCell> Grid { get; private set; }
         protected virtual IProceduralGen<TCellType, TCell>? ProcGen { get; }
         protected virtual Func<int, int, TCellType, TCell>? CustomConverter { get; }
 
-        protected ChunkLoader<TCellType, TCell, IChunkData> ChunkLoader => Grid._chunkLoader ?? throw new Exception("Chunkloader null");
-
         protected int ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight;
 
-        [SetUp]
-        public virtual void Setup()
+        protected Grid<TCellType, TCell> CreateNewGrid(int seed, Action<Random, TCellType[], int, int, (int x, int y)> method)
         {
-            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, ProcGen);
-            Grid.SetCustomConverter(CustomConverter);
-        }
-
-        [TearDown]
-        public virtual void TearDown()
-        {
-            if (Grid != null)
-                Grid.Dispose();
-        }
-
-        protected void AdjustProceduralGridGen(int seed, Action<Random, TCellType[], int, int, (int x, int y)> method)
-        {
-            if (Grid != null)
-                Grid.Dispose();
-
             var procGen = new ProceduralGenerator<TCellType, TCell>(seed, method);
-            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, procGen);
-            Grid.SetCustomConverter(CustomConverter);
+            var grid = CreateNewGrid(procGen);
+            return grid;
+        }
+
+        protected Grid<TCellType, TCell> CreateNewGrid(ProceduralGenerator<TCellType, TCell>? procGen = null)
+        {
+            var grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, procGen ?? ProcGen);
+            grid.SetCustomConverter(CustomConverter);
+            return grid;
         }
     }
 }

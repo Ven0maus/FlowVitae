@@ -40,11 +40,13 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public override void GenerateChunk_ChunkData_IsAlwaysSame()
         {
+            var grid = CreateNewGrid();
+            var chunkLoader = grid._chunkLoader ?? throw new Exception("No chunkloader available");
             int chunkX = ViewPortWidth + ChunkWidth * 10;
             int chunkY = ViewPortHeight + ChunkHeight * 10;
-            var chunkCoords = ChunkLoader.GetChunkCoordinate(chunkX, chunkY);
+            var chunkCoords = chunkLoader.GetChunkCoordinate(chunkX, chunkY);
 
-            Assert.That(() => ChunkLoader.LoadChunk(chunkX, chunkY, out _), Is.True);
+            Assert.That(() => chunkLoader.LoadChunk(chunkX, chunkY, out _), Is.True);
 
             // Collect current chunk data
             int[] chunkData = new int[ChunkWidth * ChunkHeight];
@@ -52,20 +54,20 @@ namespace Venomaus.UnitTests.Tests
             {
                 for (int y = 0; y < ChunkHeight; y++)
                 {
-                    var cell = Grid.GetCell(chunkCoords.x + x, chunkCoords.y + y);
+                    var cell = grid.GetCell(chunkCoords.x + x, chunkCoords.y + y);
                     Assert.That(cell, Is.Not.Null);
                     chunkData[y * ChunkWidth + x] = cell.CellType;
                 }
             }
 
-            Assert.That(() => ChunkLoader.UnloadChunk(chunkX, chunkY), Is.True);
-            Assert.That(() => ChunkLoader.LoadChunk(chunkX, chunkY, out _), Is.True);
+            Assert.That(() => chunkLoader.UnloadChunk(chunkX, chunkY), Is.True);
+            Assert.That(() => chunkLoader.LoadChunk(chunkX, chunkY, out _), Is.True);
 
             for (int x = 0; x < ChunkWidth; x++)
             {
                 for (int y = 0; y < ChunkHeight; y++)
                 {
-                    var cell = Grid.GetCell(chunkCoords.x + x, chunkCoords.y + y);
+                    var cell = grid.GetCell(chunkCoords.x + x, chunkCoords.y + y);
                     Assert.Multiple(() =>
                     {
                         Assert.That(cell, Is.Not.Null);
@@ -102,7 +104,7 @@ namespace Venomaus.UnitTests.Tests
             };
 
             // Initialize the custom implementations
-            var customProcGen = new StaticGenerator<int, Cell<int>, TestChunkData>(_baseMap, Grid.Width, Grid.Height, NullCell, chunkGenerationMethod);
+            var customProcGen = new StaticGenerator<int, Cell<int>, TestChunkData>(_baseMap, ViewPortWidth, ViewPortHeight, NullCell, chunkGenerationMethod);
             var customGrid = new Grid<int, Cell<int>, TestChunkData>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, customProcGen);
 
             Assert.That(customGrid._chunkLoader, Is.Not.Null);

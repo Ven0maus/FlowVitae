@@ -23,10 +23,12 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void ChunkLoader_Is_Null()
         {
+            var grid = CreateNewGrid();
+            var chunkLoader = () => grid._chunkLoader ?? throw new Exception("No chunkloader available");
             Assert.Multiple(() =>
             {
-                Assert.That(Grid._chunkLoader, Is.Null);
-                Assert.That(() => ChunkLoader, Throws.Exception);
+                Assert.That(grid._chunkLoader, Is.Null);
+                Assert.That(() => chunkLoader.Invoke(), Throws.Exception);
             });
         }
 
@@ -51,22 +53,24 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void GetCell_Get_Correct()
         {
-            var cell = Grid.GetCell(5, 5);
+            var grid = CreateNewGrid();
+            var cell = grid.GetCell(5, 5);
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell, Is.EqualTo(new Cell<int>(5, 5)));
 
-            cell = Grid.GetCell(-5, -5);
+            cell = grid.GetCell(-5, -5);
             Assert.That(cell, Is.Null);
 
-            cell = Grid.GetCell(Grid.Width + 5, Grid.Height + 5);
+            cell = grid.GetCell(grid.Width + 5, grid.Height + 5);
             Assert.That(cell, Is.Null);
         }
 
         [Test]
         public void GetCells_Get_Correct()
         {
+            var grid = CreateNewGrid();
             var cellPositions = new[] { (5, 5), (3, 2), (4, 4) };
-            var cells = Grid.GetCells(cellPositions).ToArray();
+            var cells = grid.GetCells(cellPositions).ToArray();
             Assert.That(cells, Has.Length.EqualTo(cellPositions.Length));
 
             for (int i = 0; i < cellPositions.Length; i++)
@@ -87,15 +91,16 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void SetCells_GetCells_SetGet_Correct()
         {
+            var grid = CreateNewGrid();
             var cells = new[] 
             { 
                 new Cell<int>(5, 5, false, 1), 
                 new Cell<int>(3, 2, false, 2), 
                 new Cell<int>(4, 4, true, 3) 
             };
-            Assert.That(() => Grid.SetCells(cells, true), Throws.Nothing);
+            Assert.That(() => grid.SetCells(cells, true), Throws.Nothing);
 
-            var newCells = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToArray();
+            var newCells = grid.GetCells(cells.Select(a => (a.X, a.Y))).ToArray();
             Assert.That(newCells, Has.Length.EqualTo(cells.Length));
 
             for (int i = 0; i < cells.Length; i++)
@@ -114,8 +119,8 @@ namespace Venomaus.UnitTests.Tests
                 });
             }
 
-            Assert.That(() => Grid.SetCells(cells, false), Throws.Nothing);
-            newCells = Grid.GetCells(cells.Select(a => (a.X, a.Y))).ToArray();
+            Assert.That(() => grid.SetCells(cells, false), Throws.Nothing);
+            newCells = grid.GetCells(cells.Select(a => (a.X, a.Y))).ToArray();
             Assert.That(newCells, Has.Length.EqualTo(cells.Length));
 
             for (int i = 0; i < cells.Length; i++)
@@ -138,55 +143,58 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void SetCell_Set_Correct()
         {
-            var cell = Grid.GetCell(5, 5);
+            var grid = CreateNewGrid();
+            var cell = grid.GetCell(5, 5);
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(0));
 
-            Grid.SetCell(5, 5, 1);
+            grid.SetCell(5, 5, 1);
 
-            var changedCell = Grid.GetCell(5, 5);
+            var changedCell = grid.GetCell(5, 5);
             Assert.That(changedCell, Is.Not.Null);
             Assert.Multiple(() =>
             {
                 Assert.That(changedCell.CellType, Is.EqualTo(1));
-                Assert.That(() => Grid.SetCell(Grid.Width + 5, Grid.Height + 5, 1), Throws.Nothing);
-                Assert.That(() => Grid.SetCell(-5, -5, 1), Throws.Nothing);
+                Assert.That(() => grid.SetCell(grid.Width + 5, grid.Height + 5, 1), Throws.Nothing);
+                Assert.That(() => grid.SetCell(-5, -5, 1), Throws.Nothing);
             });
         }
 
         [Test]
         public void GetCellType_Get_Correct()
         {
-            var cellType = Grid.GetCellType(Grid.Width / 2, Grid.Height / 2);
+            var grid = CreateNewGrid();
+            var cellType = grid.GetCellType(grid.Width / 2, grid.Height / 2);
             Assert.That(cellType, Is.Not.EqualTo(-1));
 
-            Grid.SetCell(Grid.Width / 2, Grid.Height / 2, -1);
+            grid.SetCell(grid.Width / 2, grid.Height / 2, -1);
 
-            cellType = Grid.GetCellType(Grid.Width / 2, Grid.Height / 2);
+            cellType = grid.GetCellType(grid.Width / 2, grid.Height / 2);
             Assert.That(cellType, Is.EqualTo(-1));
 
-            Grid.SetCell(Grid.Width / 2, Grid.Height / 2, -1, true);
+            grid.SetCell(grid.Width / 2, grid.Height / 2, -1, true);
 
-            cellType = Grid.GetCellType(Grid.Width / 2, Grid.Height / 2);
+            cellType = grid.GetCellType(grid.Width / 2, grid.Height / 2);
             Assert.That(cellType, Is.EqualTo(-1));
 
-            cellType = Grid.GetCellType(Grid.Width * 5, Grid.Height * 5);
+            cellType = grid.GetCellType(grid.Width * 5, grid.Height * 5);
             Assert.That(cellType, Is.EqualTo(default(int)));
         }
 
         [Test]
         public void StoreState_SetAndGet_Correct()
         {
-            var cell = Grid.GetCell(5, 5);
+            var grid = CreateNewGrid();
+            var cell = grid.GetCell(5, 5);
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.CellType, Is.EqualTo(0));
 
             var customCell = new Cell<int>(5, 5, false, 20);
-            Grid.SetCell(customCell, true);
+            grid.SetCell(customCell, true);
 
-            Assert.That(() => Grid.SetCell(null), Throws.Nothing);
+            Assert.That(() => grid.SetCell(null), Throws.Nothing);
 
-            var changedCell = Grid.GetCell(5, 5);
+            var changedCell = grid.GetCell(5, 5);
             Assert.That(changedCell, Is.Not.Null);
             Assert.Multiple(() =>
             {
@@ -194,9 +202,9 @@ namespace Venomaus.UnitTests.Tests
                 Assert.That(changedCell.Walkable, Is.EqualTo(customCell.Walkable));
             });
 
-            Grid.SetCell(5, 5, 1, true);
+            grid.SetCell(5, 5, 1, true);
 
-            changedCell = Grid.GetCell(5, 5);
+            changedCell = grid.GetCell(5, 5);
             Assert.That(changedCell, Is.Not.Null);
             Assert.Multiple(() =>
             {
@@ -208,58 +216,62 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void InBounds_Get_Correct()
         {
-            var inBoundsTrue = Grid.InBounds(5, 5);
+            var grid = CreateNewGrid();
+            var inBoundsTrue = grid.InBounds(5, 5);
             Assert.That(inBoundsTrue, Is.EqualTo(true));
 
-            var inBoundsFalse = Grid.InBounds(-5, 30);
+            var inBoundsFalse = grid.InBounds(-5, 30);
             Assert.That(inBoundsFalse, Is.EqualTo(false));
 
-            Assert.That(Grid.InBounds(null), Is.False);
+            Assert.That(grid.InBounds(null), Is.False);
         }
 
         [Test]
         public void ScreenToWorldPoint_Get_Correct()
         {
+            var grid = CreateNewGrid();
             var screenPosX = 5;
             var screenPosY = 5;
-            var (x, y) = Grid.ScreenToWorldCoordinate(screenPosX, screenPosY);
+            var (x, y) = grid.ScreenToWorldCoordinate(screenPosX, screenPosY);
             Assert.Multiple(() =>
             {
                 Assert.That(x, Is.EqualTo(screenPosX));
                 Assert.That(y, Is.EqualTo(screenPosY));
-                Assert.That(() => Grid.ScreenToWorldCoordinate(Grid.Width + 5, Grid.Height + 5), Throws.Exception);
-                Assert.That(() => Grid.ScreenToWorldCoordinate(-5, -5), Throws.Exception);
+                Assert.That(() => grid.ScreenToWorldCoordinate(grid.Width + 5, grid.Height + 5), Throws.Exception);
+                Assert.That(() => grid.ScreenToWorldCoordinate(-5, -5), Throws.Exception);
             });
         }
 
         [Test]
         public void WorldToScreenPoint_Get_Correct()
         {
+            var grid = CreateNewGrid();
             var worldPosX = 5;
             var worldPosY = 5;
-            var (x, y) = Grid.WorldToScreenCoordinate(worldPosX, worldPosY);
+            var (x, y) = grid.WorldToScreenCoordinate(worldPosX, worldPosY);
             Assert.Multiple(() =>
             {
                 Assert.That(x, Is.EqualTo(worldPosX));
                 Assert.That(y, Is.EqualTo(worldPosY));
-                Assert.That(() => Grid.WorldToScreenCoordinate(Grid.Width + 5, Grid.Height + 5), Throws.Exception);
-                Assert.That(() => Grid.WorldToScreenCoordinate(-5, -5), Throws.Exception);
+                Assert.That(() => grid.WorldToScreenCoordinate(grid.Width + 5, grid.Height + 5), Throws.Exception);
+                Assert.That(() => grid.WorldToScreenCoordinate(-5, -5), Throws.Exception);
             });
         }
 
         [Test]
         public void GetViewPortCells_Get_Correct()
         {
-            var viewPort = Grid.GetViewPortWorldCoordinates().ToArray();
-            Assert.That(viewPort, Has.Length.EqualTo(Grid.Width * Grid.Height));
+            var grid = CreateNewGrid();
+            var viewPort = grid.GetViewPortWorldCoordinates().ToArray();
+            Assert.That(viewPort, Has.Length.EqualTo(grid.Width * grid.Height));
 
             // Check if the order is also correct
             var comparer = new TupleComparer<int>();
-            for (int x=0; x < Grid.Width; x++)
+            for (int x=0; x < grid.Width; x++)
             {
-                for (int y = 0; y < Grid.Height; y++)
+                for (int y = 0; y < grid.Height; y++)
                 {
-                    var index = y * Grid.Width + x;
+                    var index = y * grid.Width + x;
                     Assert.That(comparer.Equals(viewPort[index], (x, y)));  
                 }
             }
@@ -268,40 +280,42 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void IsWorldCoordinateOnViewPort_Get_Correct()
         {
+            var grid = CreateNewGrid();
             Assert.Multiple(() =>
             {
-                Assert.That(Grid.IsWorldCoordinateOnViewPort(5, 5), Is.EqualTo(true));
-                Assert.That(Grid.IsWorldCoordinateOnViewPort(-5, -5), Is.EqualTo(false));
-                Assert.That(Grid.IsWorldCoordinateOnViewPort(Grid.Width + 5, Grid.Height + 5), Is.EqualTo(false));
+                Assert.That(grid.IsWorldCoordinateOnViewPort(5, 5), Is.EqualTo(true));
+                Assert.That(grid.IsWorldCoordinateOnViewPort(-5, -5), Is.EqualTo(false));
+                Assert.That(grid.IsWorldCoordinateOnViewPort(grid.Width + 5, grid.Height + 5), Is.EqualTo(false));
             });
         }
 
         [Test]
         public void OnCellUpdate_SetCell_Raised_Correct()
         {
+            var grid = CreateNewGrid();
             object? sender = null;
             CellUpdateArgs<int, Cell<int>>? args = null;
-            Grid.OnCellUpdate += (cellSender, cellArgs) =>
+            grid.OnCellUpdate += (cellSender, cellArgs) =>
             {
                 sender = cellSender;
                 args = cellArgs;
             };
 
             // Set cell within the view port
-            Grid.SetCell(new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1));
+            grid.SetCell(new Cell<int>(grid.Width / 2, grid.Height / 2, false, -1));
 
             // Verify if args are received properly
             Assert.That(args, Is.Not.Null);
             Assert.Multiple(() =>
             {
                 Assert.That(sender, Is.Null);
-                Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
-                Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.ScreenX, Is.EqualTo(grid.Width / 2));
+                Assert.That(args.ScreenY, Is.EqualTo(grid.Height / 2));
                 Assert.That(args.Cell, Is.Not.Null);
                 if (args.Cell != null)
                 {
-                    Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
-                    Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                    Assert.That(args.Cell.X, Is.EqualTo(grid.Width / 2));
+                    Assert.That(args.Cell.Y, Is.EqualTo(grid.Height / 2));
                     Assert.That(args.Cell.CellType, Is.EqualTo(-1));
                     Assert.That(args.Cell.Walkable, Is.EqualTo(false));
                 }
@@ -310,26 +324,26 @@ namespace Venomaus.UnitTests.Tests
             args = null;
 
             // Set cell within the view port, but no cell type change
-            Grid.SetCell(new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1));
+            grid.SetCell(new Cell<int>(grid.Width / 2, grid.Height / 2, false, -1));
             // Verify no args are received
             Assert.That(args, Is.Null);
 
             // Set cell within the view port, but no cell type change, with adjusted raise flag
-            Grid.RaiseOnlyOnCellTypeChange = false;
-            Grid.SetCell(new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1));
+            grid.RaiseOnlyOnCellTypeChange = false;
+            grid.SetCell(new Cell<int>(grid.Width / 2, grid.Height / 2, false, -1));
 
             // Verify if args are received properly
             Assert.That(args, Is.Not.Null);
             Assert.Multiple(() =>
             {
                 Assert.That(sender, Is.Null);
-                Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
-                Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.ScreenX, Is.EqualTo(grid.Width / 2));
+                Assert.That(args.ScreenY, Is.EqualTo(grid.Height / 2));
                 Assert.That(args.Cell, Is.Not.Null);
                 if (args.Cell != null)
                 {
-                    Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
-                    Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                    Assert.That(args.Cell.X, Is.EqualTo(grid.Width / 2));
+                    Assert.That(args.Cell.Y, Is.EqualTo(grid.Height / 2));
                     Assert.That(args.Cell.CellType, Is.EqualTo(-1));
                     Assert.That(args.Cell.Walkable, Is.EqualTo(false));
                 }
@@ -338,7 +352,7 @@ namespace Venomaus.UnitTests.Tests
             args = null;
 
             // Set cell outside of the view port
-            Grid.SetCell(new Cell<int>(Grid.Width + 5, Grid.Height + 5, false, -2));
+            grid.SetCell(new Cell<int>(grid.Width + 5, grid.Height + 5, false, -2));
             // Verify no args are received
             Assert.That(args, Is.Null);
         }
@@ -346,29 +360,30 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void OnCellUpdate_SetCells_Raised_Correct()
         {
+            var grid = CreateNewGrid();
             object? sender = null;
             CellUpdateArgs<int, Cell<int>>? args = null;
-            Grid.OnCellUpdate += (cellSender, cellArgs) =>
+            grid.OnCellUpdate += (cellSender, cellArgs) =>
             {
                 sender = cellSender;
                 args = cellArgs;
             };
 
             // Set cell within the view port
-            Grid.SetCells(new[] { new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1) });
+            grid.SetCells(new[] { new Cell<int>(grid.Width / 2, grid.Height / 2, false, -1) });
 
             // Verify if args are received properly
             Assert.That(args, Is.Not.Null);
             Assert.Multiple(() =>
             {
                 Assert.That(sender, Is.Null);
-                Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
-                Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.ScreenX, Is.EqualTo(grid.Width / 2));
+                Assert.That(args.ScreenY, Is.EqualTo(grid.Height / 2));
                 Assert.That(args.Cell, Is.Not.Null);
                 if (args.Cell != null)
                 {
-                    Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
-                    Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                    Assert.That(args.Cell.X, Is.EqualTo(grid.Width / 2));
+                    Assert.That(args.Cell.Y, Is.EqualTo(grid.Height / 2));
                     Assert.That(args.Cell.CellType, Is.EqualTo(-1));
                     Assert.That(args.Cell.Walkable, Is.EqualTo(false));
                 }
@@ -377,26 +392,26 @@ namespace Venomaus.UnitTests.Tests
             args = null;
 
             // Set cell within the view port, but no cell type change
-            Grid.SetCells(new[] { new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1) });
+            grid.SetCells(new[] { new Cell<int>(grid.Width / 2, grid.Height / 2, false, -1) });
             // Verify no args are received
             Assert.That(args, Is.Null);
 
             // Set cell within the view port, but no cell type change, with adjusted raise flag
-            Grid.RaiseOnlyOnCellTypeChange = false;
-            Grid.SetCells(new[] { new Cell<int>(Grid.Width / 2, Grid.Height / 2, false, -1) });
+            grid.RaiseOnlyOnCellTypeChange = false;
+            grid.SetCells(new[] { new Cell<int>(grid.Width / 2, grid.Height / 2, false, -1) });
 
             // Verify if args are received properly
             Assert.That(args, Is.Not.Null);
             Assert.Multiple(() =>
             {
                 Assert.That(sender, Is.Null);
-                Assert.That(args.ScreenX, Is.EqualTo(Grid.Width / 2));
-                Assert.That(args.ScreenY, Is.EqualTo(Grid.Height / 2));
+                Assert.That(args.ScreenX, Is.EqualTo(grid.Width / 2));
+                Assert.That(args.ScreenY, Is.EqualTo(grid.Height / 2));
                 Assert.That(args.Cell, Is.Not.Null);
                 if (args.Cell != null)
                 {
-                    Assert.That(args.Cell.X, Is.EqualTo(Grid.Width / 2));
-                    Assert.That(args.Cell.Y, Is.EqualTo(Grid.Height / 2));
+                    Assert.That(args.Cell.X, Is.EqualTo(grid.Width / 2));
+                    Assert.That(args.Cell.Y, Is.EqualTo(grid.Height / 2));
                     Assert.That(args.Cell.CellType, Is.EqualTo(-1));
                     Assert.That(args.Cell.Walkable, Is.EqualTo(false));
                 }
@@ -405,7 +420,7 @@ namespace Venomaus.UnitTests.Tests
             args = null;
 
             // Set cell outside of the view port
-            Grid.SetCells(new[] { new Cell<int>(Grid.Width + 5, Grid.Height + 5, false, -2) });
+            grid.SetCells(new[] { new Cell<int>(grid.Width + 5, grid.Height + 5, false, -2) });
             // Verify no args are received
             Assert.That(args, Is.Null);
         }
@@ -413,17 +428,18 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void SetCustomConverter_Converts_Correct()
         {
+            var grid = CreateNewGrid();
             Assert.Multiple(() =>
             {
-                Assert.That(() => Grid.SetCustomConverter((int x, int y, int cellType) =>
+                Assert.That(() => grid.SetCustomConverter((int x, int y, int cellType) =>
                 {
                     return new Cell<int>(x, y, cellType != -1, cellType);
                 }), Throws.Nothing);
 
-                Assert.That(() => Grid.SetCell(5, 5, -1), Throws.Nothing);
+                Assert.That(() => grid.SetCell(5, 5, -1), Throws.Nothing);
             });
 
-            var cell = Grid.GetCell(5, 5);
+            var cell = grid.GetCell(5, 5);
 
             Assert.That(cell, Is.Not.Null);
             Assert.That(cell.Walkable, Is.EqualTo(false));
@@ -460,28 +476,30 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void Center_DoesNot_Throw()
         {
-            Assert.That(() => Grid.Center(0, 0), Throws.Nothing);
+            var grid = CreateNewGrid();
+            Assert.That(() => grid.Center(0, 0), Throws.Nothing);
         }
 
         [Test]
         public void ClearGridCache_Throws_NoException()
         {
+            var grid = CreateNewGrid();
             // Populate the grid cache
             var cells = new List<Cell<int>?>();
-            for (int x = Grid.Width / 2; x < (Grid.Width / 2) + 10; x++)
+            for (int x = grid.Width / 2; x < (grid.Width / 2) + 10; x++)
             {
-                for (int y = Grid.Height / 2; y < (Grid.Height / 2) + 10; y++)
+                for (int y = grid.Height / 2; y < (grid.Height / 2) + 10; y++)
                 {
                     cells.Add(new Cell<int>(x, y, false, -10));
                 }
             }
 
-            List<Cell<int>?> prevState = Grid.GetCells(cells.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y))).ToList();
-            Grid.SetCells(cells, true);
+            List<Cell<int>?> prevState = grid.GetCells(cells.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y))).ToList();
+            grid.SetCells(cells, true);
 
-            Assert.That(() => Grid.ClearCache(), Throws.Nothing);
+            Assert.That(() => grid.ClearCache(), Throws.Nothing);
 
-            cells = Grid.GetCells(cells.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y))).ToList();
+            cells = grid.GetCells(cells.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y))).ToList();
 
             Assert.That(cells.SequenceEqual(prevState, new CellWalkableComparer<int>()));
         }
@@ -489,22 +507,25 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void ChunkDataRelatedMethods_DoNothing()
         {
-            Assert.That(() => Grid.StoreChunkData(new TestChunkData()), Throws.Nothing);
-            Assert.That(() => Grid.RemoveChunkData(new TestChunkData()), Throws.Nothing);
-            Assert.That(Grid.GetChunkData(0, 0), Is.Null);
+            var grid = CreateNewGrid();
+            Assert.That(() => grid.StoreChunkData(new TestChunkData()), Throws.Nothing);
+            Assert.That(() => grid.RemoveChunkData(new TestChunkData()), Throws.Nothing);
+            Assert.That(grid.GetChunkData(0, 0), Is.Null);
         }
 
         [Test]
         public void UseThreading_DoesNotWork_StaticGrid()
         {
-            Grid.UseThreading = true;
-            Assert.That(Grid.UseThreading, Is.False);
+            var grid = CreateNewGrid();
+            grid.UseThreading = true;
+            Assert.That(grid.UseThreading, Is.False);
         }
 
         [Test]
         public void GetNeighbors_Retrieves_CorrectCells()
         {
-            var neighbors4Way = Grid.GetNeighbors(5, 5, AdjacencyRule.FourWay);
+            var grid = CreateNewGrid();
+            var neighbors4Way = grid.GetNeighbors(5, 5, AdjacencyRule.FourWay);
             Assert.That(neighbors4Way.Count(), Is.EqualTo(4));
 
             var comparer = new TupleComparer<int>();
@@ -516,7 +537,7 @@ namespace Venomaus.UnitTests.Tests
             };
             Assert.That(neighbors4Way.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
 
-            var neighbors8Way = Grid.GetNeighbors(5, 5, AdjacencyRule.EightWay);
+            var neighbors8Way = grid.GetNeighbors(5, 5, AdjacencyRule.EightWay);
             Assert.That(neighbors8Way.Count(), Is.EqualTo(8));
 
             // Verify neighbors retrieved are correct
@@ -533,7 +554,8 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void GetNeighbor_OutOfBounds_Retrieves_CorrectCells()
         {
-            var neighbors4Way = Grid.GetNeighbors(0, 0, AdjacencyRule.FourWay);
+            var grid = CreateNewGrid();
+            var neighbors4Way = grid.GetNeighbors(0, 0, AdjacencyRule.FourWay);
             Assert.That(neighbors4Way.Count(), Is.EqualTo(2));
 
             var comparer = new TupleComparer<int>();
@@ -544,7 +566,7 @@ namespace Venomaus.UnitTests.Tests
             };
             Assert.That(neighbors4Way.Where(a => a != null).Cast<Cell<int>>().Select(a => (a.X, a.Y)).SequenceEqual(correctNeighbors, comparer));
 
-            var neighbors8Way = Grid.GetNeighbors(0, 0, AdjacencyRule.EightWay);
+            var neighbors8Way = grid.GetNeighbors(0, 0, AdjacencyRule.EightWay);
             Assert.That(neighbors8Way.Count(), Is.EqualTo(3));
 
             // Verify neighbors retrieved are correct
@@ -558,36 +580,41 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void GetChunkSeed_Returns_CorrectValue()
         {
-            var chunkSeed = Grid.GetChunkSeed(0, 0);
+            var grid = CreateNewGrid();
+            var chunkSeed = grid.GetChunkSeed(0, 0);
             Assert.That(chunkSeed, Is.EqualTo(0));
         }
 
         [Test]
         public void IsChunkLoaded_Returns_CorrectValue()
         {
-            var chunkLoaded = Grid.IsChunkLoaded(ViewPortWidth / 2, ViewPortHeight / 2);
+            var grid = CreateNewGrid();
+            var chunkLoaded = grid.IsChunkLoaded(ViewPortWidth / 2, ViewPortHeight / 2);
             Assert.That(chunkLoaded, Is.False);
         }
 
         [Test]
         public void GetChunkCoordinate_ReturnsResult_Correct()
         {
+            var grid = CreateNewGrid();
             var comparer = new TupleComparer<int>();
-            var coord = Grid.GetChunkCoordinate(ChunkWidth / 2, ChunkHeight / 2);
+            var coord = grid.GetChunkCoordinate(ChunkWidth / 2, ChunkHeight / 2);
             Assert.That(comparer.Equals(coord, (ChunkWidth / 2, ChunkHeight / 2)));
         }
 
         [Test]
         public void GetLoadedChunkCoordinates_ReturnsResult_Correct()
         {
-            var loadedChunks = Grid.GetLoadedChunkCoordinates();
+            var grid = CreateNewGrid();
+            var loadedChunks = grid.GetLoadedChunkCoordinates();
             Assert.That(loadedChunks.Count(), Is.EqualTo(0));
         }
 
         [Test]
         public void GetChunkCellCoordinates_ReturnsResult_Correct()
         {
-            var loadedChunks = Grid.GetChunkCellCoordinates(0, 0).ToArray();
+            var grid = CreateNewGrid();
+            var loadedChunks = grid.GetChunkCellCoordinates(0, 0).ToArray();
             Assert.That(loadedChunks, Has.Length.EqualTo(1));
             var comparer = new TupleComparer<int>();
             Assert.That(comparer.Equals(loadedChunks[0], (0, 0)));
@@ -596,51 +623,54 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void HasStoredCell_ReturnsResult_Correct()
         {
+            var grid = CreateNewGrid();
             // Out of bounds test
-            Assert.That(Grid.HasStoredCell(-5, -2), Is.False);
+            Assert.That(grid.HasStoredCell(-5, -2), Is.False);
 
-            Assert.That(Grid.HasStoredCell(0, 0), Is.False);
-            Grid.SetCell(new Cell<int>(0, 0, -50), true);
-            Assert.That(Grid.HasStoredCell(0, 0), Is.True);
-            Grid.SetCell(new Cell<int>(0, 0, -50), false);
-            Assert.That(Grid.HasStoredCell(0, 0), Is.False);
+            Assert.That(grid.HasStoredCell(0, 0), Is.False);
+            grid.SetCell(new Cell<int>(0, 0, -50), true);
+            Assert.That(grid.HasStoredCell(0, 0), Is.True);
+            grid.SetCell(new Cell<int>(0, 0, -50), false);
+            Assert.That(grid.HasStoredCell(0, 0), Is.False);
         }
 
         [Test]
         public void RemoveStoredCell_ReturnsResult_Correct()
         {
-            Assert.That(Grid.HasStoredCell(0, 0), Is.False);
-            Grid.SetCell(new Cell<int>(0, 0, -50), true);
-            Assert.That(Grid.HasStoredCell(0, 0), Is.True);
-            Grid.RemoveStoredCell(0, 0);
-            Assert.That(Grid.HasStoredCell(0, 0), Is.False);
+            var grid = CreateNewGrid();
+            Assert.That(grid.HasStoredCell(0, 0), Is.False);
+            grid.SetCell(new Cell<int>(0, 0, -50), true);
+            Assert.That(grid.HasStoredCell(0, 0), Is.True);
+            grid.RemoveStoredCell(0, 0);
+            Assert.That(grid.HasStoredCell(0, 0), Is.False);
         }
 
         [Test]
         public void GetCells_CanReturn_NullValues()
         {
-            Grid.SetCustomConverter((x, y, cellType) =>
+            var grid = CreateNewGrid();
+            grid.SetCustomConverter((x, y, cellType) =>
             {
                 return cellType != -1 ? new Cell<int>(x, y, cellType) : null;
             });
 
-            (int x, int y) pos = (Grid.Width / 2, Grid.Height / 2);
-            Grid.SetCell(pos.x, pos.y, -1);
+            (int x, int y) pos = (grid.Width / 2, grid.Height / 2);
+            grid.SetCell(pos.x, pos.y, -1);
 
             // Check for null
-            var cell = Grid.GetCell(pos.x, pos.y);
+            var cell = grid.GetCell(pos.x, pos.y);
             Assert.That(cell, Is.Null);
 
-            var cells = Grid.GetCells(new[] { pos }).ToArray();
+            var cells = grid.GetCells(new[] { pos }).ToArray();
             Assert.That(cells, Is.Not.Null);
             Assert.That(cells, Has.Length.EqualTo(1));
             Assert.That(cells[0], Is.Null);
 
             // Check for not null
-            cell = Grid.GetCell(pos.x + 1, pos.y + 1);
+            cell = grid.GetCell(pos.x + 1, pos.y + 1);
             Assert.That(cell, Is.Not.Null);
 
-            cells = Grid.GetCells(new[] { (pos.x + 1, pos.y + 1) }).ToArray();
+            cells = grid.GetCells(new[] { (pos.x + 1, pos.y + 1) }).ToArray();
             Assert.That(cells, Is.Not.Null);
             Assert.That(cells, Has.Length.EqualTo(1));
             Assert.That(cells[0], Is.Not.Null);
