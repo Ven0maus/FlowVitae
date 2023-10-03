@@ -208,6 +208,11 @@ namespace Venomaus.FlowVitae.Grids
         { }
 
         /// <summary>
+        /// Disposes data for this grid
+        /// </summary>
+        ~GridBase() { Dispose(); }
+
+        /// <summary>
         /// Returns all the cell positions within the chunk of the specified coordinate.
         /// </summary>
         /// <param name="x">Coordinate X</param>

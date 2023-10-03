@@ -21,10 +21,10 @@ namespace Venomaus.FlowVitae.Chunking
         private readonly int _viewPortWidth, _viewPortHeight;
         private readonly IProceduralGen<TCellType, TCell, TChunkData> _generator;
         private readonly Func<int, int, TCellType, TCell?> _cellTypeConverter;
-        private readonly Dictionary<(int x, int y), TChunkData> _chunkDataCache;
+        private readonly ConcurrentDictionary<(int x, int y), TChunkData> _chunkDataCache;
         private readonly ConcurrentDictionary<(int x, int y), (TCellType[] chunkCells, TChunkData? chunkData)> _chunks;
         private readonly ConcurrentHashSet<(int x, int y)> _tempLoadedChunks;
-        private Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>? _modifiedCellsInChunks;
+        private ConcurrentDictionary<(int x, int y), ConcurrentDictionary<(int x, int y), TCell>>? _modifiedCellsInChunks;
 
         public bool UseThreading { get; set; } = true;
 
@@ -48,8 +48,9 @@ namespace Venomaus.FlowVitae.Chunking
             _cellTypeConverter = cellTypeConverter;
             _cancellationToken = cancellationToken;
             _tempLoadedChunks = new ConcurrentHashSet<(int x, int y)>(new TupleComparer<int>());
-            _chunks = new ConcurrentDictionary<(int x, int y), (TCellType[], TChunkData?)>(new TupleComparer<int>());
-            _chunkDataCache = new Dictionary<(int x, int y), TChunkData>(new TupleComparer<int>());
+            var initialAmount = GetChunksToLoad(0, 0).AllChunks.Count;
+            _chunks = new ConcurrentDictionary<(int x, int y), (TCellType[], TChunkData?)>(Environment.ProcessorCount, initialAmount, new TupleComparer<int>());
+            _chunkDataCache = new ConcurrentDictionary<(int x, int y), TChunkData>(new TupleComparer<int>());
             _chunksOutsideViewportRadiusToLoad = chunksOutsideViewportRadiusToLoad;
         }
 
@@ -247,12 +248,12 @@ namespace Venomaus.FlowVitae.Chunking
         {
             if (_chunkDataCache.ContainsKey(chunkData.ChunkCoordinate))
                 return;
-            _chunkDataCache.Add(chunkData.ChunkCoordinate, chunkData);
+            _chunkDataCache.TryAdd(chunkData.ChunkCoordinate, chunkData);
         }
 
         public void RemoveChunkData(TChunkData chunkData, bool reloadChunk)
         {
-            _chunkDataCache.Remove(chunkData.ChunkCoordinate);
+            _chunkDataCache.Remove(chunkData.ChunkCoordinate, out _);
             if (reloadChunk)
             {
                 UnloadChunk(chunkData.ChunkCoordinate.x, chunkData.ChunkCoordinate.y, true);
@@ -406,9 +407,9 @@ namespace Venomaus.FlowVitae.Chunking
 
             if (!storeState && _modifiedCellsInChunks != null && _modifiedCellsInChunks.TryGetValue(chunkCoordinate, out var storedCells))
             {
-                storedCells.Remove(remappedCoordinate);
+                storedCells.Remove(remappedCoordinate, out _);
                 if (storedCells.Count == 0)
-                    _modifiedCellsInChunks.Remove(chunkCoordinate);
+                    _modifiedCellsInChunks.Remove(chunkCoordinate, out _);
                 if (_modifiedCellsInChunks.Count == 0)
                     _modifiedCellsInChunks = null;
             }
@@ -416,11 +417,11 @@ namespace Venomaus.FlowVitae.Chunking
             {
                 // Check if there are modified cell tiles within this chunk
                 if (_modifiedCellsInChunks == null)
-                    _modifiedCellsInChunks = new Dictionary<(int x, int y), Dictionary<(int x, int y), TCell>>(new TupleComparer<int>());
+                    _modifiedCellsInChunks = new ConcurrentDictionary<(int x, int y), ConcurrentDictionary<(int x, int y), TCell>>(new TupleComparer<int>());
                 if (!_modifiedCellsInChunks.TryGetValue(chunkCoordinate, out storedCells))
                 {
-                    storedCells = new Dictionary<(int x, int y), TCell>(new TupleComparer<int>());
-                    _modifiedCellsInChunks.Add(chunkCoordinate, storedCells);
+                    storedCells = new ConcurrentDictionary<(int x, int y), TCell>(new TupleComparer<int>());
+                    _modifiedCellsInChunks.TryAdd(chunkCoordinate, storedCells);
                 }
                 storedCells[remappedCoordinate] = cell;
             }

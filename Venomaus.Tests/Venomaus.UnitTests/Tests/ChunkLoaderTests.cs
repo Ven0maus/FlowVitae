@@ -1,4 +1,5 @@
-﻿using Venomaus.FlowVitae.Cells;
+﻿using System;
+using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Chunking;
 using Venomaus.FlowVitae.Chunking.Generators;
 using Venomaus.FlowVitae.Grids;
@@ -563,22 +564,23 @@ namespace Venomaus.UnitTests.Tests
         [Test]
         public void ChunkLoading_CorrectDuring_Centering()
         {
+            var grid = CreateNewGrid();
+
             // Test non-diagonal centering
-            CenterTowards(0, 0, Direction.North);
-            CenterTowards(0, 0, Direction.East);
-            CenterTowards(0, 0, Direction.South);
-            CenterTowards(0, 0, Direction.West);
+            CenterTowards(grid, 0, 0, Direction.North);
+            CenterTowards(grid, 0, 0, Direction.East);
+            CenterTowards(grid, 0, 0, Direction.South);
+            CenterTowards(grid, 0, 0, Direction.West);
 
             // Test diagonal centering
-            CenterTowards(0, 0, Direction.NorthEast);
-            CenterTowards(0, 0, Direction.NorthWest);
-            CenterTowards(0, 0, Direction.SouthEast);
-            CenterTowards(0, 0, Direction.SouthWest);
+            CenterTowards(grid, 0, 0, Direction.NorthEast);
+            CenterTowards(grid, 0, 0, Direction.NorthWest);
+            CenterTowards(grid, 0, 0, Direction.SouthEast);
+            CenterTowards(grid, 0, 0, Direction.SouthWest);
         }
 
-        private void CenterTowards(int startX, int startY, Direction dir)
+        private void CenterTowards(Grid<int, Cell<int>> grid, int startX, int startY, Direction dir)
         {
-            var grid = CreateNewGrid();
             var chunkLoader = grid._chunkLoader ?? throw new Exception("No chunkloader available");
             // Start at 0, 0 => Go in all directions
             grid.Center(startX, startY);
@@ -1155,8 +1157,13 @@ namespace Venomaus.UnitTests.Tests
         {
             var grid = CreateNewGrid();
             var chunkLoader = grid._chunkLoader ?? throw new Exception("No chunkloader available");
+            var expectedChunkInfo = chunkLoader.GetChunksToLoad(chunkLoader.CenterCoordinate.x, chunkLoader.CenterCoordinate.y);
+
+            Assert.That(chunkLoader.GetLoadedChunks(), Has.Length.EqualTo(expectedChunkInfo.AllChunks.Count));
+
             int loaded = 0, unloaded = 0;
-            void ChunkLoaded(object? sender, EventArgs args) {
+            void ChunkLoaded(object? sender, EventArgs args) 
+            {
                 loaded++;
             }
             void ChunkUnloaded(object? sender, EventArgs args)
@@ -1166,7 +1173,7 @@ namespace Venomaus.UnitTests.Tests
             grid.OnChunkLoad += ChunkLoaded;
             grid.OnChunkUnload += ChunkUnloaded;
             grid.ClearCache();
-            var expectedChunkInfo = chunkLoader.GetChunksToLoad(chunkLoader.CenterCoordinate.x, chunkLoader.CenterCoordinate.y);
+
             Assert.That(() => unloaded, Is.EqualTo(expectedChunkInfo.AllChunks.Count).After(2).Seconds.PollEvery(10).MilliSeconds, "Unloaded chunks not correct");
             Assert.That(() => loaded, Is.EqualTo(expectedChunkInfo.AllChunks.Count).After(2).Seconds.PollEvery(10).MilliSeconds, "Loaded chunks not correct");
             grid.OnChunkLoad -= ChunkLoaded;
