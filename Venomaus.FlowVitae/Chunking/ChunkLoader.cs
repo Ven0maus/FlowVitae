@@ -37,7 +37,7 @@ namespace Venomaus.FlowVitae.Chunking
         private readonly CancellationToken _cancellationToken;
         private readonly int _chunksOutsideViewportRadiusToLoad;
 
-        public ChunkLoader(int viewPortWidth, int viewPortHeight, int width, int height, IProceduralGen<TCellType, TCell, TChunkData> generator, Func<int, int, TCellType, TCell?> cellTypeConverter, CancellationToken cancellationToken, int chunksOutsideViewportRadiusToLoad)
+        public ChunkLoader(int viewPortWidth, int viewPortHeight, int width, int height, IProceduralGen<TCellType, TCell, TChunkData> generator, Func<int, int, TCellType, TCell?> cellTypeConverter, int chunksOutsideViewportRadiusToLoad, CancellationToken cancellationToken)
         {
             _chunkWidth = width;
             _chunkHeight = height;
@@ -347,40 +347,17 @@ namespace Venomaus.FlowVitae.Chunking
 
         public IEnumerable<TCell?> GetChunkCells(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool forceLoadScreenCells = false)
         {
-            var coords = positions.ToArray();
-            if (!UseThreading)
-            {
-                foreach (var (x, y) in coords)
-                {
-                    yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells);
-                }
-            }
-            else
-            {
-                if (LoadChunksInParallel)
-                {
-                    var cellDictionary = new ConcurrentDictionary<(int x, int y), TCell?>();
-                    Parallel.ForEach(coords, pos =>
-                    {
-                        cellDictionary.TryAdd(pos, GetChunkCell(pos.x, pos.y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells));
-                    });
+            foreach (var (x, y) in positions)
+                yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells);
+            foreach (var (x, y) in _tempLoadedChunks)
+                UnloadChunk(x, y);
+            _tempLoadedChunks.Clear();
+        }
 
-                    // Return cells in the same order as the input order
-                    foreach (var pos in coords)
-                    {
-                        if (cellDictionary.TryGetValue(pos, out var cell))
-                            yield return cell;
-                    }
-                }
-                else
-                {
-                    foreach (var (x, y) in coords)
-                    {
-                        yield return GetChunkCell(x, y, true, isWorldCoordinateOnScreen, screenCells, false, forceLoadScreenCells);
-                    }
-                }
-            }
-
+        public IEnumerable<TCellType> GetChunkCellTypes(IEnumerable<(int x, int y)> positions, Checker? isWorldCoordinateOnScreen = null, TCellType[]? screenCells = null, bool forceLoadScreenCells = false)
+        {
+            foreach (var (x, y) in positions)
+                yield return GetChunkCellType(x, y, true, isWorldCoordinateOnScreen, screenCells, false, true, forceLoadScreenCells);
             foreach (var (x, y) in _tempLoadedChunks)
                 UnloadChunk(x, y);
             _tempLoadedChunks.Clear();

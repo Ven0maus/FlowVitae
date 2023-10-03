@@ -28,7 +28,6 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         protected readonly Consumer Consumer = new();
 
         protected virtual bool ProcGenEnabled { get; }
-        protected virtual bool DivideChunk { get; }
 
         protected Cell<int>[] Cells { get; private set; }
         protected Cell<int>[] ProceduralCells { get; private set; }
@@ -38,13 +37,15 @@ namespace Venomaus.BenchmarkTests.Benchmarks
         protected abstract int Seed { get; }
         protected Random Random { get; private set; }
 
+        protected (int x, int y)? CurrentChunkCoordinate;
         protected (int x, int y) NextChunkCoordinate;
         protected (int x, int y) SameChunkPlus1Pos;
+        protected (int x, int y) UnloadedChunkCoordinate;
 
         [GlobalSetup]
         public void Setup()
         {
-            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, DivideChunk ? (int)((double)ViewPortWidth / 100 * 30) : ChunkWidth, DivideChunk ? (int)((double)ViewPortHeight / 100 * 30) : ChunkHeight, InitializeProcGen());
+            Grid = new Grid<TCellType, TCell>(ViewPortWidth, ViewPortHeight, ChunkWidth, ChunkHeight, InitializeProcGen(), 2);
 
             // Initialize benchmark data
             Random = new Random(Seed);
@@ -56,6 +57,13 @@ namespace Venomaus.BenchmarkTests.Benchmarks
 
             var (x, y) = (Grid.Width / 2, Grid.Height / 2);
             NextChunkCoordinate = GetChunkCoordinate(x + ChunkWidth, y);
+
+            if (Grid._chunkLoader != null)
+            {
+                var unloadedChunkCoordinate = Grid._chunkLoader.GetChunksToLoad(NextChunkCoordinate.x, NextChunkCoordinate.y).ChunksOutsideViewport.First();
+                UnloadedChunkCoordinate = GetChunkCoordinate(unloadedChunkCoordinate.x, unloadedChunkCoordinate.y);
+                CurrentChunkCoordinate = GetChunkCoordinate(Grid._chunkLoader.CenterCoordinate.x, Grid._chunkLoader.CenterCoordinate.y);
+            }
 
             var center = (x: Grid.Width / 2, y: Grid.Height / 2);
             SameChunkPlus1Pos = (center.x + 1, center.y);
@@ -122,8 +130,8 @@ namespace Venomaus.BenchmarkTests.Benchmarks
                         }
                         else
                         {
-                            randX = Random.Next(-(ViewPortWidth * ChunkWidth * 5), ViewPortWidth * ChunkWidth * 5);
-                            randY = Random.Next(-(ViewPortHeight * ChunkHeight * 5), ViewPortHeight * ChunkHeight * 5);
+                            randX = Random.Next(maxCoord.x, maxCoord.x + ChunkWidth);
+                            randY = Random.Next(maxCoord.y, maxCoord.y + ChunkHeight);
                         }
                         positions[y * width10Procent + x] = (randX, randY);
                     }

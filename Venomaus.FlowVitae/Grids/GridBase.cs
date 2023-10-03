@@ -61,7 +61,8 @@ namespace Venomaus.FlowVitae.Grids
         internal readonly ChunkLoader<TCellType, TCell, TChunkData>? _chunkLoader;
 
         /// <summary>
-        /// True if chunks should be loaded in a seperate thread if possible, this could improve performance.
+        /// True if chunks outside of the viewport should be loaded in a seperate thread if possible, this improves performance,
+        /// removes popin-effects and possible stuttering.
         /// This is by default enabled.
         /// </summary>
         /// <remarks>This property works only for chunked grids.</remarks>
@@ -79,8 +80,9 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         /// <summary>
-        /// True if chunks should be loaded in parallel if possible (only when threading is enabled), this could improve performance.
-        /// This is by default enabled.
+        /// True if chunks outside of viewport should be loaded in parallel if possible (only when threading is enabled), 
+        /// this could improve performance, when chunks are large.
+        /// This is by default true.
         /// </summary>
         /// <remarks>This property works only for chunked grids.</remarks>
         public bool LoadChunksInParallel
@@ -179,7 +181,7 @@ namespace Venomaus.FlowVitae.Grids
             ChunkHeight = chunkHeight;
 
             // Initialize chunkloader if grid uses chunks
-            _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert, _cancellationTokenSource.Token, chunksOutsideViewportRadiusToLoad);
+            _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert, chunksOutsideViewportRadiusToLoad, _cancellationTokenSource.Token);
             var (x, y) = GetChunkCoordinate(viewPortWidth / 2, viewPortHeight / 2);
             _chunkLoader.SetCurrentChunk(x, y);
 
@@ -423,12 +425,14 @@ namespace Venomaus.FlowVitae.Grids
         public IEnumerable<(int x, int y)> GetViewPortWorldCoordinates(Func<TCellType, bool>? criteria = null)
         {
             var indexes = Width * Height;
+            var minX = _centerCoordinate.x - Width / 2;
+            var minY = _centerCoordinate.y - Height / 2;
             for (int i = 0; i < indexes; i++)
             {
                 var x = i % Width;
                 var y = i / Width;
                 if (criteria != null && !criteria.Invoke(ScreenCells[i])) continue;
-                yield return ScreenToWorldCoordinate(x, y);
+                yield return (minX + x, minY + y);
             }
         }
 
@@ -590,6 +594,31 @@ namespace Venomaus.FlowVitae.Grids
                 // Handle chunkloaded grid
                 foreach (var cell in _chunkLoader.GetChunkCells(positions, IsWorldCoordinateOnScreen, ScreenCells))
                     yield return cell;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves multiple <typeparamref name="TCellType"/>
+        /// </summary>
+        /// <param name="positions"></param>
+        /// <returns></returns>
+        public virtual IEnumerable<TCellType> GetCellTypes(IEnumerable<(int, int)> positions)
+        {
+            if (_chunkLoader == null)
+            {
+                // Handle non chunkloaded grid
+                foreach (var pos in positions)
+                {
+                    if (!InBounds(pos.Item1, pos.Item2)) continue;
+                    var cellType = GetCellType(pos.Item1, pos.Item2);
+                    yield return cellType;
+                }
+            }
+            else
+            {
+                // Handle chunkloaded grid
+                foreach (var cellType in _chunkLoader.GetChunkCellTypes(positions, IsWorldCoordinateOnScreen, ScreenCells))
+                    yield return cellType;
             }
         }
 

@@ -4,7 +4,9 @@ using Venomaus.FlowVitae.Cells;
 
 namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
 {
-    public class ProcGenBaseBenchmarks : BaseGridBenchmarks<int, Cell<int>>
+    [MemoryDiagnoser]
+    [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.SlowestToFastest)]
+    public class ProcGenGridBenchmarks : BaseGridBenchmarks<int, Cell<int>>
     {
         protected override int Seed => 1000;
         protected override bool ProcGenEnabled => true;
@@ -50,6 +52,18 @@ namespace Venomaus.BenchmarkTests.Benchmarks.Cases.ProceduralGridCases
         public int GetCellType_WithChunkLoad()
         {
             return Grid.GetCellType(ViewPortWidth + ChunkWidth * 5, ViewPortWidth + ChunkHeight * 5);
+        }
+
+        [Benchmark]
+        public void GetCellTypes_NoChunkLoad()
+        {
+            Grid.GetCellTypes(ProceduralPositionsInView).Consume(Consumer);
+        }
+
+        [Benchmark]
+        public void GetCellTypes_WithChunkLoad()
+        {
+            Grid.GetCellTypes(ProceduralPositions).Consume(Consumer);
         }
 
         [Benchmark]

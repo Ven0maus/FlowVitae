@@ -9,17 +9,15 @@ namespace Venomaus.BenchmarkTests
 {
     internal class Program
     {
-        private const int GridSize = 25;
         private static readonly Job JobType = Job.ShortRun;
         private const bool UseDefaultConfig = false;
 
-        private static void Main(string[] args)
+        private static void Main()
         {
             CleanupLogging();
 
             // Run benchmarks on the defined size
-            RunGridBenchmarks(viewPortWidth: GridSize, viewPortHeight: GridSize, 
-                chunkWidth: GridSize, chunkHeight: GridSize);
+            RunGridBenchmarks(viewPortWidth: 240, viewPortHeight: 67, chunkWidth: 32, chunkHeight: 32);
 
             Console.ReadKey();
         }
@@ -28,9 +26,9 @@ namespace Venomaus.BenchmarkTests
         {
             return new Type[]
             {
-                typeof(StaticGridBenchmarkCases),
-                typeof(ProcGenGridBenchmarkCases),
-                typeof(ProcGenGridDivideBenchmarkCases)
+                typeof(ChunkloaderBenchmarks),
+                typeof(StaticGridBenchmarks),
+                typeof(ProcGenGridBenchmarks)
             };
         }
 

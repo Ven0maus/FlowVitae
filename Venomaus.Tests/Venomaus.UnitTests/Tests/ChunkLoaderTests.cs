@@ -294,6 +294,22 @@ namespace Venomaus.UnitTests.Tests
         }
 
         [Test]
+        public void GetChunkCellTypes_Get_Correct()
+        {
+            var grid = CreateNewGrid();
+            var chunkLoader = grid._chunkLoader ?? throw new Exception("No chunkloader available");
+            var cellPositions = new[] { (5, 5), (3, 2), (4, 4) };
+            var cells = chunkLoader.GetChunkCellTypes(cellPositions).ToArray();
+            Assert.That(cells, Is.Not.Null);
+            Assert.That(cells, Has.Length.EqualTo(cellPositions.Length));
+
+            for (int i = 0; i < cellPositions.Length; i++)
+            {
+                Assert.That(cells[i], Is.EqualTo(grid.GetCellType(cellPositions[i].Item1, cellPositions[i].Item2)));
+            }
+        }
+
+        [Test]
         public void SetChunkCell_Set_Correct()
         {
             var grid = CreateNewGrid();
