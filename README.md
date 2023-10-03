@@ -267,6 +267,6 @@ Grid.GetChunkCellCoordinates(x, y);
 Grid.GetLoadedChunkCoordinates();
 ```
 
-# Integration with SadConsole
+# Integration with SadConsole / MonoGame
 
 Checkout the SadConsoleVisualizer project, it is an example project that integrates the FlowVitae grid with SadConsole and MonoGame.
