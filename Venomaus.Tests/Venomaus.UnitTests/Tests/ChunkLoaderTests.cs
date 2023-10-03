@@ -1073,6 +1073,10 @@ namespace Venomaus.UnitTests.Tests
         {
             var grid = CreateNewGrid();
             var chunkLoader = grid._chunkLoader ?? throw new Exception("No chunkloader available");
+            var currentLoadedChunks = chunkLoader.GetChunksToLoad(chunkLoader.CenterCoordinate.x, chunkLoader.CenterCoordinate.y);
+
+            Assert.That(() => chunkLoader.GetLoadedChunks(), Has.Length.EqualTo(currentLoadedChunks.AllChunks.Count).After(2).Seconds.PollEvery(10).MilliSeconds);
+
             var chunksLoaded = new List<(int x, int y)>();
             var chunksUnloaded = new List<(int x, int y)>();
             var comparer = new TupleComparer<int>();
@@ -1098,8 +1102,6 @@ namespace Venomaus.UnitTests.Tests
 
             grid.OnChunkLoad += ChunkLoaded;
             grid.OnChunkUnload += ChunkUnloaded;
-
-            var currentLoadedChunks = chunkLoader.GetChunksToLoad(chunkLoader.CenterCoordinate.x, chunkLoader.CenterCoordinate.y);
 
             grid.UseThreading = true;
             grid.Center(ViewPortWidth / 2 + ChunkWidth, ViewPortHeight / 2);
@@ -1159,7 +1161,7 @@ namespace Venomaus.UnitTests.Tests
             var chunkLoader = grid._chunkLoader ?? throw new Exception("No chunkloader available");
             var expectedChunkInfo = chunkLoader.GetChunksToLoad(chunkLoader.CenterCoordinate.x, chunkLoader.CenterCoordinate.y);
 
-            Assert.That(chunkLoader.GetLoadedChunks(), Has.Length.EqualTo(expectedChunkInfo.AllChunks.Count));
+            Assert.That(() => chunkLoader.GetLoadedChunks(), Has.Length.EqualTo(expectedChunkInfo.AllChunks.Count).After(2).Seconds.PollEvery(10).MilliSeconds);
 
             int loaded = 0, unloaded = 0;
             void ChunkLoaded(object? sender, EventArgs args) 
