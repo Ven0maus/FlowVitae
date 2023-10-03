@@ -8,8 +8,8 @@ Supports:
 - netstandard2.1
 
 Tested with:
-- SadConsole V9
-- Unity 2022.1
+- SadConsole
+- MonoGame
 
 # Features
 
@@ -269,4 +269,4 @@ Grid.GetLoadedChunkCoordinates();
 
 # Integration with SadConsole
 
-Checkout the SadConsoleVisualizer project, it is an example project that integrates the FlowVitae grid with SadConsole V9 render engine.
+Checkout the SadConsoleVisualizer project, it is an example project that integrates the FlowVitae grid with SadConsole and MonoGame.
