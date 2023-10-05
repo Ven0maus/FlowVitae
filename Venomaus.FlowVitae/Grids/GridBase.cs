@@ -15,7 +15,7 @@ namespace Venomaus.FlowVitae.Grids
     /// <typeparam name="TCellType">The cell type to be used within the <see cref="GridBase{TCellType, TCell, TChunkData}"/></typeparam>
     /// <typeparam name="TCell">The wrapper object used to wrap around the cell type</typeparam>
     /// <typeparam name="TChunkData">The custom chunk data type to be returned from chunks</typeparam>
-    public abstract class GridBase<TCellType, TCell, TChunkData> : IDisposable
+    public abstract class GridBase<TCellType, TCell, TChunkData>
         where TCellType : struct
         where TCell : class, ICell<TCellType>, new()
         where TChunkData : class, IChunkData
@@ -135,7 +135,6 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         private bool _viewPortInitialized = false;
-        private readonly CancellationTokenSource? _cancellationTokenSource;
 
         /// <summary>
         /// Constructor for <see cref="GridBase{TCellType, TCell}"/>
@@ -173,15 +172,13 @@ namespace Venomaus.FlowVitae.Grids
             if (chunkWidth <= 0 || chunkHeight <= 0)
                 throw new Exception("Cannot define a grid with a chunk width/height smaller or equal to 0");
 
-            _cancellationTokenSource = new CancellationTokenSource();
-
             // Disable for initial load
             UseThreading = false;
             ChunkWidth = chunkWidth;
             ChunkHeight = chunkHeight;
 
             // Initialize chunkloader if grid uses chunks
-            _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert, chunksOutsideViewportRadiusToLoad, _cancellationTokenSource.Token);
+            _chunkLoader = new ChunkLoader<TCellType, TCell, TChunkData>(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, generator, Convert, chunksOutsideViewportRadiusToLoad);
             var (x, y) = GetChunkCoordinate(viewPortWidth / 2, viewPortHeight / 2);
             _chunkLoader.SetCurrentChunk(x, y);
 
@@ -208,11 +205,6 @@ namespace Venomaus.FlowVitae.Grids
         public GridBase(int viewPortWidth, int viewPortHeight, IProceduralGen<TCellType, TCell, TChunkData>? generator, int chunksOutsideViewportRadiusToLoad = 1)
             : this(viewPortWidth, viewPortHeight, viewPortWidth, viewPortHeight, generator, chunksOutsideViewportRadiusToLoad)
         { }
-
-        /// <summary>
-        /// Disposes data for this grid
-        /// </summary>
-        ~GridBase() { Dispose(); }
 
         /// <summary>
         /// Returns all the cell positions within the chunk of the specified coordinate.
@@ -772,17 +764,6 @@ namespace Venomaus.FlowVitae.Grids
                 if (!RaiseOnlyOnCellTypeChange || (RaiseOnlyOnCellTypeChange && !cell.CellType.Equals(ScreenCells[screenCoordinate.y * Width + screenCoordinate.x])))
                     OnCellUpdate?.Invoke(null, new CellUpdateArgs<TCellType, TCell>(screenCoordinate, GetCell(x, y)));
             }
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            if (_cancellationTokenSource != null)
-            {
-                _cancellationTokenSource.Cancel();
-                _cancellationTokenSource.Dispose();
-            }
-            GC.SuppressFinalize(this);
         }
     }
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Venomaus.FlowVitae.Cells;
 using Venomaus.FlowVitae.Chunking.Generators;
@@ -34,10 +33,9 @@ namespace Venomaus.FlowVitae.Chunking
 
         public bool LoadChunksInParallel { get; set; } = true;
 
-        private readonly CancellationToken _cancellationToken;
         private readonly int _chunksOutsideViewportRadiusToLoad;
 
-        public ChunkLoader(int viewPortWidth, int viewPortHeight, int width, int height, IProceduralGen<TCellType, TCell, TChunkData> generator, Func<int, int, TCellType, TCell?> cellTypeConverter, int chunksOutsideViewportRadiusToLoad, CancellationToken cancellationToken)
+        public ChunkLoader(int viewPortWidth, int viewPortHeight, int width, int height, IProceduralGen<TCellType, TCell, TChunkData> generator, Func<int, int, TCellType, TCell?> cellTypeConverter, int chunksOutsideViewportRadiusToLoad)
         {
             _chunkWidth = width;
             _chunkHeight = height;
@@ -46,7 +44,6 @@ namespace Venomaus.FlowVitae.Chunking
             _seed = generator.Seed;
             _generator = generator;
             _cellTypeConverter = cellTypeConverter;
-            _cancellationToken = cancellationToken;
             _tempLoadedChunks = new ConcurrentHashSet<(int x, int y)>(new TupleComparer<int>());
             var initialAmount = GetChunksToLoad(0, 0).AllChunks.Count;
             _chunks = new ConcurrentDictionary<(int x, int y), (TCellType[], TChunkData?)>(Environment.ProcessorCount, initialAmount, new TupleComparer<int>());
@@ -184,7 +181,6 @@ namespace Venomaus.FlowVitae.Chunking
                             {
                                 try
                                 {
-                                    _cancellationToken.ThrowIfCancellationRequested();
                                     if (LoadChunk(chunk.x, chunk.y, out _))
                                     {
                                         onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _chunkWidth, _chunkHeight, false));
@@ -202,7 +198,6 @@ namespace Venomaus.FlowVitae.Chunking
                             {
                                 foreach (var chunk in chunksOutsideViewport)
                                 {
-                                    _cancellationToken.ThrowIfCancellationRequested();
                                     if (LoadChunk(chunk.x, chunk.y, out _))
                                     {
                                         onChunkLoad?.Invoke(null, new ChunkUpdateArgs(chunk, _chunkWidth, _chunkHeight, false));
@@ -220,10 +215,10 @@ namespace Venomaus.FlowVitae.Chunking
                         Task.Run(() =>
                         {
                             throw ex;
-                        }, _cancellationToken);
+                        });
                         return;
                     }
-                }, _cancellationToken);
+                });
             }
         }
 
@@ -446,7 +441,6 @@ namespace Venomaus.FlowVitae.Chunking
             {
                 lock (loadChunkLock)
                 {
-                    if (_cancellationToken.IsCancellationRequested) return false;
                     // Recheck the condition inside the lock
                     if (!_chunks.ContainsKey(chunkCoordinate) ||
                         _chunks[chunkCoordinate].chunkCells == null)
