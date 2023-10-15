@@ -17,7 +17,7 @@ namespace Venomaus.FlowVitae.Chunking
     {
         private readonly int _seed;
         private readonly int _chunkWidth, _chunkHeight;
-        private readonly int _viewPortWidth, _viewPortHeight;
+        private int _viewPortWidth, _viewPortHeight;
         private readonly IProceduralGen<TCellType, TCell, TChunkData> _generator;
         private readonly Func<int, int, TCellType, TCell?> _cellTypeConverter;
         private readonly ConcurrentDictionary<(int x, int y), TChunkData> _chunkDataCache;
@@ -49,6 +49,12 @@ namespace Venomaus.FlowVitae.Chunking
             _chunks = new ConcurrentDictionary<(int x, int y), (TCellType[], TChunkData?)>(Environment.ProcessorCount, initialAmount, new TupleComparer<int>());
             _chunkDataCache = new ConcurrentDictionary<(int x, int y), TChunkData>(new TupleComparer<int>());
             _chunksOutsideViewportRadiusToLoad = chunksOutsideViewportRadiusToLoad;
+        }
+
+        public void ResizeViewport(int viewportWidth, int viewportHeight)
+        {
+            _viewPortWidth = viewportWidth;
+            _viewPortHeight = viewportHeight;
         }
 
         public int GetChunkSeed(int x, int y)
@@ -575,7 +581,7 @@ namespace Venomaus.FlowVitae.Chunking
 
             var prevValue = (x: cellX - diffX, y: cellY - diffY);
             var prevScreenCoord = WorldToScreenCoordinate(prevValue.x, prevValue.y, viewPortWidth, viewPortHeight, centerCoordinate);
-            if (isWorldCoordinateOnScreen.Invoke(prevValue.x, prevValue.y, out _, out _) && viewPortInitialized)
+            if (viewPortInitialized && isWorldCoordinateOnScreen.Invoke(prevValue.x, prevValue.y, out _, out _))
             {
                 var prevScreenType = screenCells[prevScreenCoord.y * viewPortWidth + prevScreenCoord.x];
 

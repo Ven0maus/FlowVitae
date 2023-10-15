@@ -3,6 +3,7 @@ FlowVitae is a memory and performance efficient 2D grid library designed for sma
 Can be easily integrated with most render engines.
 
 Supports:
+- net7.0
 - net6.0
 - netstandard2.1
 
@@ -247,6 +248,13 @@ var isInViewPort = grid.IsWorldCoordinateOnViewPort(x,y);
 ```csharp
 grid.ClearCache(); // Removes all stored cell data
 grid.RemoveStoredCell(x, y);
+```
+
+**Resize grid viewport**
+
+This will resize the surface of the screen, reinitialize all the chunks and send out render updates for the new screen surface.
+```csharp
+grid.ResizeViewport(width, height);
 ```
 
 **Be notified of main chunk loading/unloading**

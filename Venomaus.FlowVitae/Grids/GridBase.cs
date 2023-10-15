@@ -23,11 +23,11 @@ namespace Venomaus.FlowVitae.Grids
         /// <summary>
         /// Width of the viewport
         /// </summary>
-        public int Width { get; }
+        public int Width { get; private set; }
         /// <summary>
         /// Height of the viewport
         /// </summary>
-        public int Height { get; }
+        public int Height { get; private set; }
 
         /// <summary>
         /// Width of the chunk
@@ -41,7 +41,7 @@ namespace Venomaus.FlowVitae.Grids
         /// <summary>
         /// Internal cell container for the defined cell type
         /// </summary>
-        internal readonly TCellType[] ScreenCells;
+        internal TCellType[] ScreenCells;
 
         /// <summary>
         /// Represents the real coordinate that is located in the center of the screen cells.
@@ -207,6 +207,54 @@ namespace Venomaus.FlowVitae.Grids
         { }
 
         /// <summary>
+        /// Resizes the viewport (screenCells) array to the new width/height provided
+        /// </summary>
+        /// <param name="viewPortWidth"></param>
+        /// <param name="viewPortHeight"></param>
+        public void ResizeViewport(int viewPortWidth, int viewPortHeight)
+        {
+            Width = viewPortWidth;
+            Height = viewPortHeight;
+            ScreenCells = new TCellType[Width * Height];
+
+            var previousCenterCoordinate = _centerCoordinate;
+            _centerCoordinate = (Width / 2, Height / 2);
+
+            // Reload all chunks
+            if (_chunkLoader != null)
+            {
+                // Resize within chunkloader
+                _chunkLoader.ResizeViewport(viewPortWidth, viewPortHeight);
+
+                // Clear chunks and data
+                var chunksToBeLoaded = _chunkLoader.GetChunksToLoad(previousCenterCoordinate.x, previousCenterCoordinate.y);
+                var comparer = new TupleComparer<int>();
+                var loadedChunks = _chunkLoader.GetLoadedChunks();
+                foreach (var (chunkX, chunkY) in loadedChunks)
+                    if (_chunkLoader.UnloadChunk(chunkX, chunkY, true))
+                        OnChunkUnload?.Invoke(null, new ChunkUpdateArgs((chunkX, chunkY), ChunkWidth, ChunkHeight, chunksToBeLoaded.ChunksInsideViewport.Contains((chunkX, chunkY), comparer)));
+
+                // Re-center and load chunks within the main thread
+                _viewPortInitialized = false;
+                var prevThreadingUse = UseThreading;
+                UseThreading = false;
+                var (x, y) = GetChunkCoordinate(previousCenterCoordinate.x, previousCenterCoordinate.y);
+                _chunkLoader.SetCurrentChunk(x, y, OnChunkLoad);
+
+                // This will set the screen cells properly on start, so everything syncs well
+                var screenCellPositions = GetViewPortWorldCoordinates();
+                _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true).ToArray();
+                var prev = RaiseOnlyOnCellTypeChange;
+                RaiseOnlyOnCellTypeChange = false;
+                Center(previousCenterCoordinate.x, previousCenterCoordinate.y);
+                UpdateScreenCells();
+                RaiseOnlyOnCellTypeChange = prev;
+                _viewPortInitialized = true;
+                UseThreading = prevThreadingUse;
+            }
+        }
+
+        /// <summary>
         /// Returns all the cell positions within the chunk of the specified coordinate.
         /// </summary>
         /// <param name="x">Coordinate X</param>
@@ -228,6 +276,15 @@ namespace Venomaus.FlowVitae.Grids
                 }
             }
         }
+
+        /// <summary>
+        /// Returns all the cell positions within the chunk of the specified coordinate.
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <returns>Cell positions of the chunk</returns>
+        /// <see cref="GetChunkCellCoordinates(int, int)"/>
+        public IEnumerable<(int x, int y)> GetChunkCellCoordinates((int x, int y) point) 
+            => GetChunkCellCoordinates(point.x, point.y);
 
         /// <summary>
         /// Returns an enumerable of chunk coordinates that are currently loaded.
@@ -269,9 +326,11 @@ namespace Venomaus.FlowVitae.Grids
                 // This will set the screen cells properly on start, so everything syncs well
                 var screenCellPositions = GetViewPortWorldCoordinates();
                 _ = _chunkLoader.GetChunkCells(screenCellPositions, IsWorldCoordinateOnScreen, ScreenCells, true).ToArray();
-
+                var prev = RaiseOnlyOnCellTypeChange;
+                RaiseOnlyOnCellTypeChange = false;
                 Center(_centerCoordinate.x, _centerCoordinate.y);
                 UpdateScreenCells();
+                RaiseOnlyOnCellTypeChange = prev;
                 _viewPortInitialized = true;
                 UseThreading = prevThreadingUse;
             }
@@ -287,6 +346,14 @@ namespace Venomaus.FlowVitae.Grids
         {
             return _chunkLoader?.GetChunkData(x, y);
         }
+
+        /// <summary>
+        /// Retrieves the chunk data for this chunk. Returns null if no data was specified during generation.
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <returns><typeparamref name="TChunkData"/> / null</returns>
+        public TChunkData? GetChunkData((int x, int y) point)
+            => GetChunkData(point.x, point.y);
 
         /// <summary>
         /// Allows to store the chunk data in the internal cache, this will cause the chunk data not to be reloaded on chunk load.
@@ -327,6 +394,14 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         /// <summary>
+        /// Retrieves the unique chunk seed, for the chunk where the cell (x,y) is situated in.
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <returns>Unique chunk seed</returns>
+        public int GetChunkSeed((int x, int y) point)
+            => GetChunkSeed(point.x, point.y);
+
+        /// <summary>
         /// Returns the bottom-left most coordinate of the chunk the specified coordinate resides in.
         /// </summary>
         /// <param name="x">Coordinate X</param>
@@ -338,6 +413,15 @@ namespace Venomaus.FlowVitae.Grids
             if (_chunkLoader == null) return (x, y);
             return _chunkLoader.GetChunkCoordinate(x, y);
         }
+
+        /// <summary>
+        /// Returns the bottom-left most coordinate of the chunk the specified coordinate resides in.
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <remarks>The return value will be the specified (x,y) for non chunkloaded grids.</remarks>
+        /// <returns></returns>
+        public (int x, int y) GetChunkCoordinate((int x, int y) point)
+            => GetChunkCoordinate(point.x, point.y);
 
         /// <summary>
         /// Centers the grid on the specified coordinate
@@ -355,6 +439,14 @@ namespace Venomaus.FlowVitae.Grids
             _chunkLoader.CenterViewPort(x, y, Width, Height, prevCenterCoordinate, _centerCoordinate,
                 IsWorldCoordinateOnScreen, ScreenCells, OnCellUpdate, _viewPortInitialized, OnChunkLoad, OnChunkUnload);
         }
+
+        /// <summary>
+        /// Centers the grid on the specified coordinate
+        /// </summary>
+        /// <remarks>Can only be used for grids that use chunking.</remarks>
+        /// <param name="point">Coordinate (x, y)</param>
+        public void Center((int x, int y) point)
+            => Center(point.x, point.y);
 
         /// <summary>
         /// Converts the internal cell <typeparamref name="TCellType"/> to a readable cell of type <typeparamref name="TCell"/>
@@ -391,6 +483,14 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         /// <summary>
+        /// Returns the world coordinate that resembles the given screen coordinate.
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
+        public (int x, int y) ScreenToWorldCoordinate((int x, int y) point)
+            => ScreenToWorldCoordinate(point.x, point.y);
+
+        /// <summary>
         /// Returns the screen coordinate that resembles the given world coordinate.
         /// </summary>
         /// <param name="x">Coordinate X</param>
@@ -407,6 +507,15 @@ namespace Venomaus.FlowVitae.Grids
             }
             return ChunkLoader<TCellType, TCell, TChunkData>.WorldToScreenCoordinate(x, y, Width, Height, _centerCoordinate);
         }
+
+        /// <summary>
+        /// Returns the screen coordinate that resembles the given world coordinate.
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <remarks>Only useful when using a chunkloaded grid, static grids will just return input coordinate.</remarks>
+        /// <returns><see cref="ValueTuple{Int32, Int32}"/></returns>
+        public (int x, int y) WorldToScreenCoordinate((int x, int y) point)
+            => WorldToScreenCoordinate(point.x, point.y);
 
         /// <summary>
         /// Gets an enumerable of all the world coordinates that reside within the viewport
@@ -546,6 +655,15 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         /// <summary>
+        /// Returns the neighbor cells based on the specified adjacency rule
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <param name="adjacencyRule">Specifies the adjacent directions to retrieve</param>
+        /// <returns></returns>
+        public IEnumerable<TCell?> GetNeighbors((int x, int y) point, AdjacencyRule adjacencyRule)
+            => GetNeighbors(point.x, point.y, adjacencyRule);
+
+        /// <summary>
         /// Retrieve the <typeparamref name="TCell"/> at position (<paramref name="x"/>, <paramref name="y"/>)
         /// </summary>
         /// <param name="x">Coordinate X</param>
@@ -563,6 +681,15 @@ namespace Venomaus.FlowVitae.Grids
             }
             return Convert(x, y, GetCellType(x, y));
         }
+
+        /// <summary>
+        /// Retrieve the <typeparamref name="TCell"/> at position (x, y)
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <remarks>When setting multiple cells at once, use <see cref="GetCells(IEnumerable{ValueTuple{int, int}})"/> instead.</remarks>
+        /// <returns><typeparamref name="TCell"/>?</returns>
+        public TCell? GetCell((int x, int y) point)
+            => GetCell(point.x, point.y);
 
         /// <summary>
         /// Retrieves multiple <typeparamref name="TCell"/>
@@ -634,6 +761,14 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         /// <summary>
+        /// Retrieve the <typeparamref name="TCellType"/> at position (x, y))
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <returns><typeparamref name="TCellType"/></returns>
+        public TCellType GetCellType((int x, int y) point)
+            => GetCellType(point.x, point.y);
+
+        /// <summary>
         /// Returns <see langword="true"/> / <see langword="false"/> based on if the chunk is loaded where the coordinate resides in.
         /// </summary>
         /// <param name="x">Coordinate X</param>
@@ -643,6 +778,14 @@ namespace Venomaus.FlowVitae.Grids
         {
             return _chunkLoader != null && _chunkLoader.IsChunkLoaded(x, y);
         }
+
+        /// <summary>
+        /// Returns <see langword="true"/> / <see langword="false"/> based on if the chunk is loaded where the coordinate resides in.
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <returns><see langword="true"/> / <see langword="false"/></returns>
+        public bool IsChunkLoaded((int x, int y) point)
+            => IsChunkLoaded(point.x, point.y);
 
         /// <summary>
         /// Validation to see if the coordinate (<paramref name="x"/>, <paramref name="y"/>) is within the <see cref="ScreenCells"/> bounds
@@ -656,6 +799,15 @@ namespace Venomaus.FlowVitae.Grids
             if (_chunkLoader != null) return true;
             return x >= 0 && y >= 0 && x < Width && y < Height;
         }
+
+        /// <summary>
+        /// Validation to see if the coordinate (x, y) is within the <see cref="ScreenCells"/> bounds
+        /// </summary>
+        /// <remarks>Always true when chunking is used.</remarks>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <returns><see langword="true"/> or <see langword="false"/></returns>
+        public bool InBounds((int x, int y) point)
+            => InBounds(point.x, point.y);
 
         /// <summary>
         /// Validation to see if the (<typeparamref name="TCell"/>.X, <typeparamref name="TCell"/>.Y) is within the <see cref="ScreenCells"/> bounds
@@ -680,6 +832,14 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> if the world coordinate is within the viewport.
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <returns><see langword="true"/> or <see langword="false"/></returns>
+        public bool IsWorldCoordinateOnViewPort((int x, int y) point)
+            => IsWorldCoordinateOnViewPort(point.x, point.y);
+
+        /// <summary>
         /// Shortcut method to remove a stored cell, which can be done also by using SetCell with storestate parameter set to false.
         /// </summary>
         /// <param name="x">Coordinate X</param>
@@ -697,6 +857,13 @@ namespace Venomaus.FlowVitae.Grids
         }
 
         /// <summary>
+        /// Shortcut method to remove a stored cell, which can be done also by using SetCell with storestate parameter set to false.
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        public void RemoveStoredCell((int x, int y) point)
+            => RemoveStoredCell(point.x, point.y);
+
+        /// <summary>
         /// Use this method to see if a position in the grid has a stored cell
         /// </summary>
         /// <param name="x">Coordinate X</param>
@@ -711,6 +878,14 @@ namespace Venomaus.FlowVitae.Grids
                 return _chunkLoader.HasStoredCell(x, y);
             return false;
         }
+
+        /// <summary>
+        /// Use this method to see if a position in the grid has a stored cell
+        /// </summary>
+        /// <param name="point">Coordinate (x, y)</param>
+        /// <returns><see langword="true"/> or <see langword="false"/></returns>
+        public bool HasStoredCell((int x, int y) point)
+            => HasStoredCell(point.x, point.y);
 
         private void SetStateStorage(TCell cell, bool storeState)
         {
@@ -752,6 +927,8 @@ namespace Venomaus.FlowVitae.Grids
         /// <summary>
         /// Raises OnCellUpdate for each cell visible on the screen,
         /// if (RaiseOnlyOnCellTypeChange) is true, will only raise for cells that have been modified
+        /// This method should only be used to do a full render pass of the viewport.
+        /// Use Center method instead to move around the grid.
         /// </summary>
         public void UpdateScreenCells()
         {

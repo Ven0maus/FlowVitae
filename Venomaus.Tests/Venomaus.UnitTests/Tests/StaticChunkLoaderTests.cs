@@ -30,8 +30,8 @@ namespace Venomaus.UnitTests.Tests
             return chunk;
         }
 
-        public StaticChunkLoaderTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight) 
-            : base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight)
+        public StaticChunkLoaderTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, bool resizedViewport) 
+            : base(viewPortWidth, viewPortHeight, chunkWidth, chunkHeight, resizedViewport)
         {
             _baseMap = GenerateBaseMap(viewPortWidth, viewPortHeight);
             _procGen = new StaticGenerator<int, Cell<int>>(_baseMap, viewPortWidth, viewPortHeight, NullCell);

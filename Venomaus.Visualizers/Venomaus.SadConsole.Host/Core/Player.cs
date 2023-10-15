@@ -2,6 +2,7 @@
 using SadConsole.Entities;
 using SadConsole.Input;
 using SadRogue.Primitives;
+using Venomaus.SadConsoleVisualizer.Graphics;
 
 namespace Venomaus.SadConsoleVisualizer.Core
 {
@@ -67,6 +68,14 @@ namespace Venomaus.SadConsoleVisualizer.Core
                     MoveTowards(moveDirection);
                     return true;
                 }
+            }
+
+            if (keyboard.IsKeyPressed(Keys.P))
+            {
+                // Resize the viewport to half the size of the current viewport
+                GameLoop.Instance.Grid.ResizeViewport(GameLoop.Instance.Grid.Width / 2, GameLoop.Instance.Grid.Height / 2);
+                var mapWindow = (MapWindow)Game.Instance.Screen;
+                mapWindow.Resize(GameLoop.Instance.Grid.Width, GameLoop.Instance.Grid.Height, false);
             }
 
             return base.ProcessKeyboard(keyboard);

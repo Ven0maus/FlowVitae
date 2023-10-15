@@ -9,11 +9,16 @@ using Direction = Venomaus.FlowVitae.Helpers.Direction;
 
 namespace Venomaus.UnitTests.Tests
 {
-    [TestFixture(25, 25, 25, 25)]
-    [TestFixture(50, 50, 25, 25)]
-    [TestFixture(80, 35, 80, 35)]
-    [TestFixture(69, 29, 13, 12)]
-    [TestFixture(50, 50, 100, 100)]
+    [TestFixture(25, 25, 25, 25, false)]
+    [TestFixture(50, 50, 25, 25, false)]
+    [TestFixture(80, 35, 80, 35, false)]
+    [TestFixture(69, 29, 13, 12, false)]
+    [TestFixture(50, 50, 100, 100, false)]
+    [TestFixture(25, 25, 25, 25, true)]
+    [TestFixture(50, 50, 25, 25, true)]
+    [TestFixture(80, 35, 80, 35, true)]
+    [TestFixture(69, 29, 13, 12, true)]
+    [TestFixture(50, 50, 100, 100, true)]
     [TestOf(typeof(ChunkLoader<int, Cell<int>, IChunkData>))]
     [Parallelizable(ParallelScope.Fixtures)]
     internal class ChunkLoaderTests : BaseTests<int, Cell<int>>
@@ -40,12 +45,13 @@ namespace Venomaus.UnitTests.Tests
             OnGenerateChunk?.Invoke(sender, chunk);
         }
 
-        public ChunkLoaderTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight)
+        public ChunkLoaderTests(int viewPortWidth, int viewPortHeight, int chunkWidth, int chunkHeight, bool resizedViewport)
         {
             ViewPortWidth = viewPortWidth;
             ViewPortHeight = viewPortHeight;
             ChunkWidth = chunkWidth;
             ChunkHeight = chunkHeight;
+            ResizedViewport = resizedViewport;
         }
 
         [Test]
@@ -1308,7 +1314,7 @@ namespace Venomaus.UnitTests.Tests
                 for (int y = 0; y < grid.Height; y++)
                 {
                     var index = y * grid.Width + x;
-                    Assert.That(comparer.Equals(viewPort[index], (x, y)));
+                    Assert.That(comparer.Equals(viewPort[index], (x, y)), () => $"Index: {index} Was: {viewPort[index]} but expected: {(x, y)}");
                 }
             }
         }
