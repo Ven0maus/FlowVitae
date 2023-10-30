@@ -19,8 +19,8 @@ namespace Venomaus.SadConsoleVisualizer.Core
             get { return _grid ?? throw new Exception("Grid is not initialized!"); }
         }
 
-        public Renderer? _entityRenderer;
-        public Renderer EntityRenderer { get { return _entityRenderer ??= new Renderer(); } }
+        public EntityManager? _entityRenderer;
+        public EntityManager EntityRenderer { get { return _entityRenderer ??= new EntityManager(); } }
 
         private Player? _player;
         public Player Player

@@ -1,24 +1,24 @@
 ﻿using SadConsole;
+using SadConsole.Configuration;
 using Venomaus.SadConsoleVisualizer.Core;
 
 namespace Venomaus.SadConsoleVisualizer
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             // Some settings
             Settings.ResizeMode = Settings.WindowResizeOptions.Stretch;
             Settings.AllowWindowResize = true;
             Settings.WindowTitle = Constants.ScreenSettings.GameWindowTitle;
 
-            // Setup the engine and create the main window.
-            Game.Create(Constants.ScreenSettings.Width, Constants.ScreenSettings.Height);
+            Builder gameStartup = new Builder()
+                            .SetScreenSize(Constants.ScreenSettings.Width, Constants.ScreenSettings.Height)
+                            .UseDefaultConsole()
+                            .OnStart((sender, args) => GameLoop.InitializeGameLoop());
 
-            // Hook the start event so we can add consoles to the system.
-            Game.Instance.OnStart = GameLoop.InitializeGameLoop;
-
-            // Start the game.
+            Game.Create(gameStartup);
             Game.Instance.Run();
             Game.Instance.Dispose();
         }
